@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle } from 'lucide-react';
+import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -307,6 +307,46 @@ export default function CRMTool({ userName }: CRMToolProps) {
       <Badge variant="outline" className={`text-xs flex items-center gap-1 ${className}`}>
         <TrendingUp className="w-3 h-3" />
         Influence: {level}/10 ({label})
+      </Badge>
+    );
+  };
+
+  // Helper function to get receptiveness badge
+  const getReceptivenessBadge = (receptiveness?: string) => {
+    if (!receptiveness) return null;
+
+    let className = '';
+    let label = '';
+
+    switch (receptiveness) {
+      case 'very-receptive':
+        className = 'bg-green-500 text-white border-green-600';
+        label = 'Very Receptive';
+        break;
+      case 'receptive':
+        className = 'bg-green-100 text-green-800 border-green-300';
+        label = 'Receptive';
+        break;
+      case 'neutral':
+        className = 'bg-gray-100 text-gray-800 border-gray-300';
+        label = 'Neutral';
+        break;
+      case 'not-very-receptive':
+        className = 'bg-orange-100 text-orange-800 border-orange-300';
+        label = 'Not Very Receptive';
+        break;
+      case 'not-receptive':
+        className = 'bg-red-500 text-white border-red-600';
+        label = 'Not Receptive';
+        break;
+      default:
+        return null;
+    }
+
+    return (
+      <Badge variant="outline" className={`text-xs flex items-center gap-1 ${className}`}>
+        <ThumbsUp className="w-3 h-3" />
+        {label}
       </Badge>
     );
   };
@@ -730,7 +770,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                   )}
                                 </div>
 
-                                {/* Influence and Relationship Owner */}
+                                {/* Influence, Receptiveness and Relationship Owner */}
                                 <div className="flex flex-wrap gap-2 mb-3">
                                   {contact.influence && (
                                     <Badge variant="outline" className="text-xs">
@@ -738,6 +778,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                     </Badge>
                                   )}
                                   {getInfluencerLevelBadge(contact.influencerLevel)}
+                                  {getReceptivenessBadge(contact.receptiveness)}
                                   {contact.relationshipOwner?.name && (
                                     <Badge variant="secondary" className="text-xs flex items-center gap-1">
                                       <User className="w-3 h-3" />

@@ -92,6 +92,7 @@ export interface Contact {
   influence?: 'Decision Maker' | 'Influencer' | 'User' | 'Gatekeeper';
   isInfluencer?: boolean; // NEW: Flag to mark key influencers in the organization
   influencerLevel?: number; // NEW: Influencer rating from 1-10
+  receptiveness?: 'very-receptive' | 'receptive' | 'neutral' | 'not-very-receptive' | 'not-receptive';
   birthday?: string;
   birthdayAlert?: boolean;
   relationshipStatus?: string;

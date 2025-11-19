@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Star, TrendingUp } from 'lucide-react';
+import { X, Plus, Bell, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Star, TrendingUp, ThumbsUp } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -38,6 +38,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     influence: contact?.influence || 'User',
     isInfluencer: contact?.isInfluencer || false,
     influencerLevel: contact?.influencerLevel || undefined,
+    receptiveness: contact?.receptiveness || undefined,
     birthday: contact?.birthday || '',
     birthdayAlert: contact?.birthdayAlert || false,
     relationshipStatus: contact?.relationshipStatus || '',
@@ -270,6 +271,41 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     if (level <= 6) return 'Medium';
     if (level <= 8) return 'High';
     return 'Very High';
+  };
+
+  // Helper function to get receptiveness badge color
+  const getReceptivenessBadgeColor = (receptiveness?: string) => {
+    switch (receptiveness) {
+      case 'very-receptive':
+        return 'bg-green-500 text-white border-green-600';
+      case 'receptive':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'neutral':
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'not-very-receptive':
+        return 'bg-orange-100 text-orange-800 border-orange-300';
+      case 'not-receptive':
+        return 'bg-red-500 text-white border-red-600';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getReceptivenessLabel = (receptiveness?: string) => {
+    switch (receptiveness) {
+      case 'very-receptive':
+        return 'Very Receptive';
+      case 'receptive':
+        return 'Receptive';
+      case 'neutral':
+        return 'Neutral';
+      case 'not-very-receptive':
+        return 'Not Very Receptive';
+      case 'not-receptive':
+        return 'Not Receptive';
+      default:
+        return 'Not Set';
+    }
   };
 
   return (
@@ -579,6 +615,76 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
               <p className="text-xs text-gray-500 mt-1">
                 General influence category in the organization
+              </p>
+            </div>
+            
+            {/* NEW: Receptiveness Scale */}
+            <div>
+              <Label htmlFor="receptiveness" className="flex items-center gap-2">
+                <ThumbsUp className="w-4 h-4" />
+                Receptiveness Level
+              </Label>
+              <Select 
+                value={formData.receptiveness || ''} 
+                onValueChange={(value) => setFormData(prev => ({ 
+                  ...prev, 
+                  receptiveness: value as 'very-receptive' | 'receptive' | 'neutral' | 'not-very-receptive' | 'not-receptive' | undefined
+                }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select receptiveness level..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very-receptive">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span>Very Receptive</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="receptive">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-300"></div>
+                      <span>Receptive</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="neutral">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                      <span>Neutral</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="not-very-receptive">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-orange-400"></div>
+                      <span>Not Very Receptive</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="not-receptive">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span>Not Receptive</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              {formData.receptiveness && (
+                <div className="mt-2 flex items-center gap-2">
+                  <Badge variant="outline" className={cn("text-xs", getReceptivenessBadgeColor(formData.receptiveness))}>
+                    {getReceptivenessLabel(formData.receptiveness)}
+                  </Badge>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, receptiveness: undefined }))}
+                    className="text-gray-500 hover:text-red-500 h-6 px-2"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                How receptive is this contact to new ideas, proposals, or changes
               </p>
             </div>
             
