@@ -10,9 +10,19 @@ interface WelcomeScreenProps {
   userName: string;
   accounts?: Account[];
   contacts?: Contact[];
+  onAddAccount?: () => void;
+  onAddContact?: () => void;
+  onExploreFeatures?: () => void;
 }
 
-export default function WelcomeScreen({ userName, accounts = [], contacts = [] }: WelcomeScreenProps) {
+export default function WelcomeScreen({ 
+  userName, 
+  accounts = [], 
+  contacts = [],
+  onAddAccount,
+  onAddContact,
+  onExploreFeatures
+}: WelcomeScreenProps) {
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
 
   // Helper functions for KPI calculations
@@ -291,7 +301,7 @@ export default function WelcomeScreen({ userName, accounts = [], contacts = [] }
                 <p className="text-sm text-blue-700 mb-4">
                   Start by adding your strategic accounts with key information like industry, revenue, and contact details.
                 </p>
-                <Button size="sm" className="w-full">
+                <Button size="sm" className="w-full" onClick={onAddAccount}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Account
                 </Button>
@@ -305,7 +315,7 @@ export default function WelcomeScreen({ userName, accounts = [], contacts = [] }
                 <p className="text-sm text-green-700 mb-4">
                   Add key contacts, decision makers, and influencers to build strong business relationships.
                 </p>
-                <Button size="sm" className="w-full">
+                <Button size="sm" className="w-full" onClick={onAddContact}>
                   <Users className="w-4 h-4 mr-2" />
                   Add Contact
                 </Button>
@@ -319,7 +329,7 @@ export default function WelcomeScreen({ userName, accounts = [], contacts = [] }
                 <p className="text-sm text-purple-700 mb-4">
                   Upload and organize contracts, proposals, and presentations in SharePoint integration.
                 </p>
-                <Button size="sm" className="w-full">
+                <Button size="sm" className="w-full" onClick={onExploreFeatures}>
                   <Database className="w-4 h-4 mr-2" />
                   Explore Features
                 </Button>

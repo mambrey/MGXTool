@@ -211,6 +211,10 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setShowContactForm(true);
   };
 
+  const handleExploreFeatures = () => {
+    setCurrentView('document-storage');
+  };
+
   const handleImportAccounts = (importedAccounts: Account[]) => {
     setAccounts(prev => {
       const existingAccounts = prev || [];
@@ -502,7 +506,16 @@ export default function CRMTool({ userName }: CRMToolProps) {
     // Handle main views
     switch (currentView) {
       case 'welcome':
-        return <WelcomeScreen userName={userName} accounts={accounts} contacts={contacts} />;
+        return (
+          <WelcomeScreen 
+            userName={userName} 
+            accounts={accounts} 
+            contacts={contacts}
+            onAddAccount={handleAddAccount}
+            onAddContact={() => handleAddContact()}
+            onExploreFeatures={handleExploreFeatures}
+          />
+        );
       
       case 'accounts':
         return (
@@ -963,7 +976,16 @@ export default function CRMTool({ userName }: CRMToolProps) {
         return <FAQPage />;
       
       default:
-        return <WelcomeScreen userName={userName} accounts={accounts} contacts={contacts} />;
+        return (
+          <WelcomeScreen 
+            userName={userName} 
+            accounts={accounts} 
+            contacts={contacts}
+            onAddAccount={handleAddAccount}
+            onAddContact={() => handleAddContact()}
+            onExploreFeatures={handleExploreFeatures}
+          />
+        );
     }
   };
 
