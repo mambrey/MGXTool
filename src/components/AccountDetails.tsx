@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X } from 'lucide-react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import type { Account, Contact, CustomerEvent } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
 
@@ -46,6 +47,7 @@ export default function AccountDetails({
   const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
+  const [expandAll, setExpandAll] = useState(false);
 
   // Sample tasks related to this account
   const [accountTasks] = useState<Task[]>([
@@ -134,319 +136,8 @@ export default function AccountDetails({
     }
   };
 
-  const formatDateForInput = (dateString: string) => {
-    if (!dateString) return '';
-    return dateString.split('T')[0];
-  };
-
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Account Information - ${account.accountName}</title>
-          <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 20px; 
-              line-height: 1.6;
-              color: #333;
-            }
-            .header { 
-              border-bottom: 2px solid #e5e7eb; 
-              padding-bottom: 20px; 
-              margin-bottom: 30px;
-            }
-            .company-name { 
-              font-size: 28px; 
-              font-weight: bold; 
-              color: #1f2937;
-              margin-bottom: 5px;
-            }
-            .parent-company {
-              color: #6b7280;
-              font-size: 16px;
-            }
-            .ticker {
-              display: inline-block;
-              background: #f3f4f6;
-              border: 1px solid #d1d5db;
-              padding: 4px 8px;
-              border-radius: 4px;
-              font-size: 12px;
-              margin-left: 10px;
-            }
-            .section { 
-              margin-bottom: 30px; 
-            }
-            .section-title { 
-              font-size: 20px; 
-              font-weight: bold; 
-              margin-bottom: 15px;
-              color: #374151;
-              border-bottom: 1px solid #e5e7eb;
-              padding-bottom: 5px;
-            }
-            .info-grid { 
-              display: grid; 
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-              gap: 15px; 
-            }
-            .info-item { 
-              margin-bottom: 10px; 
-            }
-            .info-label { 
-              font-weight: bold; 
-              color: #6b7280;
-              font-size: 14px;
-              margin-bottom: 2px;
-            }
-            .info-value { 
-              font-size: 16px;
-              color: #1f2937;
-            }
-            .contact-item {
-              border: 1px solid #e5e7eb;
-              padding: 15px;
-              margin-bottom: 10px;
-              border-radius: 6px;
-              background: #f9fafb;
-            }
-            .contact-name {
-              font-weight: bold;
-              font-size: 16px;
-              margin-bottom: 5px;
-            }
-            .contact-title {
-              color: #6b7280;
-              font-size: 14px;
-              margin-bottom: 5px;
-            }
-            .contact-type {
-              background: #dbeafe;
-              color: #1e40af;
-              padding: 2px 6px;
-              border-radius: 4px;
-              font-size: 12px;
-              display: inline-block;
-              margin-bottom: 5px;
-            }
-            .contact-type.secondary {
-              background: #f3f4f6;
-              color: #6b7280;
-            }
-            .contact-details {
-              font-size: 14px;
-              color: #4b5563;
-            }
-            .task-item {
-              border: 1px solid #e5e7eb;
-              padding: 15px;
-              margin-bottom: 10px;
-              border-radius: 6px;
-              background: #f9fafb;
-            }
-            .task-title {
-              font-weight: bold;
-              font-size: 16px;
-              margin-bottom: 5px;
-            }
-            .task-description {
-              color: #6b7280;
-              font-size: 14px;
-              margin-bottom: 8px;
-            }
-            .task-meta {
-              font-size: 12px;
-              color: #6b7280;
-            }
-            .priority {
-              display: inline-block;
-              padding: 2px 6px;
-              border-radius: 4px;
-              font-size: 11px;
-              font-weight: bold;
-              margin-right: 8px;
-            }
-            .priority.critical { background: #fee2e2; color: #dc2626; }
-            .priority.high { background: #fef3c7; color: #d97706; }
-            .priority.medium { background: #dbeafe; color: #2563eb; }
-            .priority.low { background: #f3f4f6; color: #6b7280; }
-            .status {
-              display: inline-block;
-              padding: 2px 6px;
-              border-radius: 4px;
-              font-size: 11px;
-              font-weight: bold;
-            }
-            .status.completed { background: #dcfce7; color: #16a34a; }
-            .status.in-progress { background: #dbeafe; color: #2563eb; }
-            .status.pending { background: #fef3c7; color: #d97706; }
-            .status.overdue { background: #fee2e2; color: #dc2626; }
-            .event-item {
-              border: 1px solid #e5e7eb;
-              padding: 10px;
-              margin-bottom: 8px;
-              border-radius: 6px;
-              background: #f9fafb;
-            }
-            .event-title {
-              font-weight: bold;
-              font-size: 14px;
-              margin-bottom: 3px;
-            }
-            .event-date {
-              color: #6b7280;
-              font-size: 12px;
-            }
-            @media print {
-              body { margin: 0; }
-              .no-print { display: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="company-name">
-              ${account.accountName}
-              ${account.publiclyTraded && account.tickerSymbol ? `<span class="ticker">${account.tickerSymbol}</span>` : ''}
-            </div>
-            ${account.parentCompany ? `<div class="parent-company">Part of ${account.parentCompany}</div>` : ''}
-          </div>
-
-          <div class="section">
-            <div class="section-title">Account Information</div>
-            <div class="info-grid">
-              ${account.address ? `
-                <div class="info-item">
-                  <div class="info-label">HQ Address</div>
-                  <div class="info-value">${account.address}</div>
-                </div>
-              ` : ''}
-              ${account.website ? `
-                <div class="info-item">
-                  <div class="info-label">Website</div>
-                  <div class="info-value">${account.website}</div>
-                </div>
-              ` : ''}
-              ${account.phone ? `
-                <div class="info-item">
-                  <div class="info-label">Phone</div>
-                  <div class="info-value">${account.phone}</div>
-                </div>
-              ` : ''}
-              ${account.email ? `
-                <div class="info-item">
-                  <div class="info-label">Email</div>
-                  <div class="info-value">${account.email}</div>
-                </div>
-              ` : ''}
-              ${account.channel ? `
-                <div class="info-item">
-                  <div class="info-label">Channel</div>
-                  <div class="info-value">${account.channel}</div>
-                </div>
-              ` : ''}
-              ${account.footprint ? `
-                <div class="info-item">
-                  <div class="info-label">Footprint</div>
-                  <div class="info-value">${account.footprint}</div>
-                </div>
-              ` : ''}
-              <div class="info-item">
-                <div class="info-label">Account Owner</div>
-                <div class="info-value">${primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : (account.accountOwner || 'Not assigned')}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Relationship Owner</div>
-                <div class="info-value">${relationshipOwnerName}</div>
-              </div>
-              ${account.vp ? `
-                <div class="info-item">
-                  <div class="info-label">VP</div>
-                  <div class="info-value">${account.vp}</div>
-                </div>
-              ` : ''}
-              ${account.revenue ? `
-                <div class="info-item">
-                  <div class="info-label">Revenue</div>
-                  <div class="info-value">$${account.revenue.toLocaleString()}</div>
-                </div>
-              ` : ''}
-              <div class="info-item">
-                <div class="info-label">Created</div>
-                <div class="info-value">${new Date(account.createdAt).toLocaleDateString()}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Last Modified</div>
-                <div class="info-value">${new Date(account.lastModified).toLocaleDateString()}</div>
-              </div>
-            </div>
-          </div>
-
-          ${customerEvents.length > 0 ? `
-            <div class="section">
-              <div class="section-title">Customer Events (${customerEvents.length})</div>
-              ${customerEvents.map(event => `
-                <div class="event-item">
-                  <div class="event-title">${event.title}</div>
-                  <div class="event-date">📅 ${new Date(event.date).toLocaleDateString()}</div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-
-          ${contacts.length > 0 ? `
-            <div class="section">
-              <div class="section-title">Contacts (${contacts.length})</div>
-              ${contacts.map(contact => `
-                <div class="contact-item">
-                  <div class="contact-name">${contact.firstName} ${contact.lastName}</div>
-                  ${contact.title ? `<div class="contact-title">${contact.title}</div>` : ''}
-                  <div class="contact-type ${contact.contactType === 'Primary' ? 'primary' : 'secondary'}">${contact.contactType}</div>
-                  <div class="contact-details">
-                    ${contact.email ? `<div>📧 ${contact.email}</div>` : ''}
-                    ${contact.phone || contact.officePhone ? `<div>📞 ${contact.phone || contact.officePhone}</div>` : ''}
-                    ${contact.influence ? `<div>Influence: ${contact.influence}</div>` : ''}
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-
-          ${accountTasks.length > 0 ? `
-            <div class="section">
-              <div class="section-title">Account Tasks (${accountTasks.length})</div>
-              ${accountTasks.map(task => `
-                <div class="task-item">
-                  <div class="task-title">${task.title}</div>
-                  <div class="task-description">${task.description}</div>
-                  <div class="task-meta">
-                    <span class="priority ${task.priority}">${task.priority}</span>
-                    <span class="status ${task.status}">${task.status.replace('-', ' ')}</span>
-                    <span>Due: ${new Date(task.dueDate).toLocaleDateString()}</span>
-                    <span>Assigned to: ${task.assignedTo}</span>
-                    ${task.estimatedHours ? `<span>${task.estimatedHours}h estimated</span>` : ''}
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
-            Generated on ${new Date().toLocaleString()}
-          </div>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    window.print();
   };
 
   const getStatusColor = (status: Task['status']) => {
@@ -473,6 +164,19 @@ export default function AccountDetails({
     return days;
   };
 
+  const InfoItem = ({ label, value, icon: Icon }: { label: string; value: string | number | undefined; icon?: any }) => {
+    if (!value) return null;
+    return (
+      <div>
+        <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+          {Icon && <Icon className="w-4 h-4" />}
+          {label}
+        </label>
+        <p className="text-base mt-1">{value}</p>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -497,13 +201,30 @@ export default function AccountDetails({
           </div>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setExpandAll(!expandAll)}
+          >
+            {expandAll ? (
+              <>
+                <ChevronUp className="w-4 h-4 mr-2" />
+                Collapse All
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4 mr-2" />
+                Expand All
+              </>
+            )}
+          </Button>
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="w-4 h-4 mr-2" />
             Print
           </Button>
           <Button variant="outline" onClick={() => onEdit(account)}>
             <Edit className="w-4 h-4 mr-2" />
-            Edit Account
+            Edit
           </Button>
           <Button 
             variant="destructive" 
@@ -520,225 +241,379 @@ export default function AccountDetails({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Account Information */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {account.address && (
-                  <div className="md:col-span-2">
-                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      HQ Address
-                    </label>
-                    <p className="text-lg mt-1">{account.address}</p>
-                  </div>
-                )}
-                {account.website && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                      <Globe className="w-4 h-4" />
-                      Website
-                    </label>
-                    <a 
-                      href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-lg text-blue-600 hover:underline mt-1 block"
-                    >
-                      {account.website}
-                    </a>
-                  </div>
-                )}
-                {account.phone && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      Phone
-                    </label>
-                    <p className="text-lg mt-1">{account.phone}</p>
-                  </div>
-                )}
-                {account.email && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      Email
-                    </label>
-                    <a 
-                      href={`mailto:${account.email}`}
-                      className="text-lg text-blue-600 hover:underline mt-1 block"
-                    >
-                      {account.email}
-                    </a>
-                  </div>
-                )}
-                {account.channel && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Channel</label>
-                    <p className="text-lg mt-1">{account.channel}</p>
-                  </div>
-                )}
-                {account.footprint && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Footprint</label>
-                    <p className="text-lg mt-1">{account.footprint}</p>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Account Owner</label>
-                  <p className="text-lg mt-1">
-                    {primaryContact 
-                      ? `${primaryContact.firstName} ${primaryContact.lastName}` 
-                      : (account.accountOwner || 'Not assigned')
-                    }
-                  </p>
+        {/* Main Content - Collapsible Sections */}
+        <div className="lg:col-span-2 space-y-4">
+          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'events', 'tasks'] : undefined}>
+            
+            {/* Customer Overview */}
+            <AccordionItem value="overview">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Customer Overview
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Relationship Owner</label>
-                  <p className="text-lg mt-1">
-                    {relationshipOwnerName}
-                  </p>
-                </div>
-                {account.vp && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">VP</label>
-                    <p className="text-lg mt-1">{account.vp}</p>
-                  </div>
-                )}
-                {account.revenue && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Revenue</label>
-                    <p className="text-lg mt-1">${account.revenue.toLocaleString()}</p>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Created</label>
-                  <p className="text-lg mt-1">{new Date(account.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Last Modified</label>
-                  <p className="text-lg mt-1">{new Date(account.lastModified).toLocaleDateString()}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Customer Events Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Customer Events ({customerEvents.length})
-                </CardTitle>
-                <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Event
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[250px] pr-4">
-                <div className="space-y-3">
-                  {customerEvents.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-sm mb-4">No customer events added yet</p>
-                      <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add First Event
-                      </Button>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <InfoItem label="Account Name" value={account.accountName} icon={Building2} />
+                      <InfoItem label="Parent Company" value={account.parentCompany} />
+                      <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
+                      <InfoItem label="Publicly Traded" value={account.publiclyTraded ? 'Yes' : 'No'} />
+                      <InfoItem label="Channel" value={account.channel} />
+                      <InfoItem label="Sub-Channel" value={account.subChannel} />
+                      <InfoItem label="Footprint" value={account.footprint} />
+                      <InfoItem label="Operating States" value={account.operatingStates} />
+                      <InfoItem label="Spirits Outlets" value={account.spiritsOutlets} />
+                      <InfoItem label="HQ Influence" value={account.hqInfluence} />
+                      <InfoItem label="Display Mandates" value={account.displayMandates} />
+                      <InfoItem label="Primary Contact" value={primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner} icon={User} />
+                      <InfoItem label="Relationship Owner" value={relationshipOwnerName} icon={User} />
+                      <InfoItem label="VP" value={account.vp} />
                     </div>
-                  ) : (
-                    customerEvents.map((event) => (
-                      <Card key={event.id} className="p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <h4 className="font-medium mb-1">{event.title}</h4>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Calendar className="w-3 h-3" />
-                              <span>{new Date(event.date).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteEvent(event.id)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Market Snapshot */}
+            <AccordionItem value="market">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Market Snapshot
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <InfoItem label="Current Price" value={account.currentPrice ? `$${account.currentPrice}` : undefined} icon={DollarSign} />
+                      <InfoItem label="Percent Change" value={account.percentChange ? `${account.percentChange}%` : undefined} />
+                      <InfoItem label="Market Cap" value={account.marketCap} />
+                      <InfoItem label="High Price" value={account.highPrice ? `$${account.highPrice}` : undefined} />
+                      <InfoItem label="Low Price" value={account.lowPrice ? `$${account.lowPrice}` : undefined} />
+                      <InfoItem label="Open Price" value={account.openPrice ? `$${account.openPrice}` : undefined} />
+                      <InfoItem label="Previous Close" value={account.previousClose ? `$${account.previousClose}` : undefined} />
+                      <InfoItem label="Annual Sales" value={account.annualSales} />
+                      <InfoItem label="Revenue" value={account.revenue ? `$${account.revenue.toLocaleString()}` : undefined} />
+                      <InfoItem label="Dividend Yield" value={account.dividendYield ? `${account.dividendYield}%` : undefined} />
+                      <InfoItem label="52-Week High" value={account.fiftyTwoWeekHigh ? `$${account.fiftyTwoWeekHigh}` : undefined} />
+                      <InfoItem label="52-Week Low" value={account.fiftyTwoWeekLow ? `$${account.fiftyTwoWeekLow}` : undefined} />
+                      <InfoItem label="PEG Ratio" value={account.pegRatio} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Headquarters */}
+            <AccordionItem value="headquarters">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Headquarters
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      {account.address && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            HQ Address
+                          </label>
+                          <p className="text-base mt-1">{account.address}</p>
+                          {account.address && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="mt-2"
+                              onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(account.address || '')}`, '_blank')}
+                            >
+                              <MapPin className="w-4 h-4 mr-2" />
+                              View on Map
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                      {account.website && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                            <Globe className="w-4 h-4" />
+                            Website
+                          </label>
+                          <a 
+                            href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-base text-blue-600 hover:underline mt-1 block"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {account.website}
+                          </a>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => window.open(account.website?.startsWith('http') ? account.website : `https://${account.website}`, '_blank')}
+                          >
+                            <Globe className="w-4 h-4 mr-2" />
+                            Visit Website
                           </Button>
                         </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-
-          {/* Account Tasks */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckSquare className="w-5 h-5" />
-                Account Tasks ({accountTasks.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[300px] pr-4">
-                <div className="space-y-3">
-                  {accountTasks.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <CheckSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                      <p>No tasks for this account</p>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InfoItem label="Phone" value={account.phone} icon={Phone} />
+                        <InfoItem label="Email" value={account.email} icon={Mail} />
+                        <InfoItem label="Total Buying Offices" value={account.totalBuyingOffices} />
+                      </div>
                     </div>
-                  ) : (
-                    accountTasks.map(task => {
-                      const daysUntil = getDaysUntilDue(task.dueDate);
-                      
-                      return (
-                        <Card key={task.id} className="p-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-medium">{task.title}</h4>
-                                <Badge variant={getPriorityColor(task.priority)} className="text-xs">
-                                  {task.priority}
-                                </Badge>
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
-                                  {task.status.replace('-', ' ')}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                              <div className="flex items-center gap-3 text-xs text-gray-500">
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  {task.status === 'overdue' ? `${Math.abs(daysUntil)} days overdue` : 
-                                   daysUntil === 0 ? 'Due today' :
-                                   daysUntil === 1 ? 'Due tomorrow' :
-                                   daysUntil > 0 ? `Due in ${daysUntil} days` :
-                                   'Past due'}
-                                </span>
-                                <span>Assigned to: {task.assignedTo}</span>
-                                {task.estimatedHours && (
-                                  <span>{task.estimatedHours}h estimated</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-                      );
-                    })
-                  )}
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Strategy and Capabilities */}
+            <AccordionItem value="strategy">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Strategy and Capabilities
                 </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-6">
+                      {/* Planograms */}
+                      <div>
+                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <Package className="w-4 h-4" />
+                          Planograms
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Planograms" value={account.planograms} />
+                          <InfoItem label="Written By" value={account.planogramWrittenBy} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Reset Windows */}
+                      <div>
+                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          Reset Windows
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Q1 Reset Window" value={account.resetWindowQ1} />
+                          <InfoItem label="Q2 Reset Window" value={account.resetWindowQ2} />
+                          <InfoItem label="Q3 Reset Window" value={account.resetWindowQ3} />
+                          <InfoItem label="Q4 Reset Window" value={account.resetWindowQ4} />
+                          <InfoItem label="Spring Reset" value={account.resetWindowSpring} />
+                          <InfoItem label="Summer Reset" value={account.resetWindowSummer} />
+                          <InfoItem label="Fall Reset" value={account.resetWindowFall} />
+                          <InfoItem label="Winter Reset" value={account.resetWindowWinter} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Business Strategy */}
+                      <div>
+                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <Briefcase className="w-4 h-4" />
+                          Business Strategy
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Category Captain/Advisor" value={account.categoryCaptainAdvisor} />
+                          <InfoItem label="JBP Status" value={account.jbpStatus} />
+                          <InfoItem label="JBP Date" value={account.jbpDate} />
+                          <InfoItem label="Pricing Strategy" value={account.pricingStrategy} />
+                          <InfoItem label="Private Label" value={account.privateLabel} />
+                          <InfoItem label="Innovation Appetite" value={account.innovationAppetite} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* E-commerce & Fulfillment */}
+                      <div>
+                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <ShoppingCart className="w-4 h-4" />
+                          E-commerce & Fulfillment
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="E-commerce" value={account.ecommerce} />
+                          <InfoItem label="Fulfillment Types" value={account.fulfillmentTypes} />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Strategic Information */}
+            <AccordionItem value="strategic-info">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Strategic Information
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      {account.strategicPriorities && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Strategic Priorities</label>
+                          <p className="text-base mt-1 whitespace-pre-wrap">{account.strategicPriorities}</p>
+                        </div>
+                      )}
+                      {account.keyCompetitors && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Key Competitors</label>
+                          <p className="text-base mt-1 whitespace-pre-wrap">{account.keyCompetitors}</p>
+                        </div>
+                      )}
+                      {!account.strategicPriorities && !account.keyCompetitors && (
+                        <p className="text-gray-500 text-sm">No strategic information available</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Customer Events */}
+            <AccordionItem value="events">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Customer Events ({customerEvents.length})
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">Events</CardTitle>
+                      <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Event
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="h-[250px] pr-4">
+                      <div className="space-y-3">
+                        {customerEvents.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                            <p className="text-sm mb-4">No customer events added yet</p>
+                            <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add First Event
+                            </Button>
+                          </div>
+                        ) : (
+                          customerEvents.map((event) => (
+                            <Card key={event.id} className="p-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <h4 className="font-medium mb-1">{event.title}</h4>
+                                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{new Date(event.date).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteEvent(event.id)}
+                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </Card>
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Account Tasks */}
+            <AccordionItem value="tasks">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="w-5 h-5" />
+                  Account Tasks ({accountTasks.length})
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <ScrollArea className="h-[300px] pr-4">
+                      <div className="space-y-3">
+                        {accountTasks.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            <CheckSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                            <p>No tasks for this account</p>
+                          </div>
+                        ) : (
+                          accountTasks.map(task => {
+                            const daysUntil = getDaysUntilDue(task.dueDate);
+                            
+                            return (
+                              <Card key={task.id} className="p-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h4 className="font-medium">{task.title}</h4>
+                                      <Badge variant={getPriorityColor(task.priority)} className="text-xs">
+                                        {task.priority}
+                                      </Badge>
+                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
+                                        {task.status.replace('-', ' ')}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="w-3 h-3" />
+                                        {task.status === 'overdue' ? `${Math.abs(daysUntil)} days overdue` : 
+                                         daysUntil === 0 ? 'Due today' :
+                                         daysUntil === 1 ? 'Due tomorrow' :
+                                         daysUntil > 0 ? `Due in ${daysUntil} days` :
+                                         'Past due'}
+                                      </span>
+                                      <span>Assigned to: {task.assignedTo}</span>
+                                      {task.estimatedHours && (
+                                        <span>{task.estimatedHours}h estimated</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </Card>
+                            );
+                          })
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
         {/* Contacts Sidebar */}
@@ -756,7 +631,7 @@ export default function AccountDetails({
               </div>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[500px] pr-4">
+              <ScrollArea className="h-[800px] pr-4">
                 <div className="space-y-3">
                   {contacts.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
