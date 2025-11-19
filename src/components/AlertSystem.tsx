@@ -252,7 +252,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     }
   };
 
-  // NEW: Handle alert completion toggle
+  // Handle alert completion toggle
   const handleToggleCompletion = (alertId: string) => {
     setAlerts(prev => prev.map(alert => {
       if (alert.id === alertId) {
@@ -288,6 +288,15 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     });
     
     saveToStorage('crm-alerts', updatedAlerts);
+  };
+
+  // Handle alert dismissal
+  const handleDismissAlert = (alertId: string) => {
+    setAlerts(prev => prev.map(alert => 
+      alert.id === alertId 
+        ? { ...alert, status: 'dismissed' }
+        : alert
+    ));
   };
 
   // Generate alerts from real contacts and tasks data
@@ -597,14 +606,6 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     
     return true;
   });
-
-  const handleAlertAction = (alertId: string, action: 'acknowledge' | 'complete' | 'dismiss') => {
-    setAlerts(prev => prev.map(alert => 
-      alert.id === alertId 
-        ? { ...alert, status: action === 'acknowledge' ? 'acknowledged' : action === 'complete' ? 'completed' : 'dismissed' }
-        : alert
-    ));
-  };
 
   const sendAlertToPowerAutomate = async (alert: AlertType, isAutoSend: boolean = false) => {
     console.log('=== SEND TO POWER AUTOMATE ===');
@@ -1321,15 +1322,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                                 
                                 <Button
                                   size="sm"
-                                  variant="outline"
-                                  onClick={() => handleAlertAction(alert.id, 'acknowledge')}
-                                >
-                                  Acknowledge
-                                </Button>
-                                <Button
-                                  size="sm"
                                   variant="ghost"
-                                  onClick={() => handleAlertAction(alert.id, 'dismiss')}
+                                  onClick={() => handleDismissAlert(alert.id)}
                                 >
                                   <X className="w-4 h-4" />
                                 </Button>
