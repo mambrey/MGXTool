@@ -60,8 +60,8 @@ export interface Account {
   hqInfluence?: boolean;
   displayMandates?: boolean;
   fulfillmentTypes?: string;
-  allSpiritsOutlets?: string;
-  fullProofOutlets?: string;
+  allSpiritsOutlets?: string; // UPDATED: Changed from spiritsOutlets to allSpiritsOutlets
+  fullProofOutlets?: string; // NEW: Full proof outlets field
   // Reset window fields
   resetWindowQ1?: string;
   resetWindowQ2?: string;

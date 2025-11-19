@@ -48,19 +48,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     footprint: '',
     operatingStates: '',
     allSpiritsOutlets: '',
-
-          <div>
-            <Label htmlFor="fullProofOutlets" className="text-sm font-medium"># of Full Proof Outlets</Label>
-            <Input
-              id="fullProofOutlets"
-              type="number"
-              value={formData.fullProofOutlets}
-              onChange={(e) => updateField('fullProofOutlets', e.target.value)}
-              placeholder="Enter number of full proof outlets"
-              className="mt-1"
-              min="0"
-            />
-          </div>
     fullProofOutlets: '',
     hqInfluence: false,
     displayMandates: false,
@@ -730,7 +717,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Rest of the form sections remain unchanged */}
       {/* Headquarters */}
       <Card>
         <CardHeader>
@@ -808,7 +794,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Strategy and Capabilities - Updated with Pricing Strategy dropdown */}
+      {/* Strategy and Capabilities */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -916,69 +902,31 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             />
           </div>
 
-          <div>
-            <Label htmlFor="allSpiritsOutlets" className="text-sm font-medium"># of All Spirits Outlets</Label>
-
-          <div>
-            <Label htmlFor="fullProofOutlets" className="text-sm font-medium"># of Full Proof Outlets</Label>
-            <Input
-              id="fullProofOutlets"
-              type="number"
-              value={formData.fullProofOutlets}
-              onChange={(e) => updateField('fullProofOutlets', e.target.value)}
-              placeholder="Enter number of full proof outlets"
-              className="mt-1"
-              min="0"
-            />
-          </div>
-            <Input
-              id="allSpiritsOutlets"
-
-          <div>
-            <Label htmlFor="fullProofOutlets" className="text-sm font-medium"># of Full Proof Outlets</Label>
-            <Input
-              id="fullProofOutlets"
-              type="number"
-              value={formData.fullProofOutlets}
-              onChange={(e) => updateField('fullProofOutlets', e.target.value)}
-              placeholder="Enter number of full proof outlets"
-              className="mt-1"
-              min="0"
-            />
-          </div>
-              type="number"
-              value={formData.allSpiritsOutlets}
-
-          <div>
-            <Label htmlFor="fullProofOutlets" className="text-sm font-medium"># of Full Proof Outlets</Label>
-            <Input
-              id="fullProofOutlets"
-              type="number"
-              value={formData.fullProofOutlets}
-              onChange={(e) => updateField('fullProofOutlets', e.target.value)}
-              placeholder="Enter number of full proof outlets"
-              className="mt-1"
-              min="0"
-            />
-          </div>
-              onChange={(e) => updateField('allSpiritsOutlets', e.target.value)}
-
-          <div>
-            <Label htmlFor="fullProofOutlets" className="text-sm font-medium"># of Full Proof Outlets</Label>
-            <Input
-              id="fullProofOutlets"
-              type="number"
-              value={formData.fullProofOutlets}
-              onChange={(e) => updateField('fullProofOutlets', e.target.value)}
-              placeholder="Enter number of full proof outlets"
-              className="mt-1"
-              min="0"
-            />
-          </div>
-              placeholder="Enter number of all spirits outlets"
-              className="mt-1"
-              min="0"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="allSpiritsOutlets" className="text-sm font-medium"># of All Spirits Outlets</Label>
+              <Input
+                id="allSpiritsOutlets"
+                type="number"
+                value={formData.allSpiritsOutlets}
+                onChange={(e) => updateField('allSpiritsOutlets', e.target.value)}
+                placeholder="Enter number of all spirits outlets"
+                className="mt-1"
+                min="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="fullProofOutlets" className="text-sm font-medium"># of Full Proof Outlets</Label>
+              <Input
+                id="fullProofOutlets"
+                type="number"
+                value={formData.fullProofOutlets}
+                onChange={(e) => updateField('fullProofOutlets', e.target.value)}
+                placeholder="Enter number of full proof outlets"
+                className="mt-1"
+                min="0"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
