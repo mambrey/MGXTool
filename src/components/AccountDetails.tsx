@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe } from 'lucide-react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import type { Account, Contact } from '@/types/crm';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import type { Account, Contact, CustomerEvent } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
 
 interface AccountDetailsProps {
@@ -16,6 +19,7 @@ interface AccountDetailsProps {
   onDelete: (accountId: string) => void;
   onAddContact: (accountId: string) => void;
   onViewContact: (contact: Contact) => void;
+  onUpdateAccount?: (account: Account) => void;
 }
 
 export default function AccountDetails({ 
@@ -25,7 +29,8 @@ export default function AccountDetails({
   onEdit, 
   onDelete, 
   onAddContact, 
-  onViewContact 
+  onViewContact,
+  onUpdateAccount
 }: AccountDetailsProps) {
   // Get primary contact for this account
   const primaryContact = account.primaryContactId 
@@ -35,6 +40,12 @@ export default function AccountDetails({
   // Find the relationship owner - look for any contact with a relationship owner set
   const relationshipOwnerContact = contacts.find(c => c.relationshipOwner?.name);
   const relationshipOwnerName = relationshipOwnerContact?.relationshipOwner?.name || 'Mora Ambrey';
+
+  // Customer Events state
+  const [customerEvents, setCustomerEvents] = useState<CustomerEvent[]>(account.customerEvents || []);
+  const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState('');
+  const [newEventDate, setNewEventDate] = useState('');
 
   // Sample tasks related to this account
   const [accountTasks] = useState<Task[]>([
@@ -72,6 +83,61 @@ export default function AccountDetails({
       tags: ['contract', 'renewal', 'legal']
     }
   ]);
+
+  const handleAddEvent = () => {
+    if (!newEventTitle.trim() || !newEventDate) {
+      alert('Please enter both event title and date');
+      return;
+    }
+
+    const newEvent: CustomerEvent = {
+      id: Date.now().toString(),
+      title: newEventTitle.trim(),
+      date: newEventDate
+    };
+
+    const updatedEvents = [...customerEvents, newEvent];
+    setCustomerEvents(updatedEvents);
+
+    // Update the account with new events
+    const updatedAccount = {
+      ...account,
+      customerEvents: updatedEvents,
+      lastModified: new Date().toISOString()
+    };
+
+    if (onUpdateAccount) {
+      onUpdateAccount(updatedAccount);
+    }
+
+    // Reset form and close dialog
+    setNewEventTitle('');
+    setNewEventDate('');
+    setIsAddEventDialogOpen(false);
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    if (window.confirm('Are you sure you want to delete this event?')) {
+      const updatedEvents = customerEvents.filter(e => e.id !== eventId);
+      setCustomerEvents(updatedEvents);
+
+      // Update the account with new events
+      const updatedAccount = {
+        ...account,
+        customerEvents: updatedEvents,
+        lastModified: new Date().toISOString()
+      };
+
+      if (onUpdateAccount) {
+        onUpdateAccount(updatedAccount);
+      }
+    }
+  };
+
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return '';
+    return dateString.split('T')[0];
+  };
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -220,6 +286,22 @@ export default function AccountDetails({
             .status.in-progress { background: #dbeafe; color: #2563eb; }
             .status.pending { background: #fef3c7; color: #d97706; }
             .status.overdue { background: #fee2e2; color: #dc2626; }
+            .event-item {
+              border: 1px solid #e5e7eb;
+              padding: 10px;
+              margin-bottom: 8px;
+              border-radius: 6px;
+              background: #f9fafb;
+            }
+            .event-title {
+              font-weight: bold;
+              font-size: 14px;
+              margin-bottom: 3px;
+            }
+            .event-date {
+              color: #6b7280;
+              font-size: 12px;
+            }
             @media print {
               body { margin: 0; }
               .no-print { display: none; }
@@ -304,6 +386,18 @@ export default function AccountDetails({
               </div>
             </div>
           </div>
+
+          ${customerEvents.length > 0 ? `
+            <div class="section">
+              <div class="section-title">Customer Events (${customerEvents.length})</div>
+              ${customerEvents.map(event => `
+                <div class="event-item">
+                  <div class="event-title">${event.title}</div>
+                  <div class="event-date">📅 ${new Date(event.date).toLocaleDateString()}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
 
           ${contacts.length > 0 ? `
             <div class="section">
@@ -533,6 +627,60 @@ export default function AccountDetails({
             </CardContent>
           </Card>
 
+          {/* Customer Events Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Customer Events ({customerEvents.length})
+                </CardTitle>
+                <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Event
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[250px] pr-4">
+                <div className="space-y-3">
+                  {customerEvents.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-sm mb-4">No customer events added yet</p>
+                      <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Event
+                      </Button>
+                    </div>
+                  ) : (
+                    customerEvents.map((event) => (
+                      <Card key={event.id} className="p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <h4 className="font-medium mb-1">{event.title}</h4>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Calendar className="w-3 h-3" />
+                              <span>{new Date(event.date).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteEvent(event.id)}
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
           {/* Account Tasks */}
           <Card>
             <CardHeader>
@@ -691,6 +839,46 @@ export default function AccountDetails({
           </Card>
         </div>
       </div>
+
+      {/* Add Event Dialog */}
+      <Dialog open={isAddEventDialogOpen} onOpenChange={setIsAddEventDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add Customer Event</DialogTitle>
+            <DialogDescription>
+              Add a new event for {account.accountName}. Events will be saved immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="event-title">Event Title *</Label>
+              <Input
+                id="event-title"
+                placeholder="e.g., Annual Review Meeting"
+                value={newEventTitle}
+                onChange={(e) => setNewEventTitle(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="event-date">Event Date *</Label>
+              <Input
+                id="event-date"
+                type="date"
+                value={newEventDate}
+                onChange={(e) => setNewEventDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddEventDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddEvent}>
+              Add Event
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

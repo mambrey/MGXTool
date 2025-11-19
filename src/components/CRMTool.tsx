@@ -132,6 +132,11 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setCurrentView('accounts');
   };
 
+  const handleAccountUpdate = (account: Account) => {
+    setAccounts(prev => (prev || []).map(a => a.id === account.id ? account : a));
+    setSelectedAccount(account); // Update the selected account to reflect changes
+  };
+
   const handleContactSave = (contact: Contact) => {
     if (editingContact) {
       setContacts(prev => (prev || []).map(c => c.id === contact.id ? contact : c));
@@ -477,6 +482,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
           onBack={handleBackToList}
           onAddContact={handleAddContact}
           onViewContact={handleViewContact}
+          onUpdateAccount={handleAccountUpdate}
         />
       );
     }
