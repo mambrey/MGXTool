@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp } from 'lucide-react';
+import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,10 +18,11 @@ import SharePointSync from './SharePointSync';
 import SharePointImport from './SharePointImport';
 import ContactImport from './ContactImport';
 import RelationshipOwnerDirectory from './RelationshipOwnerDirectory';
+import FAQPage from '../pages/FAQPage';
 import type { Account, Contact, RelationshipOwner } from '@/types/crm';
 import { saveToStorage, loadFromStorage } from '@/lib/storage';
 
-type View = 'welcome' | 'accounts' | 'contacts' | 'data-view' | 'document-storage' | 'contact-hierarchy' | 'task-management' | 'alert-system' | 'sharepoint-sync' | 'relationship-owners';
+type View = 'welcome' | 'accounts' | 'contacts' | 'data-view' | 'document-storage' | 'contact-hierarchy' | 'task-management' | 'alert-system' | 'sharepoint-sync' | 'relationship-owners' | 'faq';
 
 interface CRMToolProps {
   userName: string;
@@ -365,6 +366,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
     { id: 'alert-system', label: 'Alert System', icon: Bell },
     { id: 'sharepoint-sync', label: 'SharePoint Sync', icon: FolderOpen },
     { id: 'relationship-owners', label: 'Relationship Owners', icon: UserCog },
+    { id: 'faq', label: 'FAQ', icon: HelpCircle },
   ];
 
   const renderNavigation = () => (
@@ -909,6 +911,9 @@ export default function CRMTool({ userName }: CRMToolProps) {
       
       case 'relationship-owners':
         return <RelationshipOwnerDirectory onBack={() => setCurrentView('welcome')} />;
+      
+      case 'faq':
+        return <FAQPage />;
       
       default:
         return <WelcomeScreen userName={userName} accounts={accounts} contacts={contacts} />;
