@@ -136,6 +136,16 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setImportResult({
+        success: false,
+        message: 'Please upload a valid CSV file. Only .csv files are accepted.'
+      });
+      event.target.value = '';
+      return;
+    }
+
     setImporting(true);
     setImportResult(null);
 
@@ -251,10 +261,10 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileSpreadsheet className="w-5 h-5" />
-          Contact Import
+          Import Contacts
         </CardTitle>
         <CardDescription>
-          Import contacts from CSV file
+          Import contacts from CSV file - Use this page to upload contact data
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

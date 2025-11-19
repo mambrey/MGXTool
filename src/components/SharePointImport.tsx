@@ -177,6 +177,16 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setImportResult({
+        success: false,
+        message: 'Please upload a valid CSV file. Only .csv files are accepted.'
+      });
+      event.target.value = '';
+      return;
+    }
+
     setImporting(true);
     setImportResult(null);
 
@@ -324,10 +334,10 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileSpreadsheet className="w-5 h-5" />
-          SharePoint Import
+          Import Accounts
         </CardTitle>
         <CardDescription>
-          Import accounts from SharePoint Excel file
+          Import accounts from CSV file - Use this page to upload account data
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
