@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Calendar, Clock, AlertTriangle, CheckCircle, X, Filter, Search, User, Send, Zap, RefreshCw, Settings, Trash2 } from 'lucide-react';
+import { Bell, Calendar, Clock, AlertTriangle, CheckCircle, X, Filter, Search, User, Send, Zap, RefreshCw, Settings, Trash2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +42,7 @@ interface SentAlertRecord {
 
 export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemProps) {
   const [alerts, setAlerts] = useState<AlertType[]>([]);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'high' | 'overdue'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'high' | 'overdue' | 'completed'>('all');
   const [relationshipOwnerFilter, setRelationshipOwnerFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sendingAlerts, setSendingAlerts] = useState<Set<string>>(new Set());
@@ -101,7 +101,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             alert.status === 'pending' && 
             !sentAlerts.has(alert.id) &&
             !wasAlertSent(alert.id) &&
-            !isAlertSnoozed(alert.id)) {
+            !isAlertSnoozed(alert.id) &&
+            !alert.isCompleted) {
           
           // Check if we should send based on reminder frequency
           if (shouldSendReminder(alert)) {
@@ -251,6 +252,44 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     }
   };
 
+  // NEW: Handle alert completion toggle
+  const handleToggleCompletion = (alertId: string) => {
+    setAlerts(prev => prev.map(alert => {
+      if (alert.id === alertId) {
+        const newCompletionState = !alert.isCompleted;
+        
+        // Show confirmation for uncompleting
+        if (alert.isCompleted && !window.confirm('Are you sure you want to mark this alert as incomplete? This will move it back to your active alerts.')) {
+          return alert;
+        }
+        
+        return {
+          ...alert,
+          isCompleted: newCompletionState,
+          completedAt: newCompletionState ? new Date().toISOString() : undefined,
+          status: newCompletionState ? 'completed' : 'pending'
+        };
+      }
+      return alert;
+    }));
+    
+    // Save to localStorage
+    const updatedAlerts = alerts.map(alert => {
+      if (alert.id === alertId) {
+        const newCompletionState = !alert.isCompleted;
+        return {
+          ...alert,
+          isCompleted: newCompletionState,
+          completedAt: newCompletionState ? new Date().toISOString() : undefined,
+          status: newCompletionState ? 'completed' : 'pending'
+        };
+      }
+      return alert;
+    });
+    
+    saveToStorage('crm-alerts', updatedAlerts);
+  };
+
   // Generate alerts from real contacts and tasks data
   useEffect(() => {
     const generateAlerts = (): AlertType[] => {
@@ -260,6 +299,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       console.log('Processing real contacts for alerts:', contacts?.length || 0);
       console.log('Processing accounts:', accounts?.length || 0);
       console.log('Alert Settings:', alertSettings);
+
+      // Load saved alert completion states
+      const savedAlerts = loadFromStorage<AlertType[]>('crm-alerts', []);
 
       // Process real contacts for birthday alerts - add null check
       if (contacts && Array.isArray(contacts)) {
@@ -305,6 +347,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 return;
               }
               
+              // Check if this alert was previously completed
+              const savedAlert = savedAlerts.find(a => a.id === alertId);
+              
               generatedAlerts.push({
                 id: alertId,
                 type: 'birthday',
@@ -315,11 +360,13 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 relatedId: contact.id,
                 relatedType: 'contact',
                 relatedName: `${contact.firstName} ${contact.lastName}`,
-                status: 'pending',
+                status: savedAlert?.isCompleted ? 'completed' : 'pending',
                 createdAt: new Date().toISOString(),
                 actionRequired: true,
                 contactOwner: contact.relationshipOwner?.name || account?.accountOwner || 'Unassigned',
-                vicePresident: contact.relationshipOwner?.vicePresident || account?.vp || 'Unassigned'
+                vicePresident: contact.relationshipOwner?.vicePresident || account?.vp || 'Unassigned',
+                isCompleted: savedAlert?.isCompleted || false,
+                completedAt: savedAlert?.completedAt
               });
             } else {
               console.log(`  ✗ Birthday alert not created (${daysUntilBirthday} days - outside 0-${alertSettings.birthdayLeadDays} day window)`);
@@ -347,6 +394,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 return;
               }
               
+              // Check if this alert was previously completed
+              const savedAlert = savedAlerts.find(a => a.id === alertId);
+              
               generatedAlerts.push({
                 id: alertId,
                 type: 'follow-up',
@@ -357,11 +407,13 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 relatedId: contact.id,
                 relatedType: 'contact',
                 relatedName: `${contact.firstName} ${contact.lastName}`,
-                status: 'pending',
+                status: savedAlert?.isCompleted ? 'completed' : 'pending',
                 createdAt: new Date().toISOString(),
                 actionRequired: true,
                 contactOwner: contact.relationshipOwner?.name || account?.accountOwner || 'Unassigned',
-                vicePresident: contact.relationshipOwner?.vicePresident || account?.vp || 'Unassigned'
+                vicePresident: contact.relationshipOwner?.vicePresident || account?.vp || 'Unassigned',
+                isCompleted: savedAlert?.isCompleted || false,
+                completedAt: savedAlert?.completedAt
               });
             }
           }
@@ -397,6 +449,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 return;
               }
               
+              // Check if this alert was previously completed
+              const savedAlert = savedAlerts.find(a => a.id === alertId);
+              
               generatedAlerts.push({
                 id: alertId,
                 type: 'task-due',
@@ -411,11 +466,13 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 relatedType: task.relatedType || 'task',
                 relatedName: relatedAccount?.accountName || 
                             (relatedContact ? `${relatedContact.firstName} ${relatedContact.lastName}` : task.relatedName || 'Unassigned'),
-                status: 'pending',
+                status: savedAlert?.isCompleted ? 'completed' : 'pending',
                 createdAt: task.createdAt || new Date().toISOString(),
                 actionRequired: true,
                 contactOwner: task.assignedTo || 'Unassigned',
-                vicePresident: relatedContact?.relationshipOwner?.vicePresident || relatedAccount?.vp || 'Unassigned'
+                vicePresident: relatedContact?.relationshipOwner?.vicePresident || relatedAccount?.vp || 'Unassigned',
+                isCompleted: savedAlert?.isCompleted || false,
+                completedAt: savedAlert?.completedAt
               });
             }
           }
@@ -427,7 +484,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       console.log('Alert breakdown:', {
         birthday: generatedAlerts.filter(a => a.type === 'birthday').length,
         followUp: generatedAlerts.filter(a => a.type === 'follow-up').length,
-        taskDue: generatedAlerts.filter(a => a.type === 'task-due').length
+        taskDue: generatedAlerts.filter(a => a.type === 'task-due').length,
+        completed: generatedAlerts.filter(a => a.isCompleted).length
       });
       
       return generatedAlerts;
@@ -517,9 +575,10 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
   const { uniqueRelationshipOwners, uniqueVPs } = getAllRelationshipOwners();
 
   const filteredAlerts = (alerts || []).filter(alert => {
-    if (filter === 'pending' && alert.status !== 'pending') return false;
+    if (filter === 'pending' && (alert.status !== 'pending' || alert.isCompleted)) return false;
+    if (filter === 'completed' && !alert.isCompleted) return false;
     if (filter === 'high' && !['high', 'critical'].includes(alert.priority)) return false;
-    if (filter === 'overdue' && !isOverdue(alert.dueDate)) return false;
+    if (filter === 'overdue' && (!isOverdue(alert.dueDate) || alert.isCompleted)) return false;
     
     if (relationshipOwnerFilter !== 'all') {
       if (!alert.contactOwner?.includes(relationshipOwnerFilter) && !alert.vicePresident?.includes(relationshipOwnerFilter)) {
@@ -714,9 +773,10 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     return powerAutomateEnabled && (alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'task-due');
   };
 
-  const pendingCount = (alerts || []).filter(a => a.status === 'pending').length;
-  const overdueCount = (alerts || []).filter(a => a.status === 'pending' && isOverdue(a.dueDate)).length;
-  const highPriorityCount = (alerts || []).filter(a => a.status === 'pending' && ['high', 'critical'].includes(a.priority)).length;
+  const pendingCount = (alerts || []).filter(a => a.status === 'pending' && !a.isCompleted).length;
+  const completedCount = (alerts || []).filter(a => a.isCompleted).length;
+  const overdueCount = (alerts || []).filter(a => a.status === 'pending' && !a.isCompleted && isOverdue(a.dueDate)).length;
+  const highPriorityCount = (alerts || []).filter(a => a.status === 'pending' && !a.isCompleted && ['high', 'critical'].includes(a.priority)).length;
   
   // Filter counts by relationship owner
   const getFilteredCount = (filterFn: (alert: AlertType) => boolean) => {
@@ -730,17 +790,19 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     }).length;
   };
 
-  const filteredPendingCount = getFilteredCount(a => a.status === 'pending');
-  const filteredOverdueCount = getFilteredCount(a => a.status === 'pending' && isOverdue(a.dueDate));
-  const filteredHighPriorityCount = getFilteredCount(a => a.status === 'pending' && ['high', 'critical'].includes(a.priority));
+  const filteredPendingCount = getFilteredCount(a => a.status === 'pending' && !a.isCompleted);
+  const filteredCompletedCount = getFilteredCount(a => a.isCompleted === true);
+  const filteredOverdueCount = getFilteredCount(a => a.status === 'pending' && !a.isCompleted && isOverdue(a.dueDate));
+  const filteredHighPriorityCount = getFilteredCount(a => a.status === 'pending' && !a.isCompleted && ['high', 'critical'].includes(a.priority));
   const filteredThisWeekCount = getFilteredCount(a => {
     const days = getDaysUntilDue(a.dueDate);
-    return days >= 0 && days <= 7 && a.status === 'pending';
+    return days >= 0 && days <= 7 && a.status === 'pending' && !a.isCompleted;
   });
 
   const autoSendEligibleCount = alerts.filter(a => 
     (a.type === 'birthday' || a.type === 'follow-up' || a.type === 'task-due') && 
     a.status === 'pending' && 
+    !a.isCompleted &&
     !sentAlerts.has(a.id) &&
     !isAlertSnoozed(a.id)
   ).length;
@@ -970,7 +1032,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -982,6 +1044,20 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 )}
               </div>
               <Bell className="w-8 h-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-green-600">{filteredCompletedCount}</p>
+                {relationshipOwnerFilter !== 'all' && (
+                  <p className="text-xs text-gray-500">for {relationshipOwnerFilter}</p>
+                )}
+              </div>
+              <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
@@ -1044,13 +1120,14 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 />
               </div>
             </div>
-            <Select value={filter} onValueChange={(value: 'all' | 'pending' | 'high' | 'overdue') => setFilter(value)}>
+            <Select value={filter} onValueChange={(value: 'all' | 'pending' | 'high' | 'overdue' | 'completed') => setFilter(value)}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Alerts</SelectItem>
                 <SelectItem value="pending">Pending Only</SelectItem>
+                <SelectItem value="completed">Completed Only</SelectItem>
                 <SelectItem value="high">High Priority</SelectItem>
                 <SelectItem value="overdue">Overdue</SelectItem>
               </SelectContent>
@@ -1089,20 +1166,37 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                   const isSending = sendingAlerts.has(alert.id);
                   const wasSent = sentAlerts.has(alert.id);
                   const isSnoozed = isAlertSnoozed(alert.id);
+                  const isCompleted = alert.isCompleted || false;
                   
                   return (
-                    <Card key={alert.id} className={`${overdue ? 'border-red-200 bg-red-50' : ''} ${alert.priority === 'critical' ? 'border-orange-200 bg-orange-50' : ''} ${isSnoozed ? 'opacity-60' : ''}`}>
+                    <Card 
+                      key={alert.id} 
+                      className={`
+                        ${overdue && !isCompleted ? 'border-red-200 bg-red-50' : ''} 
+                        ${alert.priority === 'critical' && !isCompleted ? 'border-orange-200 bg-orange-50' : ''} 
+                        ${isSnoozed ? 'opacity-60' : ''} 
+                        ${isCompleted ? 'opacity-70 bg-gray-50' : ''}
+                      `}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start gap-3 flex-1">
                             <div className="text-2xl">{getAlertIcon(alert.type)}</div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <h3 className="font-semibold">{alert.title}</h3>
+                                <h3 className={`font-semibold ${isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                  {alert.title}
+                                </h3>
                                 <Badge variant={getPriorityColor(alert.priority)}>
                                   {alert.priority}
                                 </Badge>
-                                {overdue && (
+                                {isCompleted && (
+                                  <Badge variant="outline" className="text-green-600 bg-green-50 border-green-200">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Completed
+                                  </Badge>
+                                )}
+                                {overdue && !isCompleted && (
                                   <Badge variant="destructive">
                                     Overdue
                                   </Badge>
@@ -1113,7 +1207,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                                     Snoozed
                                   </Badge>
                                 )}
-                                {canSendPA && (
+                                {canSendPA && !isCompleted && (
                                   <Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-200">
                                     <Zap className="w-3 h-3 mr-1" />
                                     Power Automate Ready
@@ -1124,18 +1218,20 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                                     ✓ Sent to Power Automate
                                   </Badge>
                                 )}
-                                {autoSendEnabled && canSendPA && !wasSent && !isSnoozed && (
+                                {autoSendEnabled && canSendPA && !wasSent && !isSnoozed && !isCompleted && (
                                   <Badge variant="outline" className="text-purple-600 bg-purple-50 border-purple-200">
                                     Auto-Send Enabled
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-600 mb-2">{alert.description}</p>
+                              <p className={`text-sm mb-2 ${isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {alert.description}
+                              </p>
                               <div className="flex flex-col gap-1 text-sm text-gray-500">
                                 <div className="flex items-center gap-4">
                                   <span className="flex items-center gap-1">
                                     <Calendar className="w-4 h-4" />
-                                    {overdue ? `${Math.abs(daysUntil)} days overdue` : 
+                                    {overdue && !isCompleted ? `${Math.abs(daysUntil)} days overdue` : 
                                      daysUntil === 0 ? 'Due today' :
                                      daysUntil === 1 ? 'Due tomorrow' :
                                      `Due in ${daysUntil} days`}
@@ -1156,77 +1252,90 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                                     </span>
                                   )}
                                 </div>
+                                {isCompleted && alert.completedAt && (
+                                  <div className="text-xs text-green-600 mt-1">
+                                    ✓ Completed on {new Date(alert.completedAt).toLocaleDateString()}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
-                          {alert.status === 'pending' && (
-                            <div className="flex gap-2 flex-wrap">
-                              {canSendPA && (
+                          <div className="flex gap-2 flex-wrap">
+                            {/* Complete/Uncomplete Toggle Button */}
+                            <Button
+                              size="sm"
+                              variant={isCompleted ? "outline" : "default"}
+                              onClick={() => handleToggleCompletion(alert.id)}
+                              className={isCompleted ? "text-orange-600 border-orange-300 hover:bg-orange-50" : "bg-green-600 hover:bg-green-700"}
+                            >
+                              {isCompleted ? (
+                                <>
+                                  <RotateCcw className="w-4 h-4 mr-1" />
+                                  Mark Incomplete
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Mark Complete
+                                </>
+                              )}
+                            </Button>
+                            
+                            {!isCompleted && (
+                              <>
+                                {canSendPA && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleSendToPowerAutomate(alert)}
+                                    disabled={isSending}
+                                    className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                                  >
+                                    {isSending ? (
+                                      <>
+                                        <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                                        Sending...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Send className="w-4 h-4 mr-1" />
+                                        {wasSent ? 'Resend to PA' : 'Send to PA'}
+                                      </>
+                                    )}
+                                  </Button>
+                                )}
+                                
+                                {/* Snooze Button */}
+                                <Select onValueChange={(days) => handleSnoozeAlert(alert.id, parseInt(days))}>
+                                  <SelectTrigger className="w-32">
+                                    <Clock className="w-4 h-4 mr-1" />
+                                    <SelectValue placeholder="Snooze" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="1">1 day</SelectItem>
+                                    <SelectItem value="3">3 days</SelectItem>
+                                    <SelectItem value="7">1 week</SelectItem>
+                                    <SelectItem value="14">2 weeks</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleSendToPowerAutomate(alert)}
-                                  disabled={isSending}
-                                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                                  onClick={() => handleAlertAction(alert.id, 'acknowledge')}
                                 >
-                                  {isSending ? (
-                                    <>
-                                      <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-                                      Sending...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Send className="w-4 h-4 mr-1" />
-                                      {wasSent ? 'Resend to PA' : 'Send to PA'}
-                                    </>
-                                  )}
+                                  Acknowledge
                                 </Button>
-                              )}
-                              
-                              {/* Snooze Button */}
-                              <Select onValueChange={(days) => handleSnoozeAlert(alert.id, parseInt(days))}>
-                                <SelectTrigger className="w-32">
-                                  <Clock className="w-4 h-4 mr-1" />
-                                  <SelectValue placeholder="Snooze" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="1">1 day</SelectItem>
-                                  <SelectItem value="3">3 days</SelectItem>
-                                  <SelectItem value="7">1 week</SelectItem>
-                                  <SelectItem value="14">2 weeks</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              
-                              {alert.actionRequired && (
                                 <Button
                                   size="sm"
-                                  onClick={() => handleAlertAction(alert.id, 'complete')}
+                                  variant="ghost"
+                                  onClick={() => handleAlertAction(alert.id, 'dismiss')}
                                 >
-                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                  Complete
+                                  <X className="w-4 h-4" />
                                 </Button>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleAlertAction(alert.id, 'acknowledge')}
-                              >
-                                Acknowledge
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleAlertAction(alert.id, 'dismiss')}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          )}
-                          {alert.status !== 'pending' && (
-                            <Badge variant="outline">
-                              {alert.status}
-                            </Badge>
-                          )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

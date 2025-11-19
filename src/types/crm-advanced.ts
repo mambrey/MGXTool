@@ -136,4 +136,6 @@ export interface Alert {
   actionRequired: boolean;
   contactOwner?: string;
   vicePresident?: string;
+  isCompleted?: boolean; // NEW: Track completion status independently
+  completedAt?: string; // NEW: Track when alert was marked complete
 }
