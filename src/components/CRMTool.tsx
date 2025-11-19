@@ -17,6 +17,7 @@ import AlertSystem from './AlertSystem';
 import SharePointSync from './SharePointSync';
 import SharePointImport from './SharePointImport';
 import ContactImport from './ContactImport';
+import MarketSnapshotUpload from './MarketSnapshotUpload';
 import RelationshipOwnerDirectory from './RelationshipOwnerDirectory';
 import FAQPage from '../pages/FAQPage';
 import type { Account, Contact, RelationshipOwner } from '@/types/crm';
@@ -271,6 +272,10 @@ export default function CRMTool({ userName }: CRMToolProps) {
       
       return updatedContacts;
     });
+  };
+
+  const handleUpdateAccounts = (updatedAccounts: Account[]) => {
+    setAccounts(updatedAccounts);
   };
 
   // Helper function to check if a date is coming up (within 7 days)
@@ -964,6 +969,11 @@ export default function CRMTool({ userName }: CRMToolProps) {
               <SharePointImport onImport={handleImportAccounts} existingAccounts={accounts || []} />
               <ContactImport onImport={handleImportContacts} existingContacts={contacts || []} />
             </div>
+            
+            <MarketSnapshotUpload 
+              accounts={accounts || []} 
+              onUpdate={handleUpdateAccounts}
+            />
             
             <SharePointSync accounts={accounts || []} contacts={contacts || []} />
           </div>

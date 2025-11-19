@@ -164,7 +164,7 @@ export default function AccountDetails({
     return days;
   };
 
-  const InfoItem = ({ label, value, icon: Icon }: { label: string; value: string | number | undefined; icon?: any }) => {
+  const InfoItem = ({ label, value, icon: Icon }: { label: string; value: string | number | undefined; icon?: React.ComponentType<{ className?: string }> }) => {
     if (!value) return null;
     return (
       <div>
