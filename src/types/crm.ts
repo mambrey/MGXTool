@@ -60,7 +60,8 @@ export interface Account {
   hqInfluence?: boolean;
   displayMandates?: boolean;
   fulfillmentTypes?: string;
-  spiritsOutlets?: string;
+  allSpiritsOutlets?: string;
+  fullProofOutlets?: string;
   // Reset window fields
   resetWindowQ1?: string;
   resetWindowQ2?: string;
