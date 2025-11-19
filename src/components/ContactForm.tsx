@@ -83,14 +83,19 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setAllContacts(savedContacts);
   }, []);
 
-  // Filter available managers (exclude current contact and only show contacts from same account)
-  const availableManagers = allContacts.filter(c => 
-    c.id !== contact?.id && 
-    c.accountId === formData.accountId
-  );
+  // Filter available managers - NOW SHOWS ALL CONTACTS (excluding current contact only)
+  const availableManagers = allContacts.filter(c => c.id !== contact?.id);
 
   // Get selected manager
   const selectedManager = allContacts.find(c => c.id === formData.managerId);
+
+  // Get account name for selected manager
+  const getManagerAccountName = (managerId: string) => {
+    const manager = allContacts.find(c => c.id === managerId);
+    if (!manager?.accountId) return '';
+    const account = accounts.find(a => a.id === manager.accountId);
+    return account?.accountName || '';
+  };
 
   // Effect to handle account selection and auto-populate owner information
   useEffect(() => {
@@ -157,7 +162,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   };
 
   const handleAccountChange = (accountId: string) => {
-    setFormData(prev => ({ ...prev, accountId, managerId: '' })); // Reset manager when account changes
+    setFormData(prev => ({ ...prev, accountId }));
     setAccountSearchOpen(false);
   };
 
@@ -412,7 +417,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Popover>
             </div>
 
-            {/* Manager Selection */}
+            {/* Manager Selection - UPDATED TO SHOW ALL CONTACTS */}
             <div>
               <Label htmlFor="manager" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
@@ -426,20 +431,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                     role="combobox"
                     aria-expanded={managerSearchOpen}
                     className="w-full justify-between"
-                    disabled={!formData.accountId}
                   >
                     {formData.managerId && selectedManager
                       ? `${selectedManager.firstName} ${selectedManager.lastName}`
-                      : formData.accountId 
-                        ? "Select a manager..."
-                        : "Select an account first..."}
+                      : "Select a manager..."}
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0" align="start">
                   <Command shouldFilter={true}>
                     <CommandInput 
-                      placeholder="Search contacts by name or title..." 
+                      placeholder="Search all contacts by name, title, or company..." 
                     />
                     <CommandList>
                       <CommandEmpty>No contact found.</CommandEmpty>
@@ -457,7 +459,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           <span className="text-gray-500">No manager (Top-level executive)</span>
                         </CommandItem>
                         {availableManagers.map((manager) => {
-                          const searchableText = `${manager.firstName} ${manager.lastName} ${manager.title || ''}`;
+                          const managerAccount = accounts.find(a => a.id === manager.accountId);
+                          const searchableText = `${manager.firstName} ${manager.lastName} ${manager.title || ''} ${managerAccount?.accountName || ''}`;
                           return (
                             <CommandItem
                               key={manager.id}
@@ -474,9 +477,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                 <span className="font-medium">
                                   {manager.firstName} {manager.lastName}
                                 </span>
-                                {manager.title && (
-                                  <span className="text-xs text-gray-500">{manager.title}</span>
-                                )}
+                                <span className="text-xs text-gray-500">
+                                  {manager.title && `${manager.title}`}
+                                  {manager.title && managerAccount && ' • '}
+                                  {managerAccount && `${managerAccount.accountName}`}
+                                </span>
                               </div>
                             </CommandItem>
                           );
@@ -494,13 +499,16 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       <strong>Reports to:</strong> {selectedManager.firstName} {selectedManager.lastName}
                       {selectedManager.title && ` - ${selectedManager.title}`}
                     </div>
+                    {selectedManager.accountId && getManagerAccountName(selectedManager.accountId) && (
+                      <div className="text-xs text-blue-600 mt-1 ml-5">
+                        Company: {getManagerAccountName(selectedManager.accountId)}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                {formData.accountId 
-                  ? "Select who this contact reports to in the organizational hierarchy"
-                  : "Please select an account first to choose a manager"}
+                Select who this contact reports to in the organizational hierarchy (from any company in your contact list)
               </p>
             </div>
 
