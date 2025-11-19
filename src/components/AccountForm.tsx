@@ -70,6 +70,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     website: '',
     totalBuyingOffices: '',
     hasPlanograms: false,
+    planogramWrittenBy: '',
     resetWindows: '',
     categoryCaptain: 'none',
     categoryAdvisor: 'none',
@@ -969,106 +970,120 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               checked={formData.hasPlanograms}
               onCheckedChange={(checked) => updateField('hasPlanograms', checked as boolean)}
             />
-            <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram?</Label>
+            <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram</Label>
           </div>
 
-          <div className="mt-6">
-            <Label className="text-lg font-medium mb-4 block flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Reset Windows
-            </Label>
-            
-            <div className="mb-4">
-              <Label className="text-sm font-medium mb-2 block">Quarterly Reset Windows</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div>
-                  <Label htmlFor="resetWindowQ1" className="text-xs font-medium text-gray-600">Q1 Reset</Label>
-                  <Input
-                    id="resetWindowQ1"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowQ1 || '')}
-                    onChange={(e) => updateField('resetWindowQ1', e.target.value)}
-                    className="mt-1"
-                  />
+          <div>
+            <Label htmlFor="planogramWrittenBy" className="text-sm font-medium">Written by:</Label>
+            <Input
+              id="planogramWrittenBy"
+              value={formData.planogramWrittenBy || ''}
+              onChange={(e) => updateField('planogramWrittenBy', e.target.value)}
+              placeholder="Enter author name"
+              className="mt-1"
+            />
+          </div>
+
+          {formData.hasPlanograms && (
+            <div className="mt-6">
+              <Label className="text-lg font-medium mb-4 block flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Reset Windows
+              </Label>
+              
+              <div className="mb-4">
+                <Label className="text-sm font-medium mb-2 block">Quarterly Reset Windows</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div>
+                    <Label htmlFor="resetWindowQ1" className="text-xs font-medium text-gray-600">Q1 Reset</Label>
+                    <Input
+                      id="resetWindowQ1"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowQ1 || '')}
+                      onChange={(e) => updateField('resetWindowQ1', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="resetWindowQ2" className="text-xs font-medium text-gray-600">Q2 Reset</Label>
+                    <Input
+                      id="resetWindowQ2"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowQ2 || '')}
+                      onChange={(e) => updateField('resetWindowQ2', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="resetWindowQ3" className="text-xs font-medium text-gray-600">Q3 Reset</Label>
+                    <Input
+                      id="resetWindowQ3"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowQ3 || '')}
+                      onChange={(e) => updateField('resetWindowQ3', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="resetWindowQ4" className="text-xs font-medium text-gray-600">Q4 Reset</Label>
+                    <Input
+                      id="resetWindowQ4"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowQ4 || '')}
+                      onChange={(e) => updateField('resetWindowQ4', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="resetWindowQ2" className="text-xs font-medium text-gray-600">Q2 Reset</Label>
-                  <Input
-                    id="resetWindowQ2"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowQ2 || '')}
-                    onChange={(e) => updateField('resetWindowQ2', e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="resetWindowQ3" className="text-xs font-medium text-gray-600">Q3 Reset</Label>
-                  <Input
-                    id="resetWindowQ3"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowQ3 || '')}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="resetWindowQ4" className="text-xs font-medium text-gray-600">Q4 Reset</Label>
-                  <Input
-                    id="resetWindowQ4"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowQ4 || '')}
-                    onChange={(e) => updateField('resetWindowQ4', e.target.value)}
-                    className="mt-1"
-                  />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Seasonal Reset Windows</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div>
+                    <Label htmlFor="resetWindowSpring" className="text-xs font-medium text-gray-600">Spring Reset</Label>
+                    <Input
+                      id="resetWindowSpring"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowSpring || '')}
+                      onChange={(e) => updateField('resetWindowSpring', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="resetWindowSummer" className="text-xs font-medium text-gray-600">Summer Reset</Label>
+                    <Input
+                      id="resetWindowSummer"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowSummer || '')}
+                      onChange={(e) => updateField('resetWindowSummer', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="resetWindowFall" className="text-xs font-medium text-gray-600">Fall Reset</Label>
+                    <Input
+                      id="resetWindowFall"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowFall || '')}
+                      onChange={(e) => updateField('resetWindowFall', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="resetWindowWinter" className="text-xs font-medium text-gray-600">Winter Reset</Label>
+                    <Input
+                      id="resetWindowWinter"
+                      type="date"
+                      value={formatDateForInput(formData.resetWindowWinter || '')}
+                      onChange={(e) => updateField('resetWindowWinter', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Seasonal Reset Windows</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div>
-                  <Label htmlFor="resetWindowSpring" className="text-xs font-medium text-gray-600">Spring Reset</Label>
-                  <Input
-                    id="resetWindowSpring"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowSpring || '')}
-                    onChange={(e) => updateField('resetWindowSpring', e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="resetWindowSummer" className="text-xs font-medium text-gray-600">Summer Reset</Label>
-                  <Input
-                    id="resetWindowSummer"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowSummer || '')}
-                    onChange={(e) => updateField('resetWindowSummer', e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="resetWindowFall" className="text-xs font-medium text-gray-600">Fall Reset</Label>
-                  <Input
-                    id="resetWindowFall"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowFall || '')}
-                    onChange={(e) => updateField('resetWindowFall', e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="resetWindowWinter" className="text-xs font-medium text-gray-600">Winter Reset</Label>
-                  <Input
-                    id="resetWindowWinter"
-                    type="date"
-                    value={formatDateForInput(formData.resetWindowWinter || '')}
-                    onChange={(e) => updateField('resetWindowWinter', e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 

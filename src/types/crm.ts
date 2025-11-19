@@ -56,6 +56,7 @@ export interface Account {
   lastJBPDate?: string;
   nextJBPDate?: string;
   hasPlanograms?: boolean;
+  planogramWrittenBy?: string; // NEW: Author of the planogram
   hqInfluence?: boolean;
   displayMandates?: boolean;
   fulfillmentTypes?: string;
