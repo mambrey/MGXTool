@@ -573,6 +573,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="e.g., VP of Sales, Director of Marketing"
+              />
+            </div>
 
             <div>
               <Label htmlFor="currentRoleTenure">Current Role Tenure</Label>
@@ -591,8 +593,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   <SelectItem value="10+">10+</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-              />
             </div>
             
             {/* Account Selection - FIXED LABEL */}
