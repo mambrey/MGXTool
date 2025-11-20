@@ -445,7 +445,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 id="tickerSymbol"
                 value={formData.tickerSymbol}
                 onChange={(e) => updateField('tickerSymbol', e.target.value)}
-                placeholder="e.g., AAPL"
+                placeholder="e.g., COST"
                 className="flex-1"
               />
               <Button
