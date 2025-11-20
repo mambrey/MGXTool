@@ -182,7 +182,7 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'pricingStrategy', label: 'Pricing Strategy', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'privateLabel', label: 'Private Label', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'innovationAppetite', label: 'Innovation Appetite', visible: false, type: 'slider', filterType: 'number' },
-  { key: 'hasEcommerce', label: 'Ecommerce Available', visible: false, type: 'boolean', filterType: 'select' },
+  { key: 'hasEcommerce', label: 'E-Commerce Available', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'isJBP', label: 'Is JBP', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'lastJBPDate', label: 'Last JBP Date', visible: false, type: 'datetime', filterType: 'text' },
   { key: 'nextJBPDate', label: 'Next JBP Date', visible: false, type: 'datetime', filterType: 'text' },

@@ -921,7 +921,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 checked={formData.hasEcommerce}
                 onCheckedChange={(checked) => updateField('hasEcommerce', checked as boolean)}
               />
-              <Label htmlFor="hasEcommerce" className="text-sm font-medium">Ecommerce Available</Label>
+              <Label htmlFor="hasEcommerce" className="text-sm font-medium">E-Commerce Available</Label>
             </div>
           </div>
 
@@ -1114,16 +1114,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram</Label>
           </div>
 
-          <div>
-            <Label htmlFor="planogramWrittenBy" className="text-sm font-medium">Written by:</Label>
-            <Input
-              id="planogramWrittenBy"
-              value={formData.planogramWrittenBy || ''}
-              onChange={(e) => updateField('planogramWrittenBy', e.target.value)}
-              placeholder="Enter author name"
-              className="mt-1"
-            />
-          </div>
 
           {formData.hasPlanograms && (
             <div className="mt-6">
