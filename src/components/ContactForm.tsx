@@ -102,6 +102,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     managerId: contact?.managerId || '',
     accountId: contact?.accountId || '',
     isPrimaryContact: contact?.isPrimaryContact || false,
+    contactActiveStatus: contact?.contactActiveStatus || 'Active',
     relationshipStatus: contact?.relationshipStatus || '',
     categorySegmentOwnership: contact?.categorySegmentOwnership || [],
     responsibilityLevels: contact?.responsibilityLevels || {},
@@ -789,6 +790,23 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   Primary contacts are automatically linked to the account owner for relationship management.
                 </p>
               </div>
+            </div>
+
+            {/* Contact Active Status */}
+            <div>
+              <Label htmlFor="contactActiveStatus">Contact Active Status</Label>
+              <Select
+                value={formData.contactActiveStatus}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, contactActiveStatus: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>

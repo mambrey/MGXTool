@@ -95,6 +95,7 @@ export interface Contact {
   managerId?: string; // ID of the manager contact (for reporting hierarchy)
   accountId?: string;
   isPrimaryContact?: boolean; // UPDATED: Changed from contactType to isPrimaryContact boolean
+  contactActiveStatus?: 'Active' | 'Inactive'; // NEW: Contact active status field
   birthday?: string;
   birthdayAlert?: boolean;
   relationshipStatus?: 'Promoter' | 'Supporter' | 'Neutral' | 'Detractor' | 'At Risk'; // UPDATED: Changed to specific dropdown values
