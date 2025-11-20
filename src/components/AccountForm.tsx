@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, TrendingUp, MapPin, Calendar, Package, Target, ShoppingCart, CheckSquare, Square, Crown, Globe, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Save, X, Building2, TrendingUp, MapPin, Calendar, Package, Target, ShoppingCart, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,14 @@ const US_STATES = [
   'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
   'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
   'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
+// Fulfillment types for multi-select
+const FULFILLMENT_TYPES = [
+  'Curbside',
+  'Instore pickup',
+  'Home Delivery',
+  'Third Party'
 ];
 
 // Google Maps libraries to load
@@ -86,12 +94,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     lastJBPDate: '',
     nextJBPDate: '',
     pricingStrategy: 'none',
-    privateLabel: false,
+    privateLabel: 'none',
     innovationAppetite: 5,
     hasEcommerce: false,
     fulfillmentTypes: '',
     strategicPriorities: '',
     keyCompetitors: '',
+    designatedCharities: '',
     keyEvents: '',
     customerEvents: [],
     createdAt: account?.createdAt || currentTime,
@@ -195,18 +204,23 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     return [];
   });
 
+  // Handle fulfillment types multi-select
+  const [selectedFulfillmentTypes, setSelectedFulfillmentTypes] = useState<string[]>(() => {
+    if (!formData.fulfillmentTypes) return [];
+    
+    if (Array.isArray(formData.fulfillmentTypes)) {
+      return formData.fulfillmentTypes;
+    }
+    
+    if (typeof formData.fulfillmentTypes === 'string') {
+      return formData.fulfillmentTypes.split(', ').filter(Boolean);
+    }
+    
+    return [];
+  });
+
   const [customerEvents, setCustomerEvents] = useState<CustomerEvent[]>(
     formData.customerEvents || []
-  );
-
-  // Filter contacts that could be assigned to this account
-  const availableContacts = contacts.filter(contact => 
-    !account || contact.accountId === account.id || !contact.accountId
-  );
-
-  // Get the currently selected primary contact
-  const selectedPrimaryContact = availableContacts.find(contact => 
-    contact.id === formData.primaryContactId
   );
 
   /**
@@ -277,11 +291,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     const updatedFormData = {
       ...formData,
       operatingStates: selectedStates,
+      fulfillmentTypes: selectedFulfillmentTypes,
       customerEvents: customerEvents,
       lastModified: new Date().toISOString(),
       categoryCaptain: formData.categoryCaptain === 'none' ? '' : formData.categoryCaptain,
       categoryAdvisor: formData.categoryAdvisor === 'none' ? '' : formData.categoryAdvisor,
-      pricingStrategy: formData.pricingStrategy === 'none' ? '' : formData.pricingStrategy
+      pricingStrategy: formData.pricingStrategy === 'none' ? '' : formData.pricingStrategy,
+      privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel
     };
 
     const hasNewTickerSymbol = 
@@ -321,6 +337,24 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
   const clearAllStates = () => {
     setSelectedStates([]);
+  };
+
+  const toggleFulfillmentType = (type: string) => {
+    setSelectedFulfillmentTypes(prev => {
+      if (prev.includes(type)) {
+        return prev.filter(t => t !== type);
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
+
+  const selectAllFulfillmentTypes = () => {
+    if (selectedFulfillmentTypes.length === FULFILLMENT_TYPES.length) {
+      setSelectedFulfillmentTypes([]);
+    } else {
+      setSelectedFulfillmentTypes([...FULFILLMENT_TYPES]);
+    }
   };
 
   const addCustomerEvent = () => {
@@ -377,6 +411,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
   const isAllStatesSelected = selectedStates.length === US_STATES.length;
   const isSomeStatesSelected = selectedStates.length > 0 && selectedStates.length < US_STATES.length;
+  const isAllFulfillmentTypesSelected = selectedFulfillmentTypes.length === FULFILLMENT_TYPES.length;
 
   const willSendToPA = 
     powerAutomateService.isTickerSymbolWorkflowEnabled() && 
@@ -523,51 +558,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Primary Contact Selector */}
-          <div className="sm:col-span-2">
-            <Label htmlFor="primaryContact" className="text-sm font-medium flex items-center gap-2">
-              <Crown className="w-4 h-4 text-yellow-500" />
-              Primary Contact
-            </Label>
-            <Select 
-              value={formData.primaryContactId || 'none'} 
-              onValueChange={(value) => updateField('primaryContactId', value === 'none' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select primary contact" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No primary contact</SelectItem>
-                {availableContacts.map(contact => (
-                  <SelectItem key={contact.id} value={contact.id}>
-                    {contact.firstName} {contact.lastName}
-                    {contact.title && ` - ${contact.title}`}
-                    {contact.contactType === 'Primary' && ' (Currently Primary)'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedPrimaryContact && (
-              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <div className="text-sm text-blue-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Crown className="w-4 h-4 text-yellow-500" />
-                    <strong>Selected Primary Contact:</strong>
-                  </div>
-                  <p><strong>Name:</strong> {selectedPrimaryContact.firstName} {selectedPrimaryContact.lastName}</p>
-                  {selectedPrimaryContact.title && <p><strong>Title:</strong> {selectedPrimaryContact.title}</p>}
-                  {selectedPrimaryContact.email && <p><strong>Email:</strong> {selectedPrimaryContact.email}</p>}
-                  {selectedPrimaryContact.officePhone && <p><strong>Phone:</strong> {selectedPrimaryContact.officePhone}</p>}
-                </div>
-              </div>
-            )}
-            {availableContacts.length === 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                No contacts available. Add contacts after creating the account to select a primary contact.
-              </p>
-            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -877,30 +867,28 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="EDLP">EDLP (Everyday Low Price)</SelectItem>
-                  <SelectItem value="Hi-Lo">Hi-Lo</SelectItem>
-                  <SelectItem value="Premium">Premium</SelectItem>
-                  <SelectItem value="Competitive">Competitive</SelectItem>
-                  <SelectItem value="Value">Value</SelectItem>
-                  <SelectItem value="Dynamic">Dynamic</SelectItem>
+                  <SelectItem value="EDLP (Everyday Low Pricing)">EDLP (Everyday Low Pricing)</SelectItem>
+                  <SelectItem value="High-Low">High-Low</SelectItem>
+                  <SelectItem value="Margin Focused">Margin Focused</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="privateLabel"
-                checked={formData.privateLabel}
-                onCheckedChange={(checked) => updateField('privateLabel', checked as boolean)}
-              />
+            <div>
               <Label htmlFor="privateLabel" className="text-sm font-medium">Private Label</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hasEcommerce"
-                checked={formData.hasEcommerce}
-                onCheckedChange={(checked) => updateField('hasEcommerce', checked as boolean)}
-              />
-              <Label htmlFor="hasEcommerce" className="text-sm font-medium">Ecommerce Available?</Label>
+              <Select 
+                value={formData.privateLabel || 'none'} 
+                onValueChange={(value) => updateField('privateLabel', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select private label level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -924,7 +912,15 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 checked={formData.isJBP}
                 onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
               />
-              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer?</Label>
+              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasEcommerce"
+                checked={formData.hasEcommerce}
+                onCheckedChange={(checked) => updateField('hasEcommerce', checked as boolean)}
+              />
+              <Label htmlFor="hasEcommerce" className="text-sm font-medium">Ecommerce Available</Label>
             </div>
           </div>
 
@@ -954,14 +950,54 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           )}
 
           <div>
-            <Label htmlFor="fulfillmentTypes" className="text-sm font-medium">Available Fulfillment Types</Label>
-            <Input
-              id="fulfillmentTypes"
-              value={formData.fulfillmentTypes}
-              onChange={(e) => updateField('fulfillmentTypes', e.target.value)}
-              placeholder="e.g., Direct Store Delivery, Warehouse Pickup, Drop Ship"
-              className="mt-1"
-            />
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium">Available Fulfillment Types</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={selectAllFulfillmentTypes}
+                className="flex items-center gap-1 text-xs h-7"
+              >
+                {isAllFulfillmentTypesSelected ? (
+                  <>
+                    <CheckSquare className="w-3 h-3" />
+                    Deselect All
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-3 h-3" />
+                    Select All
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {FULFILLMENT_TYPES.map(type => (
+                  <div key={type} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`fulfillment-${type}`}
+                      checked={selectedFulfillmentTypes.includes(type)}
+                      onCheckedChange={() => toggleFulfillmentType(type)}
+                    />
+                    <Label htmlFor={`fulfillment-${type}`} className="text-sm cursor-pointer">
+                      {type}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedFulfillmentTypes.length > 0 && (
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-sm font-medium text-gray-700">
+                    Selected ({selectedFulfillmentTypes.length}/{FULFILLMENT_TYPES.length}):
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {selectedFulfillmentTypes.join(', ')}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1187,6 +1223,17 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               value={formData.keyCompetitors}
               onChange={(e) => updateField('keyCompetitors', e.target.value)}
               placeholder="Enter key competitors"
+              rows={3}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="designatedCharities" className="text-sm font-medium">Designated Charities</Label>
+            <Textarea
+              id="designatedCharities"
+              value={formData.designatedCharities || ''}
+              onChange={(e) => updateField('designatedCharities', e.target.value)}
+              placeholder="Enter designated charities"
               rows={3}
               className="mt-1"
             />

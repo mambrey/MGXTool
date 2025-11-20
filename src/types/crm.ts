@@ -49,7 +49,7 @@ export interface Account {
   categoryCaptain?: string;
   categoryAdvisor?: string;
   pricingStrategy?: string; // Changed from boolean to string for dropdown
-  privateLabel?: boolean;
+  privateLabel?: string; // UPDATED: Changed from boolean to string for dropdown (High/Medium/Low)
   innovationAppetite?: number;
   hasEcommerce?: boolean;
   isJBP?: boolean;
@@ -59,7 +59,7 @@ export interface Account {
   planogramWrittenBy?: string; // NEW: Author of the planogram
   hqInfluence?: boolean;
   displayMandates?: boolean;
-  fulfillmentTypes?: string;
+  fulfillmentTypes?: string | string[]; // UPDATED: Support both string and array for multi-select
   allSpiritsOutlets?: string; // UPDATED: Changed from spiritsOutlets to allSpiritsOutlets
   fullProofOutlets?: string; // NEW: Full proof outlets field
   // Reset window fields
@@ -74,6 +74,7 @@ export interface Account {
   // Strategic information
   strategicPriorities?: string;
   keyCompetitors?: string;
+  designatedCharities?: string; // NEW: Designated charities field
   customerEvents?: CustomerEvent[];
   createdAt: string;
   lastModified: string;
