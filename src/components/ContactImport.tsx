@@ -50,7 +50,7 @@ export default function ContactImport({ onImport, existingContacts = [], existin
       
       // Find account name from accountId
       const accountName = contact.accountId 
-        ? existingAccounts.find(acc => acc.id === contact.accountId)?.name || ''
+        ? existingAccounts.find(acc => acc.id === contact.accountId)?.accountName || ''
         : '';
       
       const row = [
@@ -225,7 +225,7 @@ export default function ContactImport({ onImport, existingContacts = [], existin
         
         if (accountName) {
           const matchedAccount = existingAccounts.find(
-            acc => acc.name.toLowerCase() === accountName.toLowerCase()
+            acc => acc.accountName.toLowerCase() === accountName.toLowerCase()
           );
           
           if (matchedAccount) {
