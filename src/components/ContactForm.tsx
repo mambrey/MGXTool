@@ -32,7 +32,7 @@ interface ContactEventWithAlert extends CustomerEvent {
   alertDays?: number;
 }
 
-// Category options for segment ownership - ADDED Non-Alc
+// Category options for segment ownership - REORDERED Non-Alc below Whiskey Other
 const CATEGORY_OPTIONS = [
   'Cordials',
   'Gin',
@@ -44,10 +44,10 @@ const CATEGORY_OPTIONS = [
   'Tequila',
   'Vodka',
   'Whiskey Other',
+  'Non-Alc',
   'Beer',
   'Wine',
-  'THC',
-  'Non-Alc'
+  'THC'
 ];
 
 // Responsibility options - REMOVED "Influence level - Responsibility"
@@ -90,7 +90,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     email: contact?.email || '',
     officePhone: contact?.officePhone || '',
     mobilePhone: contact?.mobilePhone || '',
-    preferredContactMethod: contact?.preferredContactMethod || 'mobile phone',
+    preferredContactMethod: contact?.preferredContactMethod || '',
     preferredShippingAddress: contact?.preferredShippingAddress || '',
     title: contact?.title || '',
     currentRoleTenure: contact?.currentRoleTenure || '',
@@ -138,11 +138,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [headshotFileName, setHeadshotFileName] = useState('');
   const [headshotError, setHeadshotError] = useState('');
 
-  // New state for relationship owner hierarchy - Initialize from contact data
-  const [director, setDirector] = useState(contact?.director || '');
-  const [vicePresident, setVicePresident] = useState(contact?.vicePresident || '');
-  const [seniorVicePresident, setSeniorVicePresident] = useState(contact?.seniorVicePresident || '');
-
   // Primary Diageo Relationship Owner(s) state - UPDATED to store role->cadence mapping
   const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
   const [ownerEmail, setOwnerEmail] = useState(contact?.primaryDiageoRelationshipOwners?.ownerEmail || '');
@@ -153,8 +148,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [supportRoles, setSupportRoles] = useState<{[role: string]: string}>(
     contact?.primaryDiageoRelationshipOwners?.support || {}
   );
-
-  const seniorVPOptions = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
 
   // Handle headshot file upload
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,7 +228,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
   const isAllCategoriesSelected = formData.categorySegmentOwnership.length === CATEGORY_OPTIONS.length;
 
-  // Responsibility Level handlers
+  // Responsibility Level handlers - UPDATED to default to None
   const handleResponsibilityLevelChange = (key: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -246,29 +239,20 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     }));
   };
 
-  const handleResponsibilityToggle = (key: string) => {
-    setFormData(prev => {
-      const currentValue = prev.responsibilityLevels[key];
-      const newResponsibilityLevels = { ...prev.responsibilityLevels };
-      
-      if (currentValue) {
-        // If currently has a value, remove it (uncheck)
-        delete newResponsibilityLevels[key];
-      } else {
-        // If currently empty, set to 'None' (check)
-        newResponsibilityLevels[key] = 'None';
-      }
-      
-      return {
-        ...prev,
-        responsibilityLevels: newResponsibilityLevels
-      };
+  // Initialize responsibility levels with 'None' if not set
+  useEffect(() => {
+    const initializedLevels: {[key: string]: string} = {};
+    RESPONSIBILITY_OPTIONS.forEach(({ key }) => {
+      initializedLevels[key] = formData.responsibilityLevels[key] || 'None';
     });
-  };
-
-  const isResponsibilityEnabled = (key: string) => {
-    return formData.responsibilityLevels[key] !== undefined;
-  };
+    
+    if (JSON.stringify(initializedLevels) !== JSON.stringify(formData.responsibilityLevels)) {
+      setFormData(prev => ({
+        ...prev,
+        responsibilityLevels: initializedLevels
+      }));
+    }
+  }, []);
 
   // Primary Diageo Relationship Owner handlers - UPDATED
   const handleSalesRoleToggle = (role: string) => {
@@ -403,9 +387,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     const contactData: Contact = {
       id: contact?.id || Date.now().toString(),
       ...formData,
-      director,
-      vicePresident,
-      seniorVicePresident,
       primaryDiageoRelationshipOwners: {
         ownerName,
         ownerEmail,
@@ -586,11 +567,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   <SelectValue placeholder="Select tenure..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0-1">0-1</SelectItem>
-                  <SelectItem value="1-3">1-3</SelectItem>
-                  <SelectItem value="3-5">3-5</SelectItem>
-                  <SelectItem value="5-10">5-10</SelectItem>
-                  <SelectItem value="10+">10+</SelectItem>
+                  <SelectItem value="0-1 Years">0-1 Years</SelectItem>
+                  <SelectItem value="1-3 Years">1-3 Years</SelectItem>
+                  <SelectItem value="3-5 Years">3-5 Years</SelectItem>
+                  <SelectItem value="5-10 Years">5-10 Years</SelectItem>
+                  <SelectItem value="10+ Years">10+ Years</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -809,7 +790,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Label htmlFor="preferredContactMethod">Preferred Contact Method</Label>
               <Select value={formData.preferredContactMethod} onValueChange={(value) => setFormData(prev => ({ ...prev, preferredContactMethod: value }))}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select contact method..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="mobile phone">Mobile</SelectItem>
@@ -838,22 +819,47 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <CardTitle>Ways of Working</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Relationship Status */}
+            {/* Relationship Status - UPDATED WITH SUPPORT STYLE */}
             <div>
               <Label htmlFor="relationshipStatus">Relationship Status</Label>
               <Select 
                 value={formData.relationshipStatus} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-gradient-to-r from-green-50 to-blue-50 border-2">
                   <SelectValue placeholder="Select relationship status..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Promoter">Promoter</SelectItem>
-                  <SelectItem value="Supporter">Supporter</SelectItem>
-                  <SelectItem value="Neutral">Neutral</SelectItem>
-                  <SelectItem value="Detractor">Detractor</SelectItem>
-                  <SelectItem value="At Risk">At Risk</SelectItem>
+                  <SelectItem value="Promoter" className="bg-green-50 hover:bg-green-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className="font-medium">Promoter</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Supporter" className="bg-blue-50 hover:bg-blue-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      <span className="font-medium">Supporter</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Neutral" className="bg-gray-50 hover:bg-gray-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                      <span className="font-medium">Neutral</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Detractor" className="bg-orange-50 hover:bg-orange-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                      <span className="font-medium">Detractor</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="At Risk" className="bg-red-50 hover:bg-red-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span className="font-medium">At Risk</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -924,7 +930,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </p>
             </div>
 
-            {/* Responsibility Level */}
+            {/* Responsibility Level - REMOVED CHECKBOXES */}
             <div>
               <Label className="flex items-center gap-2 mb-3">
                 <ClipboardList className="w-4 h-4" />
@@ -933,27 +939,19 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <div className="space-y-2 p-4 border border-gray-200 rounded-lg">
                 {RESPONSIBILITY_OPTIONS.map(({ key, label }) => (
                   <div key={key} className="grid grid-cols-12 gap-3 items-center p-2 hover:bg-gray-50 rounded">
-                    <div className="col-span-1">
-                      <Checkbox
-                        id={`responsibility-${key}`}
-                        checked={isResponsibilityEnabled(key)}
-                        onCheckedChange={() => handleResponsibilityToggle(key)}
-                      />
-                    </div>
                     <Label 
                       htmlFor={`responsibility-${key}`} 
-                      className="col-span-7 cursor-pointer text-sm"
+                      className="col-span-8 text-sm"
                     >
                       {label}
                     </Label>
                     <div className="col-span-4">
                       <Select
-                        value={formData.responsibilityLevels[key] || ''}
+                        value={formData.responsibilityLevels[key] || 'None'}
                         onValueChange={(value) => handleResponsibilityLevelChange(key, value)}
-                        disabled={!isResponsibilityEnabled(key)}
                       >
-                        <SelectTrigger className={cn("h-9", !isResponsibilityEnabled(key) && "opacity-50")}>
-                          <SelectValue placeholder="Select level..." />
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {RESPONSIBILITY_LEVEL_OPTIONS.map((level) => (
@@ -968,7 +966,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 ))}
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Check the responsibilities this contact has and select their level of involvement
+                Select the level of responsibility for each area (defaults to None)
               </p>
             </div>
           </CardContent>
@@ -1189,7 +1187,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Preferences & Notes - WITH VALUES AND PAIN POINTS */}
+        {/* Preferences & Notes - REORDERED */}
         <Card>
           <CardHeader>
             <CardTitle>Preferences & Notes</CardTitle>
@@ -1206,7 +1204,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               />
             </div>
             <div>
-              <Label htmlFor="entertainment">Entertainment</Label>
+              <Label htmlFor="entertainment">Allowed to Entertain</Label>
               <Select 
                 value={formData.entertainment} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, entertainment: value }))}
@@ -1237,16 +1235,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
             </div>
             <div>
-              <Label htmlFor="notes">General Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="General notes about this contact..."
-                rows={3}
-              />
-            </div>
-            <div>
               <Label htmlFor="values">Values</Label>
               <Textarea
                 id="values"
@@ -1266,10 +1254,20 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 rows={3}
               />
             </div>
+            <div>
+              <Label htmlFor="notes">General Notes</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="General notes about this contact..."
+                rows={3}
+              />
+            </div>
           </CardContent>
         </Card>
 
-        {/* Primary Diageo Relationship Owner(s) - UPDATED SECTION WITH NEW FIELDS */}
+        {/* Primary Diageo Relationship Owner(s) - REMOVED DIRECTOR/VP/SVP HIERARCHY */}
         <Card className="bg-indigo-50 border-indigo-200">
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
@@ -1278,7 +1276,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* NEW: Owner Name, Owner Email, and SVP fields at the top */}
+            {/* Owner Name, Owner Email, and SVP fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
               <div>
                 <Label htmlFor="ownerName">Owner Name</Label>
@@ -1309,45 +1307,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                     {SVP_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Relationship Owner Hierarchy */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
-              <div>
-                <Label htmlFor="director">Director</Label>
-                <Input
-                  id="director"
-                  value={director}
-                  onChange={(e) => setDirector(e.target.value)}
-                  placeholder="Enter Director name"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="vicePresident">Vice President</Label>
-                <Input
-                  id="vicePresident"
-                  value={vicePresident}
-                  onChange={(e) => setVicePresident(e.target.value)}
-                  placeholder="Enter Vice President name"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="seniorVicePresident">Senior Vice President</Label>
-                <Select value={seniorVicePresident} onValueChange={setSeniorVicePresident}>
-                  <SelectTrigger id="seniorVicePresident">
-                    <SelectValue placeholder="Select Senior Vice President" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {seniorVPOptions.map((svp) => (
-                      <SelectItem key={svp} value={svp}>
-                        {svp}
                       </SelectItem>
                     ))}
                   </SelectContent>
