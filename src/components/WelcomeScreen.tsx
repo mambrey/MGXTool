@@ -235,7 +235,7 @@ export default function WelcomeScreen({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    {overdueContacts > 0 ? 'Overdue Contacts' : 'Upcoming Contacts'}
+                    {overdueContacts > 0 ? 'Overdue Connects' : 'Upcoming Contacts'}
                   </p>
                   <p className={`text-3xl font-bold ${overdueContacts > 0 ? 'text-red-600' : 'text-orange-600'}`}>
                     {overdueContacts > 0 ? overdueContacts : upcomingContacts}
