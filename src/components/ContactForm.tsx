@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Package, Trash2, ClipboardList, Image, Briefcase } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import type { Contact, Account, RelationshipOwner, CustomerEvent } from '@/types/crm';
+import type { Contact, Account, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
 
 interface ContactFormProps {
@@ -50,9 +50,8 @@ const CATEGORY_OPTIONS = [
   'Non-Alc'
 ];
 
-// Responsibility options
+// Responsibility options - REMOVED "Influence level - Responsibility"
 const RESPONSIBILITY_OPTIONS = [
-  { key: 'influenceLevelResponsibility', label: 'Influence level - Responsibility' },
   { key: 'assortmentShelf', label: 'Assortment/Shelf' },
   { key: 'displayMerchandising', label: 'Display/Merchandising' },
   { key: 'pricePromo', label: 'Price/Promo' },
@@ -112,9 +111,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     notes: contact?.notes || '',
     values: contact?.values || '',
     painPoints: contact?.painPoints || '',
-    relationshipOwner: contact?.relationshipOwner || { name: '', email: '', vicePresident: '' },
-    notificationEmail: contact?.notificationEmail || '',
-    teamsChannelId: contact?.teamsChannelId || '',
     uploadedNotes: contact?.uploadedNotes || []
   });
 
@@ -135,10 +131,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [newSocialHandle, setNewSocialHandle] = useState('');
   const [newNote, setNewNote] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [ownerAutoPopulated, setOwnerAutoPopulated] = useState(false);
   const [accountSearchOpen, setAccountSearchOpen] = useState(false);
-  const [relationshipOwners, setRelationshipOwners] = useState<RelationshipOwner[]>([]);
-  const [ownerSearchOpen, setOwnerSearchOpen] = useState(false);
   const [managerSearchOpen, setManagerSearchOpen] = useState(false);
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [headshotFileName, setHeadshotFileName] = useState('');
@@ -371,12 +364,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     return days;
   };
 
-  // Load relationship owners from directory
-  useEffect(() => {
-    const savedOwners = loadFromStorage<RelationshipOwner[]>('crm-relationship-owners', []);
-    setRelationshipOwners(savedOwners);
-  }, []);
-
   // Load all contacts for manager selection
   useEffect(() => {
     const savedContacts = loadFromStorage<Contact[]>('crm-contacts', []);
@@ -397,53 +384,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     return account?.accountName || '';
   };
 
-  // Effect to handle account selection and auto-populate owner information
+  // Effect to handle account selection
   useEffect(() => {
     if (formData.accountId) {
       const account = accounts.find(acc => acc.id === formData.accountId);
       if (account) {
         setSelectedAccount(account);
-        
-        // Auto-populate relationship owner with account owner information for primary contacts
-        // Only auto-populate if the relationship owner fields are empty or this is a new contact
-        const shouldAutoPopulate = !contact || 
-          (!formData.relationshipOwner.name && !formData.relationshipOwner.email);
-        
-        if (shouldAutoPopulate && account.accountOwner && formData.isPrimaryContact) {
-          // Try to find owner in directory first
-          const ownerInDirectory = relationshipOwners.find(
-            owner => owner.name.toLowerCase() === account.accountOwner.toLowerCase()
-          );
-
-          if (ownerInDirectory) {
-            setFormData(prev => ({
-              ...prev,
-              relationshipOwner: {
-                name: ownerInDirectory.name,
-                email: ownerInDirectory.email,
-                vicePresident: ownerInDirectory.vicePresident
-              },
-              notificationEmail: ownerInDirectory.email,
-              teamsChannelId: ownerInDirectory.teamsChannelId || ownerInDirectory.teamsChatId || ''
-            }));
-          } else {
-            setFormData(prev => ({
-              ...prev,
-              relationshipOwner: {
-                name: account.accountOwner,
-                email: prev.relationshipOwner.email || `${account.accountOwner.toLowerCase().replace(/\s+/g, '.')}@company.com`,
-                vicePresident: account.vp || prev.relationshipOwner.vicePresident || ''
-              }
-            }));
-          }
-          setOwnerAutoPopulated(true);
-        }
       }
     } else {
       setSelectedAccount(null);
-      setOwnerAutoPopulated(false);
     }
-  }, [formData.accountId, formData.isPrimaryContact, accounts, contact, relationshipOwners]);
+  }, [formData.accountId, accounts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -477,58 +428,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleManagerChange = (managerId: string) => {
     setFormData(prev => ({ ...prev, managerId: managerId === 'none' ? '' : managerId }));
     setManagerSearchOpen(false);
-  };
-
-  const handleOwnerSelect = (owner: RelationshipOwner) => {
-    setFormData(prev => ({
-      ...prev,
-      relationshipOwner: {
-        name: owner.name,
-        email: owner.email,
-        vicePresident: owner.vicePresident
-      },
-      notificationEmail: owner.email,
-      teamsChannelId: owner.teamsChannelId || owner.teamsChatId || ''
-    }));
-    setOwnerSearchOpen(false);
-  };
-
-  const handlePrimaryContactChange = (checked: boolean) => {
-    setFormData(prev => ({ ...prev, isPrimaryContact: checked }));
-    
-    // If changing to Primary and we have an account selected, auto-populate owner info
-    if (checked && selectedAccount?.accountOwner) {
-      const ownerInDirectory = relationshipOwners.find(
-        owner => owner.name.toLowerCase() === selectedAccount.accountOwner.toLowerCase()
-      );
-
-      if (ownerInDirectory) {
-        setFormData(prev => ({
-          ...prev,
-          isPrimaryContact: checked,
-          relationshipOwner: {
-            name: ownerInDirectory.name,
-            email: ownerInDirectory.email,
-            vicePresident: ownerInDirectory.vicePresident
-          },
-          notificationEmail: ownerInDirectory.email,
-          teamsChannelId: ownerInDirectory.teamsChannelId || ownerInDirectory.teamsChatId || ''
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          isPrimaryContact: checked,
-          relationshipOwner: {
-            name: selectedAccount.accountOwner,
-            email: prev.relationshipOwner.email || `${selectedAccount.accountOwner.toLowerCase().replace(/\s+/g, '.')}@company.com`,
-            vicePresident: selectedAccount.vp || prev.relationshipOwner.vicePresident || ''
-          }
-        }));
-      }
-      setOwnerAutoPopulated(true);
-    } else if (!checked) {
-      setOwnerAutoPopulated(false);
-    }
   };
 
   const addSocialHandle = () => {
@@ -832,7 +731,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Checkbox
                 id="isPrimaryContact"
                 checked={formData.isPrimaryContact}
-                onCheckedChange={(checked) => handlePrimaryContactChange(checked as boolean)}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrimaryContact: checked as boolean }))}
               />
               <div className="flex-1">
                 <Label 
@@ -1397,6 +1296,45 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </div>
             </div>
 
+            {/* Relationship Owner Hierarchy */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
+              <div>
+                <Label htmlFor="director">Director</Label>
+                <Input
+                  id="director"
+                  value={director}
+                  onChange={(e) => setDirector(e.target.value)}
+                  placeholder="Enter Director name"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="vicePresident">Vice President</Label>
+                <Input
+                  id="vicePresident"
+                  value={vicePresident}
+                  onChange={(e) => setVicePresident(e.target.value)}
+                  placeholder="Enter Vice President name"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="seniorVicePresident">Senior Vice President</Label>
+                <Select value={seniorVicePresident} onValueChange={setSeniorVicePresident}>
+                  <SelectTrigger id="seniorVicePresident">
+                    <SelectValue placeholder="Select Senior Vice President" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {seniorVPOptions.map((svp) => (
+                      <SelectItem key={svp} value={svp}>
+                        {svp}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Sales Section */}
               <div className="space-y-4 p-4 bg-white border border-indigo-200 rounded-lg">
@@ -1491,218 +1429,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   ))}
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Relationship Owner - UPDATED STRUCTURE */}
-        <Card className={`${formData.isPrimaryContact ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'}`}>
-          <CardHeader>
-            <CardTitle className={`${formData.isPrimaryContact ? 'text-yellow-900' : 'text-blue-900'} flex items-center gap-2`}>
-              {formData.isPrimaryContact ? (
-                <>
-                  <Crown className="w-5 h-5" />
-                  Primary Contact - Relationship Owner
-                </>
-              ) : (
-                <>
-                  <User className="w-5 h-5" />
-                  Relationship Owner
-                </>
-              )}
-            </CardTitle>
-            {ownerAutoPopulated && formData.isPrimaryContact && (
-              <Alert className="bg-green-50 border-green-200">
-                <Info className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
-                  As a primary contact, owner information has been automatically linked to the account owner: <strong>{selectedAccount?.accountOwner}</strong>
-                </AlertDescription>
-              </Alert>
-            )}
-            {formData.isPrimaryContact && !ownerAutoPopulated && selectedAccount && (
-              <Alert className="bg-yellow-50 border-yellow-200">
-                <Crown className="h-4 w-4 text-yellow-600" />
-                <AlertDescription className="text-yellow-800">
-                  This is a primary contact for <strong>{selectedAccount.accountName}</strong>. The relationship owner should typically be the account owner: <strong>{selectedAccount.accountOwner || 'Not assigned'}</strong>
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {relationshipOwners.length > 0 && (
-              <div>
-                <Label>Select from Directory</Label>
-                <Popover open={ownerSearchOpen} onOpenChange={setOwnerSearchOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={ownerSearchOpen}
-                      className="w-full justify-between"
-                    >
-                      {formData.relationshipOwner.name || "Select owner from directory..."}
-                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0" align="start">
-                    <Command shouldFilter={true}>
-                      <CommandInput placeholder="Search owners..." />
-                      <CommandList>
-                        <CommandEmpty>No owner found.</CommandEmpty>
-                        <CommandGroup>
-                          {relationshipOwners.map((owner) => (
-                            <CommandItem
-                              key={owner.id}
-                              value={`${owner.name} ${owner.email} ${owner.vicePresident}`}
-                              onSelect={() => handleOwnerSelect(owner)}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.relationshipOwner.name === owner.name ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <div className="flex flex-col">
-                                <span className="font-medium">{owner.name}</span>
-                                <span className="text-xs text-gray-500">
-                                  {owner.email} • VP: {owner.vicePresident}
-                                </span>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <p className="text-xs text-gray-500 mt-1">
-                  Or enter manually below
-                </p>
-              </div>
-            )}
-            
-            {/* NEW: Relationship Owner Hierarchy */}
-            <div className="space-y-4 pt-4 border-t">
-              <div>
-                <Label htmlFor="director">Director</Label>
-                <Input
-                  id="director"
-                  value={director}
-                  onChange={(e) => setDirector(e.target.value)}
-                  placeholder="Enter Director name"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="vicePresident">Vice President</Label>
-                <Input
-                  id="vicePresident"
-                  value={vicePresident}
-                  onChange={(e) => {
-                    setVicePresident(e.target.value);
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      relationshipOwner: { ...prev.relationshipOwner, vicePresident: e.target.value }
-                    }));
-                  }}
-                  placeholder="Enter Vice President name"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="seniorVicePresident">Senior Vice President</Label>
-                <Select value={seniorVicePresident} onValueChange={setSeniorVicePresident}>
-                  <SelectTrigger id="seniorVicePresident">
-                    <SelectValue placeholder="Select Senior Vice President" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {seniorVPOptions.map((svp) => (
-                      <SelectItem key={svp} value={svp}>
-                        {svp}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Original Owner Fields (kept for backward compatibility) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-              <div>
-                <Label htmlFor="ownerNameLegacy">Owner Name (Legacy)</Label>
-                <Input
-                  id="ownerNameLegacy"
-                  value={formData.relationshipOwner.name}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    relationshipOwner: { ...prev.relationshipOwner, name: e.target.value }
-                  }))}
-                  placeholder="Contact owner name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="ownerEmailLegacy">Owner Email</Label>
-                <Input
-                  id="ownerEmailLegacy"
-                  type="email"
-                  value={formData.relationshipOwner.email}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    relationshipOwner: { ...prev.relationshipOwner, email: e.target.value }
-                  }))}
-                  placeholder="owner@company.com"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Notification Overrides */}
-        <Card className="bg-purple-50 border-purple-200">
-          <CardHeader>
-            <CardTitle className="text-purple-900 flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              Alert Notification Settings (Optional Overrides)
-            </CardTitle>
-            <Alert className="bg-purple-100 border-purple-300">
-              <Info className="h-4 w-4 text-purple-600" />
-              <AlertDescription className="text-purple-900">
-                <strong>Optional:</strong> Override default notification settings for this contact's alerts. If left empty, the system will use the relationship owner's default settings from the directory.
-              </AlertDescription>
-            </Alert>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="notificationEmail" className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Notification Email Override
-              </Label>
-              <Input
-                id="notificationEmail"
-                type="email"
-                value={formData.notificationEmail}
-                onChange={(e) => setFormData(prev => ({ ...prev, notificationEmail: e.target.value }))}
-                placeholder="Leave empty to use owner's default email"
-              />
-              <p className="text-xs text-gray-600 mt-1">
-                Power Automate will send alerts to this email instead of the owner's default
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="teamsChannelId" className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Teams Channel/Chat ID Override
-              </Label>
-              <Input
-                id="teamsChannelId"
-                value={formData.teamsChannelId}
-                onChange={(e) => setFormData(prev => ({ ...prev, teamsChannelId: e.target.value }))}
-                placeholder="Leave empty to use owner's default Teams settings"
-              />
-              <p className="text-xs text-gray-600 mt-1">
-                Teams channel or chat ID for sending alerts (e.g., 19:abc123...)
-              </p>
             </div>
           </CardContent>
         </Card>
