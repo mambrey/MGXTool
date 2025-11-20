@@ -100,6 +100,7 @@ export interface Contact {
   birthday?: string;
   birthdayAlert?: boolean;
   relationshipStatus?: 'Promoter' | 'Supporter' | 'Neutral' | 'Detractor' | 'At Risk'; // UPDATED: Changed to specific dropdown values
+  categorySegmentOwnership?: string[]; // NEW: Multi-select for category/segment ownership
   lastContactDate?: string;
   nextContactDate?: string;
   nextContactAlert?: boolean;

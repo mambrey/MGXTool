@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Star, TrendingUp, ThumbsUp, Trash2 } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Star, TrendingUp, ThumbsUp, Trash2, Package } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -33,6 +33,23 @@ interface ContactEventWithAlert extends CustomerEvent {
   alertDays?: number;
 }
 
+// Category options for segment ownership
+const CATEGORY_OPTIONS = [
+  'Cordials',
+  'Gin',
+  'NAM Whiskey',
+  'Rum',
+  'RTD',
+  'RTS',
+  'Scotch',
+  'Tequila',
+  'Vodka',
+  'Whiskey Other',
+  'Beer',
+  'Wine',
+  'THC'
+];
+
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState({
     firstName: contact?.firstName || '',
@@ -48,6 +65,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     accountId: contact?.accountId || '',
     isPrimaryContact: contact?.isPrimaryContact || false,
     relationshipStatus: contact?.relationshipStatus || '',
+    categorySegmentOwnership: contact?.categorySegmentOwnership || [],
     influence: contact?.influence || 'User',
     isInfluencer: contact?.isInfluencer || false,
     influencerLevel: contact?.influencerLevel || undefined,
@@ -96,6 +114,38 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [seniorVicePresident, setSeniorVicePresident] = useState(contact?.seniorVicePresident || '');
 
   const seniorVPOptions = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
+
+  // Category/Segment Ownership handlers
+  const handleCategoryToggle = (category: string) => {
+    setFormData(prev => {
+      const current = prev.categorySegmentOwnership;
+      const isSelected = current.includes(category);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          categorySegmentOwnership: current.filter(c => c !== category)
+        };
+      } else {
+        return {
+          ...prev,
+          categorySegmentOwnership: [...current, category]
+        };
+      }
+    });
+  };
+
+  const handleSelectAllCategories = () => {
+    const allSelected = formData.categorySegmentOwnership.length === CATEGORY_OPTIONS.length;
+    
+    if (allSelected) {
+      setFormData(prev => ({ ...prev, categorySegmentOwnership: [] }));
+    } else {
+      setFormData(prev => ({ ...prev, categorySegmentOwnership: [...CATEGORY_OPTIONS] }));
+    }
+  };
+
+  const isAllCategoriesSelected = formData.categorySegmentOwnership.length === CATEGORY_OPTIONS.length;
 
   // Event management functions
   const handleAddEvent = () => {
@@ -620,26 +670,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </p>
               </div>
             </div>
-
-            {/* Relationship Status Dropdown - MOVED HERE */}
-            <div>
-              <Label htmlFor="relationshipStatus">Relationship Status</Label>
-              <Select 
-                value={formData.relationshipStatus} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select relationship status..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Promoter">Promoter</SelectItem>
-                  <SelectItem value="Supporter">Supporter</SelectItem>
-                  <SelectItem value="Neutral">Neutral</SelectItem>
-                  <SelectItem value="Detractor">Detractor</SelectItem>
-                  <SelectItem value="At Risk">At Risk</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </CardContent>
         </Card>
 
@@ -706,12 +736,98 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Relationship Information */}
+        {/* Ways of Working (formerly Relationship Information) */}
         <Card>
           <CardHeader>
-            <CardTitle>Relationship Information</CardTitle>
+            <CardTitle>Ways of Working</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Relationship Status - MOVED HERE */}
+            <div>
+              <Label htmlFor="relationshipStatus">Relationship Status</Label>
+              <Select 
+                value={formData.relationshipStatus} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select relationship status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Promoter">Promoter</SelectItem>
+                  <SelectItem value="Supporter">Supporter</SelectItem>
+                  <SelectItem value="Neutral">Neutral</SelectItem>
+                  <SelectItem value="Detractor">Detractor</SelectItem>
+                  <SelectItem value="At Risk">At Risk</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Category/Segment Ownership - NEW MULTI-SELECT */}
+            <div>
+              <Label htmlFor="categorySegmentOwnership" className="flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                Category/Segment Ownership
+              </Label>
+              <div className="mt-2 p-4 border border-gray-200 rounded-lg space-y-3">
+                {/* Select All Option */}
+                <div className="flex items-center space-x-3 p-2 bg-blue-50 border border-blue-200 rounded">
+                  <Checkbox
+                    id="selectAllCategories"
+                    checked={isAllCategoriesSelected}
+                    onCheckedChange={handleSelectAllCategories}
+                  />
+                  <Label 
+                    htmlFor="selectAllCategories" 
+                    className="font-semibold text-blue-900 cursor-pointer flex-1"
+                  >
+                    Select All
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">
+                    {formData.categorySegmentOwnership.length} / {CATEGORY_OPTIONS.length}
+                  </Badge>
+                </div>
+
+                <Separator />
+
+                {/* Individual Category Options */}
+                <ScrollArea className="h-[200px] pr-3">
+                  <div className="space-y-2">
+                    {CATEGORY_OPTIONS.map((category) => (
+                      <div key={category} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                        <Checkbox
+                          id={`category-${category}`}
+                          checked={formData.categorySegmentOwnership.includes(category)}
+                          onCheckedChange={() => handleCategoryToggle(category)}
+                        />
+                        <Label 
+                          htmlFor={`category-${category}`} 
+                          className="cursor-pointer flex-1"
+                        >
+                          {category}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+              {formData.categorySegmentOwnership.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.categorySegmentOwnership.map((category) => (
+                    <Badge key={category} variant="secondary" className="flex items-center gap-1">
+                      {category}
+                      <X 
+                        className="w-3 h-3 cursor-pointer hover:text-red-500" 
+                        onClick={() => handleCategoryToggle(category)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Select the product categories or segments this contact is responsible for
+              </p>
+            </div>
+
             <div>
               <Label htmlFor="influence">Influence Level</Label>
               <Select value={formData.influence} onValueChange={(value) => setFormData(prev => ({ ...prev, influence: value }))}>
