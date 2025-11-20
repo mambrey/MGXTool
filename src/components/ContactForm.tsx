@@ -875,7 +875,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <CardTitle>Ways of Working</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Support Style - CHANGED LABEL FROM "Relationship Status" */}
+            {/* Support Style - UPDATED WITH NEW OPTIONS */}
             <div>
               <Label htmlFor="relationshipStatus">Support Style</Label>
               <Select 
@@ -886,34 +886,49 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   <SelectValue placeholder="Select support style..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Promoter" className="bg-green-50 hover:bg-green-100">
+                  <SelectItem value="Promoter — Champions our partnership" className="bg-green-50 hover:bg-green-100">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span className="font-medium">Promoter</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">Promoter</span>
+                        <span className="text-xs text-gray-600">Champions our partnership</span>
+                      </div>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Supporter" className="bg-blue-50 hover:bg-blue-100">
+                  <SelectItem value="Supporter — Leans in consistently" className="bg-blue-50 hover:bg-blue-100">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                      <span className="font-medium">Supporter</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">Supporter</span>
+                        <span className="text-xs text-gray-600">Leans in consistently</span>
+                      </div>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Neutral" className="bg-gray-50 hover:bg-gray-100">
+                  <SelectItem value="Neutral — Transactional, low engagement" className="bg-gray-50 hover:bg-gray-100">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                      <span className="font-medium">Neutral</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">Neutral</span>
+                        <span className="text-xs text-gray-600">Transactional, low engagement</span>
+                      </div>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Detractor" className="bg-orange-50 hover:bg-orange-100">
+                  <SelectItem value="Detractor — Resists our efforts" className="bg-orange-50 hover:bg-orange-100">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                      <span className="font-medium">Detractor</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">Detractor</span>
+                        <span className="text-xs text-gray-600">Resists our efforts</span>
+                      </div>
                     </div>
                   </SelectItem>
-                  <SelectItem value="At Risk" className="bg-red-50 hover:bg-red-100">
+                  <SelectItem value="At Risk — Declining relationship signals" className="bg-red-50 hover:bg-red-100">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <span className="font-medium">At Risk</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">At Risk</span>
+                        <span className="text-xs text-gray-600">Declining relationship signals</span>
+                      </div>
                     </div>
                   </SelectItem>
                 </SelectContent>
