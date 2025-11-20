@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import type { Account, Contact, CustomerEvent } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
 
@@ -22,6 +23,25 @@ interface AccountDetailsProps {
   onViewContact: (contact: Contact) => void;
   onUpdateAccount?: (account: Account) => void;
 }
+
+// Google Maps API Key
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
+// Google Maps libraries to load
+const libraries: ("places" | "geometry")[] = ["places", "geometry"];
+
+// Map container style
+const mapContainerStyle = {
+  width: '100%',
+  height: '400px',
+  borderRadius: '8px'
+};
+
+// Default map center (will be updated based on address)
+const defaultCenter = {
+  lat: 37.7749,
+  lng: -122.4194
+};
 
 export default function AccountDetails({ 
   account, 
@@ -48,6 +68,36 @@ export default function AccountDetails({
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [expandAll, setExpandAll] = useState(false);
+
+  // Google Maps state
+  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [mapError, setMapError] = useState<string>('');
+
+  // Load Google Maps script
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: libraries,
+  });
+
+  // Geocode address to get coordinates
+  React.useEffect(() => {
+    if (isLoaded && account.address && window.google) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: account.address }, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+          const location = results[0].geometry.location;
+          setMapCenter({
+            lat: location.lat(),
+            lng: location.lng()
+          });
+          setMapError('');
+        } else {
+          setMapError('Unable to geocode address. Please verify the address is correct.');
+          console.error('Geocoding failed:', status);
+        }
+      });
+    }
+  }, [isLoaded, account.address]);
 
   // Sample tasks related to this account
   const [accountTasks] = useState<Task[]>([
@@ -327,19 +377,68 @@ export default function AccountDetails({
                             HQ Address
                           </label>
                           <p className="text-base mt-1">{account.address}</p>
-                          {account.address && (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="mt-2"
-                              onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(account.address || '')}`, '_blank')}
-                            >
-                              <MapPin className="w-4 h-4 mr-2" />
-                              View on Map
-                            </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(account.address || '')}`, '_blank')}
+                          >
+                            <MapPin className="w-4 h-4 mr-2" />
+                            View on Map
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Google Map Widget */}
+                      {account.address && (
+                        <div className="mt-6">
+                          <label className="text-sm font-medium text-gray-600 flex items-center gap-2 mb-3">
+                            <MapPin className="w-4 h-4" />
+                            Location Map
+                          </label>
+                          {!GOOGLE_MAPS_API_KEY ? (
+                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-8 text-center">
+                              <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                              <p className="text-sm text-gray-600">
+                                Google Maps API key not configured. Set VITE_GOOGLE_MAPS_API_KEY to enable map display.
+                              </p>
+                            </div>
+                          ) : loadError ? (
+                            <div className="bg-red-50 border border-red-300 rounded-lg p-8 text-center">
+                              <MapPin className="w-12 h-12 mx-auto mb-4 text-red-400" />
+                              <p className="text-sm text-red-600">
+                                Error loading Google Maps. Please check your API key and internet connection.
+                              </p>
+                            </div>
+                          ) : !isLoaded ? (
+                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-8 text-center">
+                              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                              <p className="text-sm text-gray-600">Loading map...</p>
+                            </div>
+                          ) : (
+                            <div className="border border-gray-300 rounded-lg overflow-hidden">
+                              <GoogleMap
+                                mapContainerStyle={mapContainerStyle}
+                                center={mapCenter}
+                                zoom={15}
+                                options={{
+                                  streetViewControl: false,
+                                  mapTypeControl: true,
+                                  fullscreenControl: true,
+                                }}
+                              >
+                                <Marker position={mapCenter} title={account.accountName} />
+                              </GoogleMap>
+                              {mapError && (
+                                <div className="bg-yellow-50 border-t border-yellow-300 p-3">
+                                  <p className="text-xs text-yellow-800">{mapError}</p>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
+
                       {account.website && (
                         <div>
                           <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
