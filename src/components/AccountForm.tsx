@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -94,7 +94,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     nextJBPDate: '',
     pricingStrategy: 'none',
     privateLabel: 'none',
-    innovationAppetite: 'Medium',
+    innovationAppetite: '',
     hasEcommerce: false,
     fulfillmentTypes: '',
     strategicPriorities: '',
@@ -132,6 +132,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: libraries,
   });
+
+  // Filter contacts for this account
+  const accountContacts = account ? contacts.filter(contact => contact.accountId === account.id) : [];
 
   // Initialize Google Places Autocomplete
   useEffect(() => {
@@ -629,6 +632,82 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
+      {/* Contacts Section - Only show when editing existing account */}
+      {account && accountContacts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+              Contacts ({accountContacts.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {accountContacts.map((contact) => (
+                <div key={contact.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div>
+                      <Label className="text-xs font-medium text-gray-600">Name</Label>
+                      <p className="text-sm font-medium text-gray-900">
+                        {contact.firstName} {contact.lastName}
+                        {contact.isPrimaryContact && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Primary</span>
+                        )}
+                      </p>
+                    </div>
+                    {contact.title && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Briefcase className="w-3 h-3" />
+                          Title
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.title}</p>
+                      </div>
+                    )}
+                    {contact.email && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          Email
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.email}</p>
+                      </div>
+                    )}
+                    {contact.mobilePhone && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          Mobile
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.mobilePhone}</p>
+                      </div>
+                    )}
+                    {contact.officePhone && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          Office
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.officePhone}</p>
+                      </div>
+                    )}
+                    {contact.relationshipStatus && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">Relationship Status</Label>
+                        <p className="text-sm text-gray-900">{contact.relationshipStatus}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Note: To add, edit, or remove contacts, please use the Contacts section in the main view.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Parent Information */}
       <Card>
         <CardHeader>
@@ -940,7 +1019,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           <div>
             <Label htmlFor="innovationAppetite" className="text-sm font-medium">Innovation Appetite</Label>
             <Select 
-              value={formData.innovationAppetite?.toString() || 'Medium'} 
+              value={formData.innovationAppetite?.toString() || ''} 
               onValueChange={(value) => updateField('innovationAppetite', value)}
             >
               <SelectTrigger className="mt-1">
