@@ -105,6 +105,7 @@ export interface Contact {
   knownPreferences?: string;
   notes?: string;
   uploadedNotes?: string[];
+  contactEvents?: CustomerEvent[]; // NEW: Custom events for contacts
   relationshipOwner?: {
     name: string;
     email: string;
