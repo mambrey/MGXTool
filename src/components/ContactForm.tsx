@@ -8,12 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Star, TrendingUp, ThumbsUp } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Star, TrendingUp, ThumbsUp, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import type { Contact, Account, RelationshipOwner } from '@/types/crm';
+import type { Contact, Account, RelationshipOwner, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
 
 interface ContactFormProps {
@@ -21,6 +25,12 @@ interface ContactFormProps {
   accounts: Account[];
   onSave: (contact: Contact) => void;
   onCancel: () => void;
+}
+
+// Extended event interface with alert functionality
+interface ContactEventWithAlert extends CustomerEvent {
+  alertEnabled?: boolean;
+  alertDays?: number;
 }
 
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
@@ -54,6 +64,20 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     uploadedNotes: contact?.uploadedNotes || []
   });
 
+  // Contact Events state with alert functionality
+  const [contactEvents, setContactEvents] = useState<ContactEventWithAlert[]>(
+    (contact?.contactEvents || []).map(event => ({
+      ...event,
+      alertEnabled: false,
+      alertDays: 7
+    }))
+  );
+  const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState('');
+  const [newEventDate, setNewEventDate] = useState('');
+  const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
+  const [newEventAlertDays, setNewEventAlertDays] = useState(7);
+
   const [newSocialHandle, setNewSocialHandle] = useState('');
   const [newNote, setNewNote] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -70,6 +94,58 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [seniorVicePresident, setSeniorVicePresident] = useState(contact?.seniorVicePresident || '');
 
   const seniorVPOptions = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
+
+  // Event management functions
+  const handleAddEvent = () => {
+    if (!newEventTitle.trim() || !newEventDate) {
+      alert('Please enter both event title and date');
+      return;
+    }
+
+    const newEvent: ContactEventWithAlert = {
+      id: Date.now().toString(),
+      title: newEventTitle.trim(),
+      date: newEventDate,
+      alertEnabled: newEventAlertEnabled,
+      alertDays: newEventAlertDays
+    };
+
+    setContactEvents([...contactEvents, newEvent]);
+
+    // Reset form and close dialog
+    setNewEventTitle('');
+    setNewEventDate('');
+    setNewEventAlertEnabled(false);
+    setNewEventAlertDays(7);
+    setIsAddEventDialogOpen(false);
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    if (window.confirm('Are you sure you want to delete this event?')) {
+      setContactEvents(contactEvents.filter(e => e.id !== eventId));
+    }
+  };
+
+  const handleToggleEventAlert = (eventId: string) => {
+    setContactEvents(contactEvents.map(event => 
+      event.id === eventId 
+        ? { ...event, alertEnabled: !event.alertEnabled }
+        : event
+    ));
+  };
+
+  const handleUpdateEventAlertDays = (eventId: string, days: number) => {
+    setContactEvents(contactEvents.map(event => 
+      event.id === eventId 
+        ? { ...event, alertDays: days }
+        : event
+    ));
+  };
+
+  const getDaysUntilEvent = (eventDate: string) => {
+    const days = Math.ceil((new Date(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    return days;
+  };
 
   // Load relationship owners from directory
   useEffect(() => {
@@ -154,6 +230,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       director,
       vicePresident,
       seniorVicePresident,
+      contactEvents: contactEvents.map(({ alertEnabled, alertDays, ...event }) => event),
       createdAt: contact?.createdAt || new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
@@ -788,12 +865,22 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Important Dates */}
+        {/* Important Dates with Event Management */}
         <Card>
           <CardHeader>
-            <CardTitle>Important Dates</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Important Dates
+              </CardTitle>
+              <Button type="button" size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Event
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* System Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="birthday">Birthday</Label>
@@ -847,6 +934,118 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 onChange={(e) => setFormData(prev => ({ ...prev, lastContactDate: e.target.value }))}
               />
             </div>
+
+            {/* Custom Events */}
+            {contactEvents.length > 0 && (
+              <>
+                <Separator className="my-4" />
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-700">Custom Events ({contactEvents.length})</h4>
+                  <ScrollArea className="h-[300px] pr-4">
+                    <div className="space-y-3">
+                      {contactEvents.map((event) => {
+                        const daysUntil = getDaysUntilEvent(event.date);
+                        const isUpcoming = daysUntil >= 0 && daysUntil <= (event.alertDays || 7);
+                        
+                        return (
+                          <Card key={event.id} className={`p-3 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-sm mb-1">{event.title}</h4>
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{new Date(event.date).toLocaleDateString()}</span>
+                                    {daysUntil >= 0 && (
+                                      <Badge variant={daysUntil <= 7 ? 'default' : 'secondary'} className="text-xs">
+                                        {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`}
+                                      </Badge>
+                                    )}
+                                    {daysUntil < 0 && (
+                                      <Badge variant="outline" className="text-xs text-gray-500">
+                                        {Math.abs(daysUntil)} days ago
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteEvent(event.id)}
+                                  className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+
+                              {/* Alert Settings */}
+                              <div className="pt-2 border-t border-gray-200 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {event.alertEnabled ? (
+                                      <Bell className="w-3 h-3 text-orange-600" />
+                                    ) : (
+                                      <BellOff className="w-3 h-3 text-gray-400" />
+                                    )}
+                                    <Label htmlFor={`alert-${event.id}`} className="text-xs font-medium cursor-pointer">
+                                      Enable Alert
+                                    </Label>
+                                  </div>
+                                  <Switch
+                                    id={`alert-${event.id}`}
+                                    checked={event.alertEnabled || false}
+                                    onCheckedChange={() => handleToggleEventAlert(event.id)}
+                                  />
+                                </div>
+
+                                {event.alertEnabled && (
+                                  <div className="space-y-1 pl-5">
+                                    <Label htmlFor={`alert-days-${event.id}`} className="text-xs text-gray-600">
+                                      Alert me (days before):
+                                    </Label>
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        id={`alert-days-${event.id}`}
+                                        type="number"
+                                        min="1"
+                                        max="90"
+                                        value={event.alertDays || 7}
+                                        onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
+                                        className="w-16 h-7 text-xs"
+                                      />
+                                      <span className="text-xs text-gray-500">days</span>
+                                    </div>
+                                    {isUpcoming && (
+                                      <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                        <Bell className="w-3 h-3" />
+                                        <span>Alert active</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </>
+            )}
+
+            {/* Empty State */}
+            {contactEvents.length === 0 && (
+              <div className="text-center py-6 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm mb-3">No custom events added yet</p>
+                <Button type="button" size="sm" variant="outline" onClick={() => setIsAddEventDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add First Event
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -1184,6 +1383,99 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </Button>
         </div>
       </form>
+
+      {/* Add Event Dialog */}
+      <Dialog open={isAddEventDialogOpen} onOpenChange={setIsAddEventDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Important Date</DialogTitle>
+            <DialogDescription>
+              Add a new important date for this contact. You can optionally enable alerts to be notified before the event.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="event-title">Event Title *</Label>
+              <Input
+                id="event-title"
+                placeholder="e.g., Birthday, Anniversary, Meeting"
+                value={newEventTitle}
+                onChange={(e) => setNewEventTitle(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="event-date">Event Date *</Label>
+              <Input
+                id="event-date"
+                type="date"
+                value={newEventDate}
+                onChange={(e) => setNewEventDate(e.target.value)}
+              />
+            </div>
+            
+            <Separator />
+            
+            {/* Alert Configuration */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-orange-600" />
+                    <Label htmlFor="enable-alert" className="text-base font-medium cursor-pointer">
+                      Enable Alert
+                    </Label>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Get notified before this event occurs
+                  </p>
+                </div>
+                <Switch
+                  id="enable-alert"
+                  checked={newEventAlertEnabled}
+                  onCheckedChange={setNewEventAlertEnabled}
+                />
+              </div>
+
+              {newEventAlertEnabled && (
+                <div className="space-y-2 pl-6 pt-2">
+                  <Label htmlFor="alert-days" className="text-sm">
+                    Alert me (days before event):
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="alert-days"
+                      type="number"
+                      min="1"
+                      max="90"
+                      value={newEventAlertDays}
+                      onChange={(e) => setNewEventAlertDays(parseInt(e.target.value) || 7)}
+                      className="w-24"
+                    />
+                    <span className="text-sm text-gray-500">days before</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    You'll receive an alert {newEventAlertDays} {newEventAlertDays === 1 ? 'day' : 'days'} before this event
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsAddEventDialogOpen(false);
+              setNewEventTitle('');
+              setNewEventDate('');
+              setNewEventAlertEnabled(false);
+              setNewEventAlertDays(7);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddEvent}>
+              Add Event
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
