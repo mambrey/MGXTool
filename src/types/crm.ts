@@ -84,6 +84,7 @@ export interface Contact {
   firstName: string;
   preferredFirstName?: string; // NEW: Preferred first name field
   lastName: string;
+  headshot?: string; // NEW: Headshot image URL or file path
   email: string;
   officePhone?: string;
   mobilePhone?: string;

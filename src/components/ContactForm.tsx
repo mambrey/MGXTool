@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Package, Trash2, ClipboardList, Target } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Package, Trash2, ClipboardList, Image } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -69,6 +69,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     firstName: contact?.firstName || '',
     preferredFirstName: contact?.preferredFirstName || '',
     lastName: contact?.lastName || '',
+    headshot: contact?.headshot || '',
     email: contact?.email || '',
     officePhone: contact?.officePhone || '',
     mobilePhone: contact?.mobilePhone || '',
@@ -489,6 +490,25 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 />
               </div>
             </div>
+            
+            {/* Headshot Field */}
+            <div>
+              <Label htmlFor="headshot" className="flex items-center gap-2">
+                <Image className="w-4 h-4" />
+                Headshot
+              </Label>
+              <Input
+                id="headshot"
+                type="url"
+                value={formData.headshot}
+                onChange={(e) => setFormData(prev => ({ ...prev, headshot: e.target.value }))}
+                placeholder="Enter image URL (e.g., /images/headshot.jpg)"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Provide a URL to the contact's headshot image
+              </p>
+            </div>
+
             <div>
               <Label htmlFor="title">Job Title</Label>
               <Input
@@ -1062,15 +1082,15 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Social Handles */}
+        {/* LinkedIn Profile */}
         <Card>
           <CardHeader>
-            <CardTitle>Social Handles</CardTitle>
+            <CardTitle>LinkedIn Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
               <Input
-                placeholder="Add social media handle (e.g., @username)"
+                placeholder="Add LinkedIn profile URL (e.g., https://linkedin.com/in/username)"
                 value={newSocialHandle}
                 onChange={(e) => setNewSocialHandle(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSocialHandle())}
@@ -1093,7 +1113,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Preferences & Notes */}
+        {/* Preferences & Notes - WITH VALUES AND PAIN POINTS */}
         <Card>
           <CardHeader>
             <CardTitle>Preferences & Notes</CardTitle>
@@ -1150,18 +1170,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 rows={3}
               />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Values - NEW SECTION */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5" />
-              Values
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <div>
               <Label htmlFor="values">Values</Label>
               <Textarea
