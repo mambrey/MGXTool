@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink } from 'lucide-react';
+import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink, Briefcase, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -451,6 +451,80 @@ export default function ContactDetails({
               </div>
             </div>
           </div>
+
+          {/* Primary Diageo Relationship Owner(s) Section */}
+          {contact.primaryDiageoRelationshipOwners && (
+            (contact.primaryDiageoRelationshipOwners.sales?.roles?.length > 0 || 
+             contact.primaryDiageoRelationshipOwners.support?.roles?.length > 0)
+          ) && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-indigo-600" />
+                Primary Diageo Relationship Owner(s)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Sales Section */}
+                {contact.primaryDiageoRelationshipOwners.sales?.roles?.length > 0 && (
+                  <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Sales
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-2">Roles:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {contact.primaryDiageoRelationshipOwners.sales.roles.map((role) => (
+                            <Badge key={role} variant="secondary" className="text-xs">
+                              {role}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      {contact.primaryDiageoRelationshipOwners.sales.cadence && (
+                        <div>
+                          <p className="text-xs text-gray-600 mb-1">Cadence:</p>
+                          <Badge variant="outline" className="text-xs">
+                            {contact.primaryDiageoRelationshipOwners.sales.cadence}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Support Section */}
+                {contact.primaryDiageoRelationshipOwners.support?.roles?.length > 0 && (
+                  <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Support
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-2">Roles:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {contact.primaryDiageoRelationshipOwners.support.roles.map((role) => (
+                            <Badge key={role} variant="secondary" className="text-xs">
+                              {role}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      {contact.primaryDiageoRelationshipOwners.support.cadence && (
+                        <div>
+                          <p className="text-xs text-gray-600 mb-1">Cadence:</p>
+                          <Badge variant="outline" className="text-xs">
+                            {contact.primaryDiageoRelationshipOwners.support.cadence}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Contact Timestamps */}
           <div className="mt-6 pt-6 border-t">

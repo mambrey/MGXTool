@@ -131,6 +131,17 @@ export interface Contact {
   director?: string;
   vicePresident?: string;
   seniorVicePresident?: string;
+  // Primary Diageo Relationship Owner(s) - NEW STRUCTURE
+  primaryDiageoRelationshipOwners?: {
+    sales?: {
+      roles: string[]; // Multi-select: CEO, President, SVP, VP Sales, Director Sales, NAM
+      cadence: string; // Annual, Semi Annual, Quarterly, Monthly, Ongoing
+    };
+    support?: {
+      roles: string[]; // Multi-select: VP Customer Development, Director Category Development, etc.
+      cadence: string; // Annual, Semi Annual, Quarterly, Monthly, Ongoing
+    };
+  };
   // Per-contact notification overrides
   notificationEmail?: string; // Override email for this contact's alerts
   teamsChannelId?: string; // Override Teams channel for this contact's alerts
