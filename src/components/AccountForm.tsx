@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Save, X, Building2, TrendingUp, MapPin, Calendar, Package, Target, ShoppingCart, CheckSquare, Square, Crown, Globe, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
+import { useLoadScript } from '@react-google-maps/api';
 import type { Account, Contact } from '@/types/crm';
 import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
 import { useMarketData } from '@/hooks/useMarketData';
@@ -33,6 +34,12 @@ const US_STATES = [
   'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
   'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
 ];
+
+// Google Maps libraries to load
+const libraries: ("places")[] = ["places"];
+
+// Google Maps API Key - Replace with your actual API key or use environment variable
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 export default function AccountForm({ account, contacts = [], onSave, onCancel }: AccountFormProps) {
   const currentTime = new Date().toISOString();
@@ -108,7 +115,44 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   // Use the market data hook
   const { marketData, loading, error, fetchMarketData, clearMarketData } = useMarketData();
 
-  // Auto-fetch market data when account is loaded with a ticker symbol
+  // Google Maps Autocomplete
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  // Load Google Maps script
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: libraries,
+  });
+
+  // Initialize Google Places Autocomplete
+  useEffect(() => {
+    if (isLoaded && addressInputRef.current && GOOGLE_MAPS_API_KEY) {
+      try {
+        autocompleteRef.current = new google.maps.places.Autocomplete(addressInputRef.current, {
+          types: ['address'],
+          fields: ['formatted_address', 'address_components', 'geometry'],
+        });
+
+        autocompleteRef.current.addListener('place_changed', () => {
+          const place = autocompleteRef.current?.getPlace();
+          if (place?.formatted_address) {
+            setFormData(prev => ({ ...prev, address: place.formatted_address || '' }));
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing Google Places Autocomplete:', error);
+      }
+    }
+
+    return () => {
+      if (autocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
+    };
+  }, [isLoaded]);
+
+  // Auto-fetch market data when account is loaded with a ticker snapbol
   useEffect(() => {
     if (account?.tickerSymbol && account.tickerSymbol.trim() !== '') {
       console.log('🚀 Auto-fetching market data for ticker:', account.tickerSymbol);
@@ -727,15 +771,28 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="address" className="text-sm font-medium">HQ Address</Label>
-            <Textarea
+            <Label htmlFor="address" className="text-sm font-medium">
+              HQ Address
+              {isLoaded && GOOGLE_MAPS_API_KEY && (
+                <span className="ml-2 text-xs text-green-600">(Google Autocomplete enabled)</span>
+              )}
+              {!GOOGLE_MAPS_API_KEY && (
+                <span className="ml-2 text-xs text-gray-500">(Set VITE_GOOGLE_MAPS_API_KEY for autocomplete)</span>
+              )}
+            </Label>
+            <Input
+              ref={addressInputRef}
               id="address"
               value={formData.address}
               onChange={(e) => updateField('address', e.target.value)}
-              placeholder="Enter headquarters address"
-              rows={3}
+              placeholder="Start typing address for suggestions..."
               className="mt-1"
             />
+            {loadError && (
+              <p className="text-xs text-red-600 mt-1">
+                ⚠️ Error loading Google Maps. Address can still be entered manually.
+              </p>
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
