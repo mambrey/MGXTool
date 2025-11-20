@@ -1361,14 +1361,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
               <Briefcase className="w-5 h-5" />
-              Primary Diageo Relationship Owner(s)
+              Diageo Relationship Owner(s)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Owner Name, Owner Email, and SVP fields */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
               <div>
-                <Label htmlFor="ownerName">Owner Name</Label>
+                <Label htmlFor="ownerName">Primary Owner</Label>
                 <Input
                   id="ownerName"
                   value={ownerName}
@@ -1377,7 +1377,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 />
               </div>
               <div>
-                <Label htmlFor="ownerEmail">Owner Email</Label>
+                <Label htmlFor="ownerEmail">Primary Owner Email</Label>
                 <Input
                   id="ownerEmail"
                   type="email"
@@ -1385,21 +1385,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   onChange={(e) => setOwnerEmail(e.target.value)}
                   placeholder="owner@company.com"
                 />
-              </div>
-              <div>
-                <Label htmlFor="svp">SVP</Label>
-                <Select value={svp} onValueChange={setSvp}>
-                  <SelectTrigger id="svp">
-                    <SelectValue placeholder="Select SVP" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SVP_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
 
