@@ -79,8 +79,14 @@ export default function WelcomeScreen({
     return contactOwnerMatch || accountOwnerMatch;
   });
 
-  // Calculate Strategic Accounts KPI - count accounts based on selected relationship owner
-  const strategicAccountsCount = filteredAccounts.length;
+  // Calculate Strategic Accounts KPI - count unique accounts based on relationship owner from contacts
+  const strategicAccountsCount = ownerFilter === 'all' 
+    ? accounts.length 
+    : new Set(
+        contacts
+          .filter(contact => contact.relationshipOwner?.name === ownerFilter && contact.accountId)
+          .map(contact => contact.accountId)
+      ).size;
 
   // Calculate KPIs based on filtered data
   const upcomingBirthdays = filteredContacts.filter(contact => 
@@ -154,7 +160,7 @@ export default function WelcomeScreen({
               {ownerFilter !== 'all' && (
                 <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    <strong>Filtering by:</strong> {ownerFilter} - Showing {filteredAccounts.length} account{filteredAccounts.length !== 1 ? 's' : ''} and {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''} related to this relationship owner.
+                    <strong>Filtering by:</strong> {ownerFilter} - Showing {strategicAccountsCount} unique account{strategicAccountsCount !== 1 ? 's' : ''} and {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''} where {ownerFilter} is the relationship owner.
                   </p>
                 </div>
               )}
@@ -171,7 +177,7 @@ export default function WelcomeScreen({
                   <p className="text-sm font-medium text-gray-600">Strategic Accounts</p>
                   <p className="text-3xl font-bold text-gray-900">{strategicAccountsCount}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {ownerFilter === 'all' ? 'Total accounts' : `${ownerFilter}'s accounts`}
+                    {ownerFilter === 'all' ? 'Total accounts' : 'Unique accounts'}
                   </p>
                   {ownerFilter !== 'all' && (
                     <p className="text-xs text-blue-600 mt-1">Owned by {ownerFilter}</p>
