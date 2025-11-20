@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, TrendingUp, MapPin, Calendar, Package, Target, ShoppingCart, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Slider } from '@/components/ui/slider';
 import { useLoadScript } from '@react-google-maps/api';
 import type { Account, Contact } from '@/types/crm';
 import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
@@ -38,7 +37,7 @@ const US_STATES = [
 // Fulfillment types for multi-select
 const FULFILLMENT_TYPES = [
   'Curbside',
-  'Instore pickup',
+  'In-Store Pickup',
   'Home Delivery',
   'Third Party'
 ];
@@ -95,7 +94,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     nextJBPDate: '',
     pricingStrategy: 'none',
     privateLabel: 'none',
-    innovationAppetite: 5,
+    innovationAppetite: 'Medium',
     hasEcommerce: false,
     fulfillmentTypes: '',
     strategicPriorities: '',
@@ -161,7 +160,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     };
   }, [isLoaded]);
 
-  // Auto-fetch market data when account is loaded with a ticker snapbol
+  // Auto-fetch market data when account is loaded with a ticker symbol
   useEffect(() => {
     if (account?.tickerSymbol && account.tickerSymbol.trim() !== '') {
       console.log('🚀 Auto-fetching market data for ticker:', account.tickerSymbol);
@@ -297,7 +296,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       categoryCaptain: formData.categoryCaptain === 'none' ? '' : formData.categoryCaptain,
       categoryAdvisor: formData.categoryAdvisor === 'none' ? '' : formData.categoryAdvisor,
       pricingStrategy: formData.pricingStrategy === 'none' ? '' : formData.pricingStrategy,
-      privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel
+      privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel,
+      innovationAppetite: formData.innovationAppetite === 'none' ? '' : formData.innovationAppetite
     };
 
     const hasNewTickerSymbol = 
@@ -629,145 +629,18 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Market Snapshot */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
-            Market Snapshot
-            <span className="ml-auto text-xs text-green-600">Auto-populated from CSV</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Basic Market Data */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div>
-              <Label htmlFor="currentPrice" className="text-sm font-medium">Current Price</Label>
-              <Input
-                id="currentPrice"
-                value={formData.currentPrice}
-                onChange={(e) => updateField('currentPrice', e.target.value)}
-                placeholder="$0.00"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="percentChange" className="text-sm font-medium">Percent Change (%)</Label>
-              <Input
-                id="percentChange"
-                value={formData.percentChange}
-                onChange={(e) => updateField('percentChange', e.target.value)}
-                placeholder="0.00"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="marketCap" className="text-sm font-medium">Market Cap</Label>
-              <Input
-                id="marketCap"
-                value={formData.marketCap}
-                onChange={(e) => updateField('marketCap', e.target.value)}
-                placeholder="$0.00B"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="highPrice" className="text-sm font-medium">High Price (Day)</Label>
-              <Input
-                id="highPrice"
-                value={formData.highPrice}
-                onChange={(e) => updateField('highPrice', e.target.value)}
-                placeholder="$0.00"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="lowPrice" className="text-sm font-medium">Low Price (Day)</Label>
-              <Input
-                id="lowPrice"
-                value={formData.lowPrice}
-                onChange={(e) => updateField('lowPrice', e.target.value)}
-                placeholder="$0.00"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="openPrice" className="text-sm font-medium">Open Price</Label>
-              <Input
-                id="openPrice"
-                value={formData.openPrice}
-                onChange={(e) => updateField('openPrice', e.target.value)}
-                placeholder="$0.00"
-                className="mt-1"
-              />
-            </div>
-          </div>
-
-          {/* Financial Data from CSV */}
-          <div className="mt-6">
-            <Label className="text-sm font-medium mb-3 block text-blue-700">Financial Data from CSV</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              <div>
-                <Label htmlFor="previousClose" className="text-sm font-medium">Previous Close</Label>
-                <Input
-                  id="previousClose"
-                  value={formData.previousClose}
-                  onChange={(e) => updateField('previousClose', e.target.value)}
-                  placeholder="Auto-populated from CSV"
-                  className="mt-1 bg-blue-50"
-                />
-                <p className="text-xs text-blue-600 mt-1">Fed by CSV</p>
-              </div>
-              <div>
-                <Label htmlFor="annualSales" className="text-sm font-medium">Annual Sales</Label>
-                <Input
-                  id="annualSales"
-                  value={formData.annualSales}
-                  onChange={(e) => updateField('annualSales', e.target.value)}
-                  placeholder="Auto-populated from CSV"
-                  className="mt-1 bg-blue-50"
-                />
-                <p className="text-xs text-blue-600 mt-1">Fed by CSV</p>
-              </div>
-              <div>
-                <Label htmlFor="fiftyTwoWeekLow" className="text-sm font-medium">52-Week Low</Label>
-                <Input
-                  id="fiftyTwoWeekLow"
-                  value={formData.fiftyTwoWeekLow}
-                  onChange={(e) => updateField('fiftyTwoWeekLow', e.target.value)}
-                  placeholder="Auto-populated from CSV"
-                  className="mt-1 bg-blue-50"
-                />
-                <p className="text-xs text-blue-600 mt-1">Fed by CSV</p>
-              </div>
-              <div>
-                <Label htmlFor="fiftyTwoWeekHigh" className="text-sm font-medium">52-Week High</Label>
-                <Input
-                  id="fiftyTwoWeekHigh"
-                  value={formData.fiftyTwoWeekHigh}
-                  onChange={(e) => updateField('fiftyTwoWeekHigh', e.target.value)}
-                  placeholder="Auto-populated from CSV"
-                  className="mt-1 bg-blue-50"
-                />
-                <p className="text-xs text-blue-600 mt-1">Fed by CSV</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Headquarters */}
+      {/* Parent Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-            Headquarters
+            Parent Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="address" className="text-sm font-medium">
-              HQ Address
+              Parent Company Address
               {isLoaded && GOOGLE_MAPS_API_KEY && (
                 <span className="ml-2 text-xs text-green-600">(Google Autocomplete enabled)</span>
               )}
@@ -1065,15 +938,20 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
 
           <div>
-            <Label className="text-sm font-medium mb-2 block">Innovation Appetite: {formData.innovationAppetite}/10</Label>
-            <Slider
-              value={[formData.innovationAppetite]}
-              onValueChange={(value) => updateField('innovationAppetite', value[0])}
-              max={10}
-              min={1}
-              step={1}
-              className="w-full"
-            />
+            <Label htmlFor="innovationAppetite" className="text-sm font-medium">Innovation Appetite</Label>
+            <Select 
+              value={formData.innovationAppetite?.toString() || 'Medium'} 
+              onValueChange={(value) => updateField('innovationAppetite', value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select innovation appetite" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center space-x-2 pt-4 border-t">

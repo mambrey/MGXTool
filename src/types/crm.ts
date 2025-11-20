@@ -50,7 +50,7 @@ export interface Account {
   categoryAdvisor?: string;
   pricingStrategy?: string; // Changed from boolean to string for dropdown
   privateLabel?: string; // UPDATED: Changed from boolean to string for dropdown (High/Medium/Low)
-  innovationAppetite?: number;
+  innovationAppetite?: string | number; // UPDATED: Support both string (High/Medium/Low) and number for backward compatibility
   hasEcommerce?: boolean;
   isJBP?: boolean;
   lastJBPDate?: string;
