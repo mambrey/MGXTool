@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck } from 'lucide-react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Switch } from '@/components/ui/switch';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import type { Account, Contact, CustomerEvent } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
@@ -22,6 +23,12 @@ interface AccountDetailsProps {
   onAddContact: (accountId: string) => void;
   onViewContact: (contact: Contact) => void;
   onUpdateAccount?: (account: Account) => void;
+}
+
+// Extended CustomerEvent interface with alert functionality
+interface CustomerEventWithAlert extends CustomerEvent {
+  alertEnabled?: boolean;
+  alertDays?: number;
 }
 
 // Google Maps API Key
@@ -62,11 +69,19 @@ export default function AccountDetails({
   const relationshipOwnerContact = contacts.find(c => c.relationshipOwner?.name);
   const relationshipOwnerName = relationshipOwnerContact?.relationshipOwner?.name || 'Mora Ambrey';
 
-  // Customer Events state
-  const [customerEvents, setCustomerEvents] = useState<CustomerEvent[]>(account.customerEvents || []);
+  // Customer Events state with alert functionality
+  const [customerEvents, setCustomerEvents] = useState<CustomerEventWithAlert[]>(
+    (account.customerEvents || []).map(event => ({
+      ...event,
+      alertEnabled: false,
+      alertDays: 7
+    }))
+  );
   const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
+  const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
+  const [newEventAlertDays, setNewEventAlertDays] = useState(7);
   const [expandAll, setExpandAll] = useState(false);
 
   // Google Maps state
@@ -142,10 +157,12 @@ export default function AccountDetails({
       return;
     }
 
-    const newEvent: CustomerEvent = {
+    const newEvent: CustomerEventWithAlert = {
       id: Date.now().toString(),
       title: newEventTitle.trim(),
-      date: newEventDate
+      date: newEventDate,
+      alertEnabled: newEventAlertEnabled,
+      alertDays: newEventAlertDays
     };
 
     const updatedEvents = [...customerEvents, newEvent];
@@ -154,7 +171,7 @@ export default function AccountDetails({
     // Update the account with new events
     const updatedAccount = {
       ...account,
-      customerEvents: updatedEvents,
+      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
       lastModified: new Date().toISOString()
     };
 
@@ -165,6 +182,8 @@ export default function AccountDetails({
     // Reset form and close dialog
     setNewEventTitle('');
     setNewEventDate('');
+    setNewEventAlertEnabled(false);
+    setNewEventAlertDays(7);
     setIsAddEventDialogOpen(false);
   };
 
@@ -176,13 +195,53 @@ export default function AccountDetails({
       // Update the account with new events
       const updatedAccount = {
         ...account,
-        customerEvents: updatedEvents,
+        customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
         lastModified: new Date().toISOString()
       };
 
       if (onUpdateAccount) {
         onUpdateAccount(updatedAccount);
       }
+    }
+  };
+
+  const handleToggleEventAlert = (eventId: string) => {
+    const updatedEvents = customerEvents.map(event => 
+      event.id === eventId 
+        ? { ...event, alertEnabled: !event.alertEnabled }
+        : event
+    );
+    setCustomerEvents(updatedEvents);
+
+    // Update the account
+    const updatedAccount = {
+      ...account,
+      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      lastModified: new Date().toISOString()
+    };
+
+    if (onUpdateAccount) {
+      onUpdateAccount(updatedAccount);
+    }
+  };
+
+  const handleUpdateEventAlertDays = (eventId: string, days: number) => {
+    const updatedEvents = customerEvents.map(event => 
+      event.id === eventId 
+        ? { ...event, alertDays: days }
+        : event
+    );
+    setCustomerEvents(updatedEvents);
+
+    // Update the account
+    const updatedAccount = {
+      ...account,
+      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      lastModified: new Date().toISOString()
+    };
+
+    if (onUpdateAccount) {
+      onUpdateAccount(updatedAccount);
     }
   };
 
@@ -211,6 +270,11 @@ export default function AccountDetails({
 
   const getDaysUntilDue = (dueDate: string) => {
     const days = Math.ceil((new Date(dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    return days;
+  };
+
+  const getDaysUntilEvent = (eventDate: string) => {
+    const days = Math.ceil((new Date(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
     return days;
   };
 
@@ -589,12 +653,12 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Customer Events */}
+            {/* Important Dates (Customer Events) with Alert Functionality */}
             <AccordionItem value="events">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Customer Events ({customerEvents.length})
+                  Important Dates ({customerEvents.length})
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -609,39 +673,103 @@ export default function AccountDetails({
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <ScrollArea className="h-[250px] pr-4">
+                    <ScrollArea className="h-[350px] pr-4">
                       <div className="space-y-3">
                         {customerEvents.length === 0 ? (
                           <div className="text-center py-8 text-gray-500">
                             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                            <p className="text-sm mb-4">No customer events added yet</p>
+                            <p className="text-sm mb-4">No important dates added yet</p>
                             <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
                               <Plus className="w-4 h-4 mr-2" />
                               Add First Event
                             </Button>
                           </div>
                         ) : (
-                          customerEvents.map((event) => (
-                            <Card key={event.id} className="p-3">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1">
-                                  <h4 className="font-medium mb-1">{event.title}</h4>
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Calendar className="w-3 h-3" />
-                                    <span>{new Date(event.date).toLocaleDateString()}</span>
+                          customerEvents.map((event) => {
+                            const daysUntil = getDaysUntilEvent(event.date);
+                            const isUpcoming = daysUntil >= 0 && daysUntil <= (event.alertDays || 7);
+                            
+                            return (
+                              <Card key={event.id} className={`p-4 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
+                                <div className="space-y-3">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1">
+                                      <h4 className="font-medium mb-1">{event.title}</h4>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <Calendar className="w-3 h-3" />
+                                        <span>{new Date(event.date).toLocaleDateString()}</span>
+                                        {daysUntil >= 0 && (
+                                          <Badge variant={daysUntil <= 7 ? 'default' : 'secondary'} className="text-xs">
+                                            {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`}
+                                          </Badge>
+                                        )}
+                                        {daysUntil < 0 && (
+                                          <Badge variant="outline" className="text-xs text-gray-500">
+                                            {Math.abs(daysUntil)} days ago
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeleteEvent(event.id)}
+                                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+
+                                  {/* Alert Settings for this Event */}
+                                  <div className="pt-3 border-t border-gray-200 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        {event.alertEnabled ? (
+                                          <Bell className="w-4 h-4 text-orange-600" />
+                                        ) : (
+                                          <BellOff className="w-4 h-4 text-gray-400" />
+                                        )}
+                                        <Label htmlFor={`alert-${event.id}`} className="text-sm font-medium cursor-pointer">
+                                          Enable Alert
+                                        </Label>
+                                      </div>
+                                      <Switch
+                                        id={`alert-${event.id}`}
+                                        checked={event.alertEnabled || false}
+                                        onCheckedChange={() => handleToggleEventAlert(event.id)}
+                                      />
+                                    </div>
+
+                                    {event.alertEnabled && (
+                                      <div className="space-y-2 pl-6">
+                                        <Label htmlFor={`alert-days-${event.id}`} className="text-xs text-gray-600">
+                                          Alert me (days before):
+                                        </Label>
+                                        <div className="flex items-center gap-2">
+                                          <Input
+                                            id={`alert-days-${event.id}`}
+                                            type="number"
+                                            min="1"
+                                            max="90"
+                                            value={event.alertDays || 7}
+                                            onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
+                                            className="w-20 h-8 text-sm"
+                                          />
+                                          <span className="text-xs text-gray-500">days before event</span>
+                                        </div>
+                                        {isUpcoming && (
+                                          <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                            <Bell className="w-3 h-3" />
+                                            <span>Alert active - event is within {event.alertDays} days</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteEvent(event.id)}
-                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </Card>
-                          ))
+                              </Card>
+                            );
+                          })
                         )}
                       </div>
                     </ScrollArea>
@@ -814,13 +942,13 @@ export default function AccountDetails({
         </div>
       </div>
 
-      {/* Add Event Dialog */}
+      {/* Add Event Dialog with Alert Configuration */}
       <Dialog open={isAddEventDialogOpen} onOpenChange={setIsAddEventDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Add Customer Event</DialogTitle>
+            <DialogTitle>Add Important Date</DialogTitle>
             <DialogDescription>
-              Add a new event for {account.accountName}. Events will be saved immediately.
+              Add a new important date for {account.accountName}. You can optionally enable alerts to be notified before the event.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -828,7 +956,7 @@ export default function AccountDetails({
               <Label htmlFor="event-title">Event Title *</Label>
               <Input
                 id="event-title"
-                placeholder="e.g., Annual Review Meeting"
+                placeholder="e.g., Annual Review Meeting, Contract Renewal"
                 value={newEventTitle}
                 onChange={(e) => setNewEventTitle(e.target.value)}
               />
@@ -842,9 +970,62 @@ export default function AccountDetails({
                 onChange={(e) => setNewEventDate(e.target.value)}
               />
             </div>
+            
+            <Separator />
+            
+            {/* Alert Configuration */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-orange-600" />
+                    <Label htmlFor="enable-alert" className="text-base font-medium cursor-pointer">
+                      Enable Alert
+                    </Label>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Get notified before this event occurs
+                  </p>
+                </div>
+                <Switch
+                  id="enable-alert"
+                  checked={newEventAlertEnabled}
+                  onCheckedChange={setNewEventAlertEnabled}
+                />
+              </div>
+
+              {newEventAlertEnabled && (
+                <div className="space-y-2 pl-6 pt-2">
+                  <Label htmlFor="alert-days" className="text-sm">
+                    Alert me (days before event):
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="alert-days"
+                      type="number"
+                      min="1"
+                      max="90"
+                      value={newEventAlertDays}
+                      onChange={(e) => setNewEventAlertDays(parseInt(e.target.value) || 7)}
+                      className="w-24"
+                    />
+                    <span className="text-sm text-gray-500">days before</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    You'll receive an alert {newEventAlertDays} {newEventAlertDays === 1 ? 'day' : 'days'} before this event
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddEventDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setIsAddEventDialogOpen(false);
+              setNewEventTitle('');
+              setNewEventDate('');
+              setNewEventAlertEnabled(false);
+              setNewEventAlertDays(7);
+            }}>
               Cancel
             </Button>
             <Button onClick={handleAddEvent}>
