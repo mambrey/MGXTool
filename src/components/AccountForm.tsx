@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Image, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -136,6 +136,15 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   // Filter contacts for this account
   const accountContacts = account ? contacts.filter(contact => contact.accountId === account.id) : [];
 
+  // Auto-check "Publicly Traded" when ticker symbol is populated
+  useEffect(() => {
+    if (formData.tickerSymbol && formData.tickerSymbol.trim() !== '') {
+      if (!formData.publiclyTraded) {
+        setFormData(prev => ({ ...prev, publiclyTraded: true }));
+      }
+    }
+  }, [formData.tickerSymbol]);
+
   // Initialize Google Places Autocomplete
   useEffect(() => {
     if (isLoaded && addressInputRef.current && GOOGLE_MAPS_API_KEY) {
@@ -235,6 +244,22 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     }
 
     await fetchMarketData(formData.tickerSymbol);
+  };
+
+  /**
+   * Handle Add Banner button click
+   */
+  const handleAddBanner = () => {
+    console.log('Add Banner clicked - Feature to be implemented');
+    alert('Add Banner feature will be implemented soon');
+  };
+
+  /**
+   * Handle Add Buying Office button click
+   */
+  const handleAddBuyingOffice = () => {
+    console.log('Add Buying Office clicked - Feature to be implemented');
+    alert('Add Buying Office feature will be implemented soon');
   };
 
   /**
@@ -425,6 +450,28 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      {/* Action Buttons at Top */}
+      <div className="flex flex-wrap gap-2 sm:gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleAddBanner}
+          className="flex items-center gap-2"
+        >
+          <Image className="w-4 h-4" />
+          Add a Banner
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleAddBuyingOffice}
+          className="flex items-center gap-2"
+        >
+          <Building className="w-4 h-4" />
+          Add a Buying Office
+        </Button>
+      </div>
+
       {/* Timestamp Information */}
       {account && (
         <Card className="bg-blue-50 border-blue-200">
@@ -524,7 +571,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               checked={formData.publiclyTraded}
               onCheckedChange={(checked) => updateField('publiclyTraded', checked as boolean)}
             />
-            <Label htmlFor="publiclyTraded" className="text-sm font-medium">Publicly Traded?</Label>
+            <Label htmlFor="publiclyTraded" className="text-sm font-medium">Publicly Traded</Label>
           </div>
           <div>
             <Label htmlFor="channel" className="text-sm font-medium">Channel</Label>
