@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 import type { Contact, Account, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
 
@@ -80,6 +81,10 @@ const CADENCE_OPTIONS = ['Annual', 'Semi Annual', 'Quarterly', 'Monthly', 'Ongoi
 
 // SVP dropdown options
 const SVP_OPTIONS = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
+
+// Google Maps configuration
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+const libraries: ("places")[] = ["places"];
 
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState({
@@ -148,6 +153,44 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [supportRoles, setSupportRoles] = useState<{[role: string]: string}>(
     contact?.primaryDiageoRelationshipOwners?.support || {}
   );
+
+  // Google Places Autocomplete state
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Load Google Maps script
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: libraries,
+  });
+
+  // Handle place selection from autocomplete
+  const onPlaceChanged = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      if (place.formatted_address) {
+        setFormData(prev => ({ ...prev, preferredShippingAddress: place.formatted_address || '' }));
+      }
+    }
+  };
+
+  // Initialize autocomplete when Google Maps is loaded
+  useEffect(() => {
+    if (isLoaded && inputRef.current && window.google) {
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+        types: ['address'],
+        fields: ['formatted_address', 'address_components']
+      });
+      
+      autocompleteRef.current.addListener('place_changed', onPlaceChanged);
+    }
+
+    return () => {
+      if (autocompleteRef.current && window.google) {
+        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
+    };
+  }, [isLoaded]);
 
   // Handle headshot file upload
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -802,13 +845,26 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
             <div>
               <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
-              <Textarea
-                id="preferredShippingAddress"
-                value={formData.preferredShippingAddress}
-                onChange={(e) => setFormData(prev => ({ ...prev, preferredShippingAddress: e.target.value }))}
-                placeholder="Street address, City, State, ZIP"
-                rows={3}
-              />
+              {isLoaded ? (
+                <Input
+                  ref={inputRef}
+                  id="preferredShippingAddress"
+                  value={formData.preferredShippingAddress}
+                  onChange={(e) => setFormData(prev => ({ ...prev, preferredShippingAddress: e.target.value }))}
+                  placeholder="Start typing address..."
+                  className="w-full"
+                />
+              ) : (
+                <Input
+                  id="preferredShippingAddress"
+                  value={formData.preferredShippingAddress}
+                  onChange={(e) => setFormData(prev => ({ ...prev, preferredShippingAddress: e.target.value }))}
+                  placeholder="Street address, City, State, ZIP"
+                />
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                {isLoaded ? 'Start typing to see address suggestions' : 'Enter shipping address'}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -819,15 +875,15 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <CardTitle>Ways of Working</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Relationship Status - UPDATED WITH SUPPORT STYLE */}
+            {/* Support Style - CHANGED LABEL FROM "Relationship Status" */}
             <div>
-              <Label htmlFor="relationshipStatus">Relationship Status</Label>
+              <Label htmlFor="relationshipStatus">Support Style</Label>
               <Select 
                 value={formData.relationshipStatus} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
               >
                 <SelectTrigger className="bg-gradient-to-r from-green-50 to-blue-50 border-2">
-                  <SelectValue placeholder="Select relationship status..." />
+                  <SelectValue placeholder="Select support style..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Promoter" className="bg-green-50 hover:bg-green-100">
