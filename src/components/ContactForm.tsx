@@ -1324,12 +1324,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
             </div>
             <div>
-              <Label htmlFor="values">Values</Label>
+              <Label htmlFor="values">What do they value from a business perspective (ie Communication style, Data, Details, etc)</Label>
               <Textarea
                 id="values"
                 value={formData.values}
                 onChange={(e) => setFormData(prev => ({ ...prev, values: e.target.value }))}
-                placeholder="Enter values..."
+                placeholder="Communication style, Data, Details, etc."
                 rows={3}
               />
             </div>
