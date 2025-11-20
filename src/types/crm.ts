@@ -87,7 +87,8 @@ export interface Contact {
   email: string;
   officePhone?: string;
   mobilePhone?: string;
-  preferredContactMethod?: 'email' | 'mobile phone' | 'office phone';
+  preferredContactMethod?: 'email' | 'mobile phone' | 'office phone' | 'text';
+  preferredShippingAddress?: string; // NEW: Preferred shipping address field
   title?: string;
   managerId?: string; // ID of the manager contact (for reporting hierarchy)
   accountId?: string;

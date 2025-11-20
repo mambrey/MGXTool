@@ -41,7 +41,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     email: contact?.email || '',
     officePhone: contact?.officePhone || '',
     mobilePhone: contact?.mobilePhone || '',
-    preferredContactMethod: contact?.preferredContactMethod || 'email',
+    preferredContactMethod: contact?.preferredContactMethod || 'mobile phone',
+    preferredShippingAddress: contact?.preferredShippingAddress || '',
     title: contact?.title || '',
     managerId: contact?.managerId || '',
     accountId: contact?.accountId || '',
@@ -680,11 +681,22 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="mobile phone">Mobile</SelectItem>
+                  <SelectItem value="text">Text</SelectItem>
                   <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="mobile phone">Mobile Phone</SelectItem>
-                  <SelectItem value="office phone">Office Phone</SelectItem>
+                  <SelectItem value="office phone">Office</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
+              <Textarea
+                id="preferredShippingAddress"
+                value={formData.preferredShippingAddress}
+                onChange={(e) => setFormData(prev => ({ ...prev, preferredShippingAddress: e.target.value }))}
+                placeholder="Street address, City, State, ZIP"
+                rows={3}
+              />
             </div>
           </CardContent>
         </Card>
