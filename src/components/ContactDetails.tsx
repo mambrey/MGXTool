@@ -253,6 +253,7 @@ export default function ContactDetails({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header with Headshot */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex-1">
           <Button variant="ghost" onClick={onBack} className="mb-2">
             ← Back to Contacts
@@ -301,36 +302,35 @@ export default function ContactDetails({
           </div>
           {/* Action Buttons */}
           <div className="flex gap-2">
-        <div className="flex gap-2">
-          <Button
-            onClick={printContact}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Printer className="w-4 h-4" />
-            Print
-          </Button>
-          <Button
-            onClick={() => onEdit(contact)}
-            variant="outline"
-            className="flex items-center gap-2"
-        </div>
-          >
-            <Edit2 className="w-4 h-4" />
-            Edit Contact
-          </Button>
-          <Button 
-            variant="destructive" 
-            onClick={() => {
-              if (window.confirm(`Are you sure you want to delete ${contact.firstName} ${contact.lastName}? This action cannot be undone.`)) {
-                onDelete(contact.id);
-              }
-            }}
-            className="flex items-center gap-2"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete
-          </Button>
+            <Button
+              onClick={printContact}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Printer className="w-4 h-4" />
+              Print
+            </Button>
+            <Button
+              onClick={() => onEdit(contact)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Edit2 className="w-4 h-4" />
+              Edit Contact
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                if (window.confirm(`Are you sure you want to delete ${contact.firstName} ${contact.lastName}? This action cannot be undone.`)) {
+                  onDelete(contact.id);
+                }
+              }}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -470,7 +470,7 @@ export default function ContactDetails({
             </div>
           </div>
 
-          {/* Primary Diageo Relationship Owner(s) Section - UPDATED TO SHOW NEW FIELDS */}
+          {/* Primary Diageo Relationship Owner(s) Section */}
           {contact.primaryDiageoRelationshipOwners && (
             (contact.primaryDiageoRelationshipOwners.ownerName || 
              contact.primaryDiageoRelationshipOwners.ownerEmail || 
@@ -481,10 +481,10 @@ export default function ContactDetails({
             <div className="mt-6 pt-6 border-t">
               <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
                 <Briefcase className="w-5 h-5 text-indigo-600" />
-                Primary Diageo Relationship Owner(s)
+                Diageo Relationship Owner(s)
               </h3>
 
-              {/* NEW: Display Owner Name, Owner Email, and SVP */}
+              {/* Display Owner Name, Owner Email, and SVP */}
               {(contact.primaryDiageoRelationshipOwners.ownerName || 
                 contact.primaryDiageoRelationshipOwners.ownerEmail || 
                 contact.primaryDiageoRelationshipOwners.svp) && (
@@ -492,7 +492,7 @@ export default function ContactDetails({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {contact.primaryDiageoRelationshipOwners.ownerName && (
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Owner Name</p>
+                        <p className="text-xs text-gray-500 mb-1">Primary Owner</p>
                         <p className="text-sm font-medium text-gray-700">
                           {contact.primaryDiageoRelationshipOwners.ownerName}
                         </p>
@@ -500,7 +500,7 @@ export default function ContactDetails({
                     )}
                     {contact.primaryDiageoRelationshipOwners.ownerEmail && (
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Owner Email</p>
+                        <p className="text-xs text-gray-500 mb-1">Primary Owner Email</p>
                         <a 
                           href={`mailto:${contact.primaryDiageoRelationshipOwners.ownerEmail}`}
                           className="text-sm text-blue-600 hover:text-blue-800 break-all"
@@ -547,6 +547,20 @@ export default function ContactDetails({
                   <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
                     <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
                       <Users className="w-4 h-4" />
+                      Support
+                    </h4>
+                    <div className="space-y-2">
+                      {Object.entries(contact.primaryDiageoRelationshipOwners.support).map(([role, cadence]) => (
+                        <div key={role} className="flex items-center justify-between p-2 bg-white rounded border border-indigo-100">
+                          <span className="text-sm font-medium text-gray-700">{role}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {cadence || 'Not set'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
