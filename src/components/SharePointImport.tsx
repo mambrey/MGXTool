@@ -23,7 +23,7 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
       'Total Buying Offices', 'Current Price', 'Percent Change', 'High Price', 'Low Price',
       'Open Price', 'Previous Close', 'Market Cap', 'PEG Ratio', 'Annual Sales', 'Dividend Yield',
       '52 Week Low', '52 Week High', 'Percent of General Market', 'Sales 52 Weeks', 'Sales 12 Weeks',
-      'Sales 4 Weeks', 'Category Captain', 'Category Advisor', 'Pricing Strategy', 'Private Label',
+      'Sales 4 Weeks', 'Category Captain', 'Category Validator', 'Pricing Strategy', 'Private Label',
       'Innovation Appetite', 'Has Ecommerce', 'Is JBP', 'Last JBP Date', 'Next JBP Date',
       'Has Planograms', 'HQ Influence', 'Display Mandates', 'Fulfillment Types', 'Spirits Outlets',
       'Reset Window Q1', 'Reset Window Q2', 'Reset Window Q3', 'Reset Window Q4',
@@ -281,7 +281,7 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
           sales4Weeks: getCell('Sales 4 Weeks') || undefined,
           // Strategy & Capabilities
           categoryCaptain: getCell('Category Captain') || undefined,
-          categoryAdvisor: getCell('Category Advisor') || undefined,
+          categoryAdvisor: getCell('Category Validator') || undefined,
           pricingStrategy: getBooleanCell('Pricing Strategy'),
           privateLabel: getBooleanCell('Private Label'),
           innovationAppetite: getNumberCell('Innovation Appetite'),
@@ -420,7 +420,7 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
             <p><strong>Optional:</strong> VP, Revenue, Employees, Website, Address, Phone, Email, Description, Channel, Footprint, Operating States, Publicly Traded, Ticker Symbol, Parent Company, Total Buying Offices</p>
             <p><strong>Market Data:</strong> Current Price, Percent Change, High Price, Low Price, Open Price, Previous Close, Market Cap, PEG Ratio, Annual Sales, Dividend Yield, 52 Week Low, 52 Week High</p>
             <p><strong>Sales Data:</strong> Percent of General Market, Sales 52 Weeks, Sales 12 Weeks, Sales 4 Weeks</p>
-            <p><strong>Strategy:</strong> Category Captain, Category Advisor, Pricing Strategy, Private Label, Innovation Appetite, Has Ecommerce, Is JBP, Last JBP Date, Next JBP Date, Has Planograms, HQ Influence, Display Mandates, Fulfillment Types, Spirits Outlets</p>
+            <p><strong>Strategy:</strong> Category Captain, Category Validator, Pricing Strategy, Private Label, Innovation Appetite, Has Ecommerce, Is JBP, Last JBP Date, Next JBP Date, Has Planograms, HQ Influence, Display Mandates, Fulfillment Types, Spirits Outlets</p>
             <p><strong>Reset Windows:</strong> Q1, Q2, Q3, Q4, Spring, Summer, Fall, Winter</p>
             <p><strong>Strategic Info:</strong> Strategic Priorities, Key Competitors</p>
             <p><strong>Note:</strong> Industry and Account Status columns have been removed. Imported accounts will default to "Not Specified" for Industry and "Prospect" for Account Status.</p>

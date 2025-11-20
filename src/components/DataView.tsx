@@ -178,7 +178,7 @@ const defaultColumns: ColumnConfig[] = [
   
   // Strategy and Capabilities
   { key: 'categoryCaptain', label: 'Category Captain', visible: false, type: 'text', filterType: 'text' },
-  { key: 'categoryAdvisor', label: 'Category Advisor', visible: false, type: 'text', filterType: 'text' },
+  { key: 'categoryAdvisor', label: 'Category Validator', visible: false, type: 'text', filterType: 'text' },
   { key: 'pricingStrategy', label: 'Pricing Strategy', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'privateLabel', label: 'Private Label', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'innovationAppetite', label: 'Innovation Appetite', visible: false, type: 'slider', filterType: 'number' },
