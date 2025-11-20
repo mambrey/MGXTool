@@ -36,6 +36,7 @@ interface ContactEventWithAlert extends CustomerEvent {
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState({
     firstName: contact?.firstName || '',
+    preferredFirstName: contact?.preferredFirstName || '',
     lastName: contact?.lastName || '',
     email: contact?.email || '',
     officePhone: contact?.officePhone || '',
@@ -408,7 +409,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <CardTitle>Basic Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="firstName">First Name *</Label>
                 <Input
@@ -416,6 +417,15 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   value={formData.firstName}
                   onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
                   required
+                />
+              </div>
+              <div>
+                <Label htmlFor="preferredFirstName">Preferred First Name</Label>
+                <Input
+                  id="preferredFirstName"
+                  value={formData.preferredFirstName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, preferredFirstName: e.target.value }))}
+                  placeholder="Preferred name or nickname"
                 />
               </div>
               <div>
@@ -440,7 +450,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             
             {/* Account Selection */}
             <div>
-              <Label htmlFor="accountId">Account *</Label>
+              <Label htmlFor="accountId">Account/Banned/Buying Office-Contact *</Label>
               <Popover open={accountSearchOpen} onOpenChange={setAccountSearchOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -451,7 +461,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   >
                     {formData.accountId
                       ? accounts.find(account => account.id === formData.accountId)?.accountName
-                      : "Select an account..."}
+                      : "Select"}
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>

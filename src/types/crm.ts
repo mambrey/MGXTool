@@ -82,6 +82,7 @@ export interface Account {
 export interface Contact {
   id: string;
   firstName: string;
+  preferredFirstName?: string; // NEW: Preferred first name field
   lastName: string;
   email: string;
   officePhone?: string;
