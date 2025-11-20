@@ -450,28 +450,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-      {/* Action Buttons at Top */}
-      <div className="flex flex-wrap gap-2 sm:gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleAddBanner}
-          className="flex items-center gap-2"
-        >
-          <Image className="w-4 h-4" />
-          Add a Banner
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleAddBuyingOffice}
-          className="flex items-center gap-2"
-        >
-          <Building className="w-4 h-4" />
-          Add a Buying Office
-        </Button>
-      </div>
-
       {/* Timestamp Information */}
       {account && (
         <Card className="bg-blue-50 border-blue-200">
@@ -493,10 +471,34 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       {/* Customer Overview */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
-            Customer Overview
-          </CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              Customer Overview
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddBanner}
+                className="flex items-center gap-2"
+              >
+                <Image className="w-4 h-4" />
+                Add a Banner
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddBuyingOffice}
+                className="flex items-center gap-2"
+              >
+                <Building className="w-4 h-4" />
+                Add a Buying Office
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="sm:col-span-2">
