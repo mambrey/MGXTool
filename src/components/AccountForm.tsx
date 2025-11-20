@@ -34,12 +34,21 @@ const US_STATES = [
   'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
 ];
 
-// Fulfillment types for multi-select
+// Fulfillment types for multi-select - UPDATED
 const FULFILLMENT_TYPES = [
-  'Curbside',
-  'In-Store Pickup',
-  'Home Delivery',
-  'Third Party'
+  'In-Store Pickup (Click & Collect)',
+  'Curbside Pickup',
+  'Local Delivery (Self-Operated)',
+  'Local Delivery (Third Party Partner)',
+  'Ship-to-Home (Where Legal)'
+];
+
+// E-Commerce Partners for multi-select - NEW
+const ECOMMERCE_PARTNERS = [
+  'Uber Eats',
+  'DoorDash',
+  'Instacart',
+  'GoPuff'
 ];
 
 // Google Maps libraries to load
@@ -95,7 +104,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     privateLabel: 'none',
     innovationAppetite: '',
     ecommerceMaturityLevel: 'none',
-    fulfillmentTypes: '',
+    ecommerceSalesPercentage: '',
+    ecommercePartners: [],
+    fulfillmentTypes: [],
     strategicPriorities: '',
     keyCompetitors: '',
     designatedCharities: '',
@@ -238,6 +249,17 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     return [];
   });
 
+  // Handle e-commerce partners multi-select - NEW
+  const [selectedEcommercePartners, setSelectedEcommercePartners] = useState<string[]>(() => {
+    if (!formData.ecommercePartners) return [];
+    
+    if (Array.isArray(formData.ecommercePartners)) {
+      return formData.ecommercePartners;
+    }
+    
+    return [];
+  });
+
   const [customerEvents, setCustomerEvents] = useState<CustomerEvent[]>(
     formData.customerEvents || []
   );
@@ -327,6 +349,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       ...formData,
       operatingStates: selectedStates,
       fulfillmentTypes: selectedFulfillmentTypes,
+      ecommercePartners: selectedEcommercePartners,
       customerEvents: customerEvents,
       lastModified: new Date().toISOString(),
       categoryCaptain: formData.categoryCaptain === 'none' ? '' : formData.categoryCaptain,
@@ -404,6 +427,24 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     }
   };
 
+  const toggleEcommercePartner = (partner: string) => {
+    setSelectedEcommercePartners(prev => {
+      if (prev.includes(partner)) {
+        return prev.filter(p => p !== partner);
+      } else {
+        return [...prev, partner];
+      }
+    });
+  };
+
+  const selectAllEcommercePartners = () => {
+    if (selectedEcommercePartners.length === ECOMMERCE_PARTNERS.length) {
+      setSelectedEcommercePartners([]);
+    } else {
+      setSelectedEcommercePartners([...ECOMMERCE_PARTNERS]);
+    }
+  };
+
   const addCustomerEvent = () => {
     const newEvent: CustomerEvent = {
       id: Date.now().toString(),
@@ -459,6 +500,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const isAllStatesSelected = selectedStates.length === US_STATES.length;
   const isSomeStatesSelected = selectedStates.length > 0 && selectedStates.length < US_STATES.length;
   const isAllFulfillmentTypesSelected = selectedFulfillmentTypes.length === FULFILLMENT_TYPES.length;
+  const isAllEcommercePartnersSelected = selectedEcommercePartners.length === ECOMMERCE_PARTNERS.length;
 
   const willSendToPA = 
     powerAutomateService.isTickerSymbolWorkflowEnabled() && 
@@ -1066,6 +1108,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </SelectContent>
               </Select>
             </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isJBP"
+                checked={formData.isJBP}
+                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
+              />
+              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
+            </div>
             <div>
               <Label htmlFor="displayMandates" className="text-sm font-medium">Are all displays mandated</Label>
               <Select 
@@ -1082,32 +1132,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   <SelectItem value="None">None</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <Label htmlFor="ecommerceMaturityLevel" className="text-sm font-medium">E-Commerce Maturity Level</Label>
-              <Select 
-                value={formData.ecommerceMaturityLevel || 'none'} 
-                onValueChange={(value) => updateField('ecommerceMaturityLevel', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select e-commerce maturity level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
-                  <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
-                  <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
-                  <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isJBP"
-                checked={formData.isJBP}
-                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
-              />
-              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
             </div>
           </div>
 
@@ -1135,6 +1159,91 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           )}
+
+          <div>
+            <Label htmlFor="ecommerceMaturityLevel" className="text-sm font-medium">E-Commerce Maturity Level</Label>
+            <Select 
+              value={formData.ecommerceMaturityLevel || 'none'} 
+              onValueChange={(value) => updateField('ecommerceMaturityLevel', value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select e-commerce maturity level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
+                <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
+                <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
+                <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="ecommerceSalesPercentage" className="text-sm font-medium">% of Sales Coming From E-Commerce:</Label>
+            <div className="flex items-center gap-2 mt-1">
+              <Input
+                id="ecommerceSalesPercentage"
+                type="text"
+                value={formData.ecommerceSalesPercentage}
+                onChange={(e) => updateField('ecommerceSalesPercentage', e.target.value)}
+                placeholder="Enter percentage"
+                className="flex-1"
+              />
+              <span className="text-sm font-medium text-gray-600">%</span>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium">Who Are Your Primary E-Commerce Partners?</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={selectAllEcommercePartners}
+                className="flex items-center gap-1 text-xs h-7"
+              >
+                {isAllEcommercePartnersSelected ? (
+                  <>
+                    <CheckSquare className="w-3 h-3" />
+                    Deselect All
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-3 h-3" />
+                    Select All
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {ECOMMERCE_PARTNERS.map(partner => (
+                  <div key={partner} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`partner-${partner}`}
+                      checked={selectedEcommercePartners.includes(partner)}
+                      onCheckedChange={() => toggleEcommercePartner(partner)}
+                    />
+                    <Label htmlFor={`partner-${partner}`} className="text-sm cursor-pointer">
+                      {partner}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedEcommercePartners.length > 0 && (
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-sm font-medium text-gray-700">
+                    Selected ({selectedEcommercePartners.length}/{ECOMMERCE_PARTNERS.length}):
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {selectedEcommercePartners.join(', ')}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">

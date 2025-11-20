@@ -52,13 +52,15 @@ export interface Account {
   privateLabel?: string; // UPDATED: Changed from boolean to string for dropdown (High/Medium/Low)
   innovationAppetite?: string | number; // UPDATED: Support both string (High/Medium/Low) and number for backward compatibility
   ecommerceMaturityLevel?: string; // UPDATED: Changed from hasEcommerce (boolean) to ecommerceMaturityLevel (string) for dropdown
+  ecommerceSalesPercentage?: string; // NEW: % of Sales Coming From E-Commerce
+  ecommercePartners?: string[]; // NEW: Primary E-Commerce Partners (multi-select)
   isJBP?: boolean;
   lastJBPDate?: string;
   nextJBPDate?: string;
   hasPlanograms?: boolean;
   planogramWrittenBy?: string; // NEW: Author of the planogram
   displayMandates?: string; // UPDATED: Changed from boolean to string for dropdown (All/Some/None)
-  fulfillmentTypes?: string | string[]; // UPDATED: Support both string and array for multi-select
+  fulfillmentTypes?: string[]; // UPDATED: Changed to array for multi-select dropdown
   allSpiritsOutlets?: string; // UPDATED: Changed from spiritsOutlets to allSpiritsOutlets
   fullProofOutlets?: string; // NEW: Full proof outlets field
   // Reset window fields
