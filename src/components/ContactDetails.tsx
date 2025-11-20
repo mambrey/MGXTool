@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User } from 'lucide-react';
+import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -184,6 +184,16 @@ export default function ContactDetails({
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
+  // Helper function to format LinkedIn URL
+  const formatLinkedInUrl = (url: string) => {
+    // If URL already starts with http:// or https://, return as is
+    if (url.match(/^https?:\/\//i)) {
+      return url;
+    }
+    // Otherwise, add https://
+    return `https://${url}`;
+  };
+
   const printContact = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -351,10 +361,17 @@ export default function ContactDetails({
                     <p className="text-xs text-gray-500 mb-2">LinkedIn Profile</p>
                     <div className="space-y-2">
                       {contact.socialHandles.map((handle, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
-                          <Badge variant="outline" className="text-xs">
+                        <div key={index} className="flex items-center gap-2">
+                          <Linkedin className="w-4 h-4 text-blue-600 shrink-0" />
+                          <a 
+                            href={formatLinkedInUrl(handle)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline text-sm flex items-center gap-1 break-all"
+                          >
                             {handle}
-                          </Badge>
+                            <ExternalLink className="w-3 h-3 shrink-0" />
+                          </a>
                         </div>
                       ))}
                     </div>
