@@ -123,6 +123,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [ownerSearchOpen, setOwnerSearchOpen] = useState(false);
   const [managerSearchOpen, setManagerSearchOpen] = useState(false);
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
+  const [headshotFileName, setHeadshotFileName] = useState('');
+  const [headshotError, setHeadshotError] = useState('');
 
   // New state for relationship owner hierarchy - Initialize from contact data
   const [director, setDirector] = useState(contact?.director || '');
@@ -130,6 +132,53 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [seniorVicePresident, setSeniorVicePresident] = useState(contact?.seniorVicePresident || '');
 
   const seniorVPOptions = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
+
+  // Handle headshot file upload
+  const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset error
+    setHeadshotError('');
+
+    // Validate file type
+    if (!file.type.match(/image\/(jpeg|jpg)/)) {
+      setHeadshotError('Please upload a JPG or JPEG image file');
+      e.target.value = '';
+      return;
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      setHeadshotError('File size must be less than 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    // Read file and convert to base64
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64String = event.target?.result as string;
+      setFormData(prev => ({ ...prev, headshot: base64String }));
+      setHeadshotFileName(file.name);
+    };
+    reader.onerror = () => {
+      setHeadshotError('Failed to read file. Please try again.');
+      e.target.value = '';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Remove headshot
+  const removeHeadshot = () => {
+    setFormData(prev => ({ ...prev, headshot: '' }));
+    setHeadshotFileName('');
+    setHeadshotError('');
+    // Reset file input
+    const fileInput = document.getElementById('headshot') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
 
   // Category/Segment Ownership handlers
   const handleCategoryToggle = (category: string) => {
@@ -491,22 +540,51 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </div>
             </div>
             
-            {/* Headshot Field */}
+            {/* Headshot File Upload */}
             <div>
               <Label htmlFor="headshot" className="flex items-center gap-2">
                 <Image className="w-4 h-4" />
                 Headshot
               </Label>
-              <Input
-                id="headshot"
-                type="url"
-                value={formData.headshot}
-                onChange={(e) => setFormData(prev => ({ ...prev, headshot: e.target.value }))}
-                placeholder="Enter image URL (e.g., /images/headshot.jpg)"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Provide a URL to the contact's headshot image
-              </p>
+              <div className="space-y-2">
+                <Input
+                  id="headshot"
+                  type="file"
+                  accept=".jpg,.jpeg"
+                  onChange={handleHeadshotUpload}
+                  className="cursor-pointer"
+                />
+                <p className="text-xs text-gray-500">
+                  Upload a JPG or JPEG image (max 5MB)
+                </p>
+                {headshotError && (
+                  <p className="text-xs text-red-600">{headshotError}</p>
+                )}
+                {formData.headshot && (
+                  <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <img 
+                      src={formData.headshot} 
+                      alt="Headshot preview" 
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-green-900">
+                        {headshotFileName || 'Headshot uploaded'}
+                      </p>
+                      <p className="text-xs text-green-700">Image ready</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeHeadshot}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>

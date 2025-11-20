@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X } from 'lucide-react';
+import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -179,6 +179,11 @@ export default function ContactDetails({
     );
   };
 
+  // Helper function to get initials from name
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
   const printContact = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -237,13 +242,29 @@ export default function ContactDetails({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
+      {/* Header with Headshot */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <Button variant="ghost" onClick={onBack} className="mb-2">
             ← Back to Contacts
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            {/* Headshot Display */}
+            <div className="shrink-0">
+              {contact.headshot ? (
+                <img 
+                  src={contact.headshot} 
+                  alt={`${contact.firstName} ${contact.lastName}`}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-gray-200 shadow-md"
+                />
+              ) : (
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center border-2 border-gray-200 shadow-md">
+                  <span className="text-white text-2xl sm:text-3xl font-bold">
+                    {getInitials(contact.firstName, contact.lastName)}
+                  </span>
+                </div>
+              )}
+            </div>
             <div>
               <h1 className="text-3xl font-bold">{contact.firstName} {contact.lastName}</h1>
               <p className="text-gray-600">{contact.title || 'No title specified'}</p>
@@ -327,7 +348,7 @@ export default function ContactDetails({
                 )}
                 {contact.socialHandles && contact.socialHandles.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-2">Social Handles</p>
+                    <p className="text-xs text-gray-500 mb-2">LinkedIn Profile</p>
                     <div className="space-y-2">
                       {contact.socialHandles.map((handle, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
