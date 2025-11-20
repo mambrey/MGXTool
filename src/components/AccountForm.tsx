@@ -1074,6 +1074,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           <div className="border-t pt-4"></div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isJBP"
+                checked={formData.isJBP}
+                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
+              />
+              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
+            </div>
             <div>
               <Label htmlFor="pricingStrategy" className="text-sm font-medium">Pricing Strategy</Label>
               <Select 
@@ -1090,6 +1098,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   <SelectItem value="Margin Focused">Margin Focused</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isJBP"
+                checked={formData.isJBP}
+                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
+              />
+              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
             </div>
             <div>
               <Label htmlFor="privateLabel" className="text-sm font-medium">Private Label</Label>
@@ -1109,6 +1125,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </Select>
             </div>
             <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isJBP"
+                checked={formData.isJBP}
+                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
+              />
+              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
+            </div>
+          <div className="flex items-center space-x-2">
               <Checkbox
                 id="isJBP"
                 checked={formData.isJBP}
@@ -1512,10 +1536,10 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Strategic Information */}
+      {/* Additional Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">Strategic Information</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Additional Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
