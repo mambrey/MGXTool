@@ -63,8 +63,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     operatingStates: '',
     allSpiritsOutlets: '',
     fullProofOutlets: '',
-    hqInfluence: false,
-    displayMandates: false,
+    displayMandates: 'none',
     currentPrice: '',
     percentChange: '',
     highPrice: '',
@@ -335,6 +334,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       pricingStrategy: formData.pricingStrategy === 'none' ? '' : formData.pricingStrategy,
       privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel,
       innovationAppetite: formData.innovationAppetite === 'none' ? '' : formData.innovationAppetite,
+      displayMandates: formData.displayMandates === 'none' ? '' : formData.displayMandates,
       // Convert 'none' to empty string for level of influence fields
       influenceAssortmentShelf: formData.influenceAssortmentShelf === 'none' ? '' : formData.influenceAssortmentShelf,
       influencePricePromo: formData.influencePricePromo === 'none' ? '' : formData.influencePricePromo,
@@ -1065,21 +1065,22 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hqInfluence"
-                checked={formData.hqInfluence}
-                onCheckedChange={(checked) => updateField('hqInfluence', checked as boolean)}
-              />
-              <Label htmlFor="hqInfluence" className="text-sm font-medium">HQ Influence</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="displayMandates"
-                checked={formData.displayMandates}
-                onCheckedChange={(checked) => updateField('displayMandates', checked as boolean)}
-              />
-              <Label htmlFor="displayMandates" className="text-sm font-medium">Display Mandates</Label>
+            <div>
+              <Label htmlFor="displayMandates" className="text-sm font-medium">Are all displays mandated</Label>
+              <Select 
+                value={formData.displayMandates || 'none'} 
+                onValueChange={(value) => updateField('displayMandates', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select display mandate level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="All">All</SelectItem>
+                  <SelectItem value="Some">Some</SelectItem>
+                  <SelectItem value="None">None</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox

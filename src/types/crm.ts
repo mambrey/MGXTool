@@ -57,8 +57,7 @@ export interface Account {
   nextJBPDate?: string;
   hasPlanograms?: boolean;
   planogramWrittenBy?: string; // NEW: Author of the planogram
-  hqInfluence?: boolean;
-  displayMandates?: boolean;
+  displayMandates?: string; // UPDATED: Changed from boolean to string for dropdown (All/Some/None)
   fulfillmentTypes?: string | string[]; // UPDATED: Support both string and array for multi-select
   allSpiritsOutlets?: string; // UPDATED: Changed from spiritsOutlets to allSpiritsOutlets
   fullProofOutlets?: string; // NEW: Full proof outlets field
