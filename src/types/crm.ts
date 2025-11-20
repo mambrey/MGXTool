@@ -92,7 +92,7 @@ export interface Contact {
   title?: string;
   managerId?: string; // ID of the manager contact (for reporting hierarchy)
   accountId?: string;
-  contactType?: 'Primary' | 'Secondary';
+  isPrimaryContact?: boolean; // UPDATED: Changed from contactType to isPrimaryContact boolean
   influence?: 'Decision Maker' | 'Influencer' | 'User' | 'Gatekeeper';
   isInfluencer?: boolean; // NEW: Flag to mark key influencers in the organization
   influencerLevel?: number; // NEW: Influencer rating from 1-10

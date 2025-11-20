@@ -46,7 +46,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     title: contact?.title || '',
     managerId: contact?.managerId || '',
     accountId: contact?.accountId || '',
-    contactType: contact?.contactType || 'Secondary',
+    isPrimaryContact: contact?.isPrimaryContact || false,
     influence: contact?.influence || 'User',
     isInfluencer: contact?.isInfluencer || false,
     influencerLevel: contact?.influencerLevel || undefined,
@@ -187,7 +187,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         const shouldAutoPopulate = !contact || 
           (!formData.relationshipOwner.name && !formData.relationshipOwner.email);
         
-        if (shouldAutoPopulate && account.accountOwner && formData.contactType === 'Primary') {
+        if (shouldAutoPopulate && account.accountOwner && formData.isPrimaryContact) {
           // Try to find owner in directory first
           const ownerInDirectory = relationshipOwners.find(
             owner => owner.name.toLowerCase() === account.accountOwner.toLowerCase()
@@ -221,7 +221,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       setSelectedAccount(null);
       setOwnerAutoPopulated(false);
     }
-  }, [formData.accountId, formData.contactType, accounts, contact, relationshipOwners]);
+  }, [formData.accountId, formData.isPrimaryContact, accounts, contact, relationshipOwners]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,11 +264,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setOwnerSearchOpen(false);
   };
 
-  const handleContactTypeChange = (contactType: string) => {
-    setFormData(prev => ({ ...prev, contactType }));
+  const handlePrimaryContactChange = (checked: boolean) => {
+    setFormData(prev => ({ ...prev, isPrimaryContact: checked }));
     
     // If changing to Primary and we have an account selected, auto-populate owner info
-    if (contactType === 'Primary' && selectedAccount?.accountOwner) {
+    if (checked && selectedAccount?.accountOwner) {
       const ownerInDirectory = relationshipOwners.find(
         owner => owner.name.toLowerCase() === selectedAccount.accountOwner.toLowerCase()
       );
@@ -276,7 +276,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       if (ownerInDirectory) {
         setFormData(prev => ({
           ...prev,
-          contactType,
+          isPrimaryContact: checked,
           relationshipOwner: {
             name: ownerInDirectory.name,
             email: ownerInDirectory.email,
@@ -288,7 +288,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       } else {
         setFormData(prev => ({
           ...prev,
-          contactType,
+          isPrimaryContact: checked,
           relationshipOwner: {
             name: selectedAccount.accountOwner,
             email: prev.relationshipOwner.email || `${selectedAccount.accountOwner.toLowerCase().replace(/\s+/g, '.')}@company.com`,
@@ -297,7 +297,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         }));
       }
       setOwnerAutoPopulated(true);
-    } else if (contactType === 'Secondary') {
+    } else if (!checked) {
       setOwnerAutoPopulated(false);
     }
   };
@@ -600,39 +600,24 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </p>
             </div>
 
-            <div>
-              <Label htmlFor="contactType">Contact Type *</Label>
-              <Select value={formData.contactType} onValueChange={handleContactTypeChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Primary">
-                    <div className="flex items-center gap-2">
-                      <Crown className="w-4 h-4 text-yellow-600" />
-                      <span>Primary Contact</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Secondary">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <span>Secondary Contact</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="mt-2 text-sm text-gray-600">
-                {formData.contactType === 'Primary' ? (
-                  <div className="flex items-center gap-1 text-yellow-700">
-                    <Crown className="w-3 h-3" />
-                    <span>Primary contacts are automatically linked to the account owner for relationship management.</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-gray-600">
-                    <User className="w-3 h-3" />
-                    <span>Secondary contacts can have different relationship owners as needed.</span>
-                  </div>
-                )}
+            {/* Primary Contact Checkbox */}
+            <div className="flex items-start space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <Checkbox
+                id="isPrimaryContact"
+                checked={formData.isPrimaryContact}
+                onCheckedChange={(checked) => handlePrimaryContactChange(checked as boolean)}
+              />
+              <div className="flex-1">
+                <Label 
+                  htmlFor="isPrimaryContact" 
+                  className="flex items-center gap-2 font-semibold text-yellow-900 cursor-pointer"
+                >
+                  <Crown className="w-4 h-4 text-yellow-600" />
+                  Primary Contact
+                </Label>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Primary contacts are automatically linked to the account owner for relationship management.
+                </p>
               </div>
             </div>
           </CardContent>
@@ -1132,10 +1117,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         </Card>
 
         {/* Relationship Owner - UPDATED STRUCTURE */}
-        <Card className={`${formData.contactType === 'Primary' ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'}`}>
+        <Card className={`${formData.isPrimaryContact ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'}`}>
           <CardHeader>
-            <CardTitle className={`${formData.contactType === 'Primary' ? 'text-yellow-900' : 'text-blue-900'} flex items-center gap-2`}>
-              {formData.contactType === 'Primary' ? (
+            <CardTitle className={`${formData.isPrimaryContact ? 'text-yellow-900' : 'text-blue-900'} flex items-center gap-2`}>
+              {formData.isPrimaryContact ? (
                 <>
                   <Crown className="w-5 h-5" />
                   Primary Contact - Relationship Owner
@@ -1147,7 +1132,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </>
               )}
             </CardTitle>
-            {ownerAutoPopulated && formData.contactType === 'Primary' && (
+            {ownerAutoPopulated && formData.isPrimaryContact && (
               <Alert className="bg-green-50 border-green-200">
                 <Info className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
@@ -1155,7 +1140,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </AlertDescription>
               </Alert>
             )}
-            {formData.contactType === 'Primary' && !ownerAutoPopulated && selectedAccount && (
+            {formData.isPrimaryContact && !ownerAutoPopulated && selectedAccount && (
               <Alert className="bg-yellow-50 border-yellow-200">
                 <Crown className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-800">
