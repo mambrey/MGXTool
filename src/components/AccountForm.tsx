@@ -513,9 +513,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 <SelectValue placeholder="Select channel mapping" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="State Retailer">State Retailer</SelectItem>
                 <SelectItem value="National Retailer">National Retailer</SelectItem>
-                <SelectItem value="Multi State Retailer">Multi State Retailer</SelectItem>
+                <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
+                <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
               </SelectContent>
             </Select>
           </div>
