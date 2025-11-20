@@ -452,9 +452,12 @@ export default function ContactDetails({
             </div>
           </div>
 
-          {/* Primary Diageo Relationship Owner(s) Section - UPDATED TO SHOW INDIVIDUAL CADENCE */}
+          {/* Primary Diageo Relationship Owner(s) Section - UPDATED TO SHOW NEW FIELDS */}
           {contact.primaryDiageoRelationshipOwners && (
-            (Object.keys(contact.primaryDiageoRelationshipOwners.sales || {}).length > 0 || 
+            (contact.primaryDiageoRelationshipOwners.ownerName || 
+             contact.primaryDiageoRelationshipOwners.ownerEmail || 
+             contact.primaryDiageoRelationshipOwners.svp ||
+             Object.keys(contact.primaryDiageoRelationshipOwners.sales || {}).length > 0 || 
              Object.keys(contact.primaryDiageoRelationshipOwners.support || {}).length > 0)
           ) && (
             <div className="mt-6 pt-6 border-t">
@@ -462,6 +465,44 @@ export default function ContactDetails({
                 <Briefcase className="w-5 h-5 text-indigo-600" />
                 Primary Diageo Relationship Owner(s)
               </h3>
+
+              {/* NEW: Display Owner Name, Owner Email, and SVP */}
+              {(contact.primaryDiageoRelationshipOwners.ownerName || 
+                contact.primaryDiageoRelationshipOwners.ownerEmail || 
+                contact.primaryDiageoRelationshipOwners.svp) && (
+                <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {contact.primaryDiageoRelationshipOwners.ownerName && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Owner Name</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          {contact.primaryDiageoRelationshipOwners.ownerName}
+                        </p>
+                      </div>
+                    )}
+                    {contact.primaryDiageoRelationshipOwners.ownerEmail && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Owner Email</p>
+                        <a 
+                          href={`mailto:${contact.primaryDiageoRelationshipOwners.ownerEmail}`}
+                          className="text-sm text-blue-600 hover:text-blue-800 break-all"
+                        >
+                          {contact.primaryDiageoRelationshipOwners.ownerEmail}
+                        </a>
+                      </div>
+                    )}
+                    {contact.primaryDiageoRelationshipOwners.svp && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">SVP</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          {contact.primaryDiageoRelationshipOwners.svp}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Sales Section */}
                 {contact.primaryDiageoRelationshipOwners.sales && Object.keys(contact.primaryDiageoRelationshipOwners.sales).length > 0 && (

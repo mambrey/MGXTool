@@ -132,8 +132,11 @@ export interface Contact {
   vicePresident?: string;
   seniorVicePresident?: string;
   // Primary Diageo Relationship Owner(s) - UPDATED STRUCTURE
-  // Each role now has its own cadence
+  // Each role now has its own cadence, plus owner info and SVP
   primaryDiageoRelationshipOwners?: {
+    ownerName?: string; // NEW: Owner name field
+    ownerEmail?: string; // NEW: Owner email field
+    svp?: string; // NEW: SVP dropdown field
     sales?: {
       [role: string]: string; // role name -> cadence (e.g., "CEO" -> "Monthly")
     };

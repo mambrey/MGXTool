@@ -32,7 +32,7 @@ interface ContactEventWithAlert extends CustomerEvent {
   alertDays?: number;
 }
 
-// Category options for segment ownership
+// Category options for segment ownership - ADDED Non-Alc
 const CATEGORY_OPTIONS = [
   'Cordials',
   'Gin',
@@ -46,7 +46,8 @@ const CATEGORY_OPTIONS = [
   'Whiskey Other',
   'Beer',
   'Wine',
-  'THC'
+  'THC',
+  'Non-Alc'
 ];
 
 // Responsibility options
@@ -77,6 +78,9 @@ const SUPPORT_ROLES = [
   'Manager Shopper'
 ];
 const CADENCE_OPTIONS = ['Annual', 'Semi Annual', 'Quarterly', 'Monthly', 'Ongoing'];
+
+// SVP dropdown options
+const SVP_OPTIONS = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
 
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState({
@@ -146,6 +150,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [seniorVicePresident, setSeniorVicePresident] = useState(contact?.seniorVicePresident || '');
 
   // Primary Diageo Relationship Owner(s) state - UPDATED to store role->cadence mapping
+  const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
+  const [ownerEmail, setOwnerEmail] = useState(contact?.primaryDiageoRelationshipOwners?.ownerEmail || '');
+  const [svp, setSvp] = useState(contact?.primaryDiageoRelationshipOwners?.svp || '');
   const [salesRoles, setSalesRoles] = useState<{[role: string]: string}>(
     contact?.primaryDiageoRelationshipOwners?.sales || {}
   );
@@ -448,6 +455,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       vicePresident,
       seniorVicePresident,
       primaryDiageoRelationshipOwners: {
+        ownerName,
+        ownerEmail,
+        svp,
         sales: salesRoles,
         support: supportRoles
       },
@@ -666,9 +676,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               />
             </div>
             
-            {/* Account Selection */}
+            {/* Account Selection - FIXED LABEL */}
             <div>
-              <Label htmlFor="accountId">Account/Banned/Buying Office-Contact *</Label>
+              <Label htmlFor="accountId">Account/Banner/Buying Office *</Label>
               <Popover open={accountSearchOpen} onOpenChange={setAccountSearchOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -1340,7 +1350,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Primary Diageo Relationship Owner(s) - UPDATED SECTION WITH INDIVIDUAL CADENCE */}
+        {/* Primary Diageo Relationship Owner(s) - UPDATED SECTION WITH NEW FIELDS */}
         <Card className="bg-indigo-50 border-indigo-200">
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
@@ -1349,6 +1359,44 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* NEW: Owner Name, Owner Email, and SVP fields at the top */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
+              <div>
+                <Label htmlFor="ownerName">Owner Name</Label>
+                <Input
+                  id="ownerName"
+                  value={ownerName}
+                  onChange={(e) => setOwnerName(e.target.value)}
+                  placeholder="Enter owner name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="ownerEmail">Owner Email</Label>
+                <Input
+                  id="ownerEmail"
+                  type="email"
+                  value={ownerEmail}
+                  onChange={(e) => setOwnerEmail(e.target.value)}
+                  placeholder="owner@company.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="svp">SVP</Label>
+                <Select value={svp} onValueChange={setSvp}>
+                  <SelectTrigger id="svp">
+                    <SelectValue placeholder="Select SVP" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SVP_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Sales Section */}
               <div className="space-y-4 p-4 bg-white border border-indigo-200 rounded-lg">
@@ -1582,9 +1630,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             {/* Original Owner Fields (kept for backward compatibility) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
               <div>
-                <Label htmlFor="ownerName">Owner Name (Legacy)</Label>
+                <Label htmlFor="ownerNameLegacy">Owner Name (Legacy)</Label>
                 <Input
-                  id="ownerName"
+                  id="ownerNameLegacy"
                   value={formData.relationshipOwner.name}
                   onChange={(e) => setFormData(prev => ({ 
                     ...prev, 
@@ -1594,9 +1642,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 />
               </div>
               <div>
-                <Label htmlFor="ownerEmail">Owner Email</Label>
+                <Label htmlFor="ownerEmailLegacy">Owner Email</Label>
                 <Input
-                  id="ownerEmail"
+                  id="ownerEmailLegacy"
                   type="email"
                   value={formData.relationshipOwner.email}
                   onChange={(e) => setFormData(prev => ({ 
