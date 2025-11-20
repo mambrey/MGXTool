@@ -567,7 +567,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
           <div className="sm:col-span-2">
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Operating States</Label>
+              <Label className="text-sm font-medium">Spirits Operating States</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
