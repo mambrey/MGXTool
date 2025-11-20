@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Image, Building } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Image, Building, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -102,6 +102,15 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     designatedCharities: '',
     keyEvents: '',
     customerEvents: [],
+    // Level of Influence fields - default to 'none'
+    influenceAssortmentShelf: 'none',
+    influencePricePromo: 'none',
+    influenceDisplayMerchandising: 'none',
+    influenceDigital: 'none',
+    influenceEcommerce: 'none',
+    influenceInStoreEvents: 'none',
+    influenceShrinkManagement: 'none',
+    influenceBuyingPOOwnership: 'none',
     createdAt: account?.createdAt || currentTime,
     lastModified: currentTime,
     accountOwnerName: '',
@@ -325,7 +334,16 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       categoryAdvisor: formData.categoryAdvisor === 'none' ? '' : formData.categoryAdvisor,
       pricingStrategy: formData.pricingStrategy === 'none' ? '' : formData.pricingStrategy,
       privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel,
-      innovationAppetite: formData.innovationAppetite === 'none' ? '' : formData.innovationAppetite
+      innovationAppetite: formData.innovationAppetite === 'none' ? '' : formData.innovationAppetite,
+      // Convert 'none' to empty string for level of influence fields
+      influenceAssortmentShelf: formData.influenceAssortmentShelf === 'none' ? '' : formData.influenceAssortmentShelf,
+      influencePricePromo: formData.influencePricePromo === 'none' ? '' : formData.influencePricePromo,
+      influenceDisplayMerchandising: formData.influenceDisplayMerchandising === 'none' ? '' : formData.influenceDisplayMerchandising,
+      influenceDigital: formData.influenceDigital === 'none' ? '' : formData.influenceDigital,
+      influenceEcommerce: formData.influenceEcommerce === 'none' ? '' : formData.influenceEcommerce,
+      influenceInStoreEvents: formData.influenceInStoreEvents === 'none' ? '' : formData.influenceInStoreEvents,
+      influenceShrinkManagement: formData.influenceShrinkManagement === 'none' ? '' : formData.influenceShrinkManagement,
+      influenceBuyingPOOwnership: formData.influenceBuyingPOOwnership === 'none' ? '' : formData.influenceBuyingPOOwnership
     };
 
     const hasNewTickerSymbol = 
@@ -1114,7 +1132,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram</Label>
           </div>
 
-
           {formData.hasPlanograms && (
             <div className="mt-6">
               <Label className="text-lg font-medium mb-4 block flex items-center gap-2">
@@ -1215,6 +1232,163 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Level of Influence */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+            Level of Influence
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="influenceAssortmentShelf" className="text-sm font-medium">Assortment / Shelf</Label>
+              <Select 
+                value={formData.influenceAssortmentShelf || 'none'} 
+                onValueChange={(value) => updateField('influenceAssortmentShelf', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="influencePricePromo" className="text-sm font-medium">Price / Promo</Label>
+              <Select 
+                value={formData.influencePricePromo || 'none'} 
+                onValueChange={(value) => updateField('influencePricePromo', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="influenceDisplayMerchandising" className="text-sm font-medium">Display / Merchandising</Label>
+              <Select 
+                value={formData.influenceDisplayMerchandising || 'none'} 
+                onValueChange={(value) => updateField('influenceDisplayMerchandising', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="influenceDigital" className="text-sm font-medium">Digital</Label>
+              <Select 
+                value={formData.influenceDigital || 'none'} 
+                onValueChange={(value) => updateField('influenceDigital', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="influenceEcommerce" className="text-sm font-medium">eCommerce</Label>
+              <Select 
+                value={formData.influenceEcommerce || 'none'} 
+                onValueChange={(value) => updateField('influenceEcommerce', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="influenceInStoreEvents" className="text-sm font-medium">In Store Events</Label>
+              <Select 
+                value={formData.influenceInStoreEvents || 'none'} 
+                onValueChange={(value) => updateField('influenceInStoreEvents', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="influenceShrinkManagement" className="text-sm font-medium">Shrink Management</Label>
+              <Select 
+                value={formData.influenceShrinkManagement || 'none'} 
+                onValueChange={(value) => updateField('influenceShrinkManagement', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="influenceBuyingPOOwnership" className="text-sm font-medium">Buying / PO Ownership</Label>
+              <Select 
+                value={formData.influenceBuyingPOOwnership || 'none'} 
+                onValueChange={(value) => updateField('influenceBuyingPOOwnership', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

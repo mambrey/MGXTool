@@ -76,6 +76,15 @@ export interface Account {
   keyCompetitors?: string;
   designatedCharities?: string; // NEW: Designated charities field
   customerEvents?: CustomerEvent[];
+  // Level of Influence fields
+  influenceAssortmentShelf?: string;
+  influencePricePromo?: string;
+  influenceDisplayMerchandising?: string;
+  influenceDigital?: string;
+  influenceEcommerce?: string;
+  influenceInStoreEvents?: string;
+  influenceShrinkManagement?: string;
+  influenceBuyingPOOwnership?: string;
   createdAt: string;
   lastModified: string;
 }
