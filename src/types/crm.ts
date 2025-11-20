@@ -114,7 +114,10 @@ export interface Contact {
   nextContactAlert?: boolean;
   socialHandles?: string[];
   knownPreferences?: string;
+  entertainment?: string; // NEW: Entertainment dropdown (Yes/No)
   notes?: string;
+  values?: string; // NEW: Values free text
+  painPoints?: string; // NEW: Pain Points free text
   uploadedNotes?: string[];
   contactEvents?: CustomerEvent[]; // NEW: Custom events for contacts
   relationshipOwner?: {

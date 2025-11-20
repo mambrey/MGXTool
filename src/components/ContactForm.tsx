@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Package, Trash2, ClipboardList } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Package, Trash2, ClipboardList, Target } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -88,7 +88,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     lastContactDate: contact?.lastContactDate || '',
     socialHandles: contact?.socialHandles || [],
     knownPreferences: contact?.knownPreferences || '',
+    entertainment: contact?.entertainment || '',
     notes: contact?.notes || '',
+    values: contact?.values || '',
+    painPoints: contact?.painPoints || '',
     relationshipOwner: contact?.relationshipOwner || { name: '', email: '', vicePresident: '' },
     notificationEmail: contact?.notificationEmail || '',
     teamsChannelId: contact?.teamsChannelId || '',
@@ -824,7 +827,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </p>
             </div>
 
-            {/* Responsibility Level - NEW */}
+            {/* Responsibility Level */}
             <div>
               <Label className="flex items-center gap-2 mb-3">
                 <ClipboardList className="w-4 h-4" />
@@ -1106,12 +1109,59 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               />
             </div>
             <div>
+              <Label htmlFor="entertainment">Entertainment</Label>
+              <Select 
+                value={formData.entertainment} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, entertainment: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label htmlFor="notes">General Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 placeholder="General notes about this contact..."
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Values - NEW SECTION */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Values
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="values">Values</Label>
+              <Textarea
+                id="values"
+                value={formData.values}
+                onChange={(e) => setFormData(prev => ({ ...prev, values: e.target.value }))}
+                placeholder="Enter values..."
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="painPoints">Pain Points</Label>
+              <Textarea
+                id="painPoints"
+                value={formData.painPoints}
+                onChange={(e) => setFormData(prev => ({ ...prev, painPoints: e.target.value }))}
+                placeholder="Enter pain points..."
                 rows={3}
               />
             </div>
