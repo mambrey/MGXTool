@@ -3,11 +3,12 @@ import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle } from 'luc
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import type { Contact } from '@/types/crm';
+import type { Contact, Account } from '@/types/crm';
 
 interface ContactImportProps {
   onImport: (contacts: Contact[]) => void;
   existingContacts?: Contact[];
+  existingAccounts: Account[];
 }
 
 interface ExtendedContact extends Contact {
@@ -15,7 +16,7 @@ interface ExtendedContact extends Contact {
   seniorVicePresident?: string;
 }
 
-export default function ContactImport({ onImport, existingContacts = [] }: ContactImportProps) {
+export default function ContactImport({ onImport, existingContacts = [], existingAccounts = [] }: ContactImportProps) {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ success: boolean; message: string; count?: number } | null>(null);
 
@@ -23,7 +24,7 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
     // Generate CSV with current contact data
     const headers = [
       'First Name', 'Last Name', 'Email', 'Office Phone', 'Mobile Phone', 'Preferred Contact Method',
-      'Title', 'Account ID', 'Contact Type', 'Influence', 'Birthday', 'Birthday Alert',
+      'Title', 'Account Name', 'Contact Type', 'Influence', 'Birthday', 'Birthday Alert',
       'Relationship Status', 'Last Contact Date', 'Next Contact Date', 'Next Contact Alert',
       'Social Handles', 'Known Preferences', 'Notes', 'Relationship Owner Name',
       'Relationship Owner Email', 'Director', 'Vice President', 'Senior Vice President', 
@@ -47,6 +48,11 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
       // Handle socialHandles array
       const socialHandlesStr = contact.socialHandles ? contact.socialHandles.join('; ') : '';
       
+      // Find account name from accountId
+      const accountName = contact.accountId 
+        ? existingAccounts.find(acc => acc.id === contact.accountId)?.name || ''
+        : '';
+      
       const row = [
         escapeCSV(contact.firstName),
         escapeCSV(contact.lastName),
@@ -55,7 +61,7 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
         escapeCSV(contact.mobilePhone),
         escapeCSV(contact.preferredContactMethod),
         escapeCSV(contact.title),
-        escapeCSV(contact.accountId),
+        escapeCSV(accountName),
         escapeCSV(contact.contactType),
         escapeCSV(contact.influence),
         escapeCSV(contact.birthday),
@@ -165,7 +171,11 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
       const headers = rows[0].map(h => h.trim());
       const dataRows = rows.slice(1).filter(row => row.some(cell => cell.trim()));
 
-      const contacts: ExtendedContact[] = dataRows.map((row, index) => {
+      const contacts: ExtendedContact[] = [];
+      const unmatchedAccounts: string[] = [];
+      let linkedCount = 0;
+
+      dataRows.forEach((row, index) => {
         const getCell = (columnName: string): string => {
           const colIndex = headers.findIndex(h => 
             h.toLowerCase() === columnName.toLowerCase()
@@ -209,7 +219,27 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
           vicePresident: vicePresident || ''
         } : undefined;
 
-        return {
+        // Match account name to account ID (case-insensitive)
+        const accountName = getCell('Account Name');
+        let accountId: string | undefined = undefined;
+        
+        if (accountName) {
+          const matchedAccount = existingAccounts.find(
+            acc => acc.name.toLowerCase() === accountName.toLowerCase()
+          );
+          
+          if (matchedAccount) {
+            accountId = matchedAccount.id;
+            linkedCount++;
+          } else {
+            // Track unmatched account names
+            if (!unmatchedAccounts.includes(accountName)) {
+              unmatchedAccounts.push(accountName);
+            }
+          }
+        }
+
+        contacts.push({
           id: `imported-${Date.now()}-${index}`,
           firstName,
           lastName,
@@ -218,7 +248,7 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
           mobilePhone: getCell('Mobile Phone') || undefined,
           preferredContactMethod: (getCell('Preferred Contact Method') || undefined) as 'email' | 'mobile phone' | 'office phone' | undefined,
           title: getCell('Title') || undefined,
-          accountId: getCell('Account ID') || undefined,
+          accountId,
           contactType: (getCell('Contact Type') || undefined) as 'Primary' | 'Secondary' | undefined,
           influence: (getCell('Influence') || undefined) as 'Decision Maker' | 'Influencer' | 'User' | 'Gatekeeper' | undefined,
           birthday: getCell('Birthday') || undefined,
@@ -236,13 +266,23 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
           seniorVicePresident: seniorVicePresident || undefined,
           createdAt: getCell('Created At') || now,
           lastModified: getCell('Last Modified') || now
-        };
+        });
       });
 
       onImport(contacts);
+      
+      // Build detailed success message
+      let message = `Successfully imported ${contacts.length} contact(s).`;
+      if (linkedCount > 0) {
+        message += ` ${linkedCount} contact(s) linked to existing accounts.`;
+      }
+      if (unmatchedAccounts.length > 0) {
+        message += ` Warning: The following account names were not found and contacts were not linked: ${unmatchedAccounts.join(', ')}`;
+      }
+      
       setImportResult({
         success: true,
-        message: `Successfully imported ${contacts.length} contact(s)`,
+        message,
         count: contacts.length
       });
     } catch (error) {
@@ -347,7 +387,7 @@ export default function ContactImport({ onImport, existingContacts = [] }: Conta
           <div className="text-xs text-gray-600 space-y-1">
             <p><strong>Required:</strong> First Name, Last Name, Email</p>
             <p><strong>Contact Info:</strong> Office Phone, Mobile Phone, Preferred Contact Method, Title</p>
-            <p><strong>Account Link:</strong> Account ID (use the account's ID to link this contact)</p>
+            <p><strong>Account Link:</strong> Account Name (use the exact account name to link this contact)</p>
             <p><strong>Classification:</strong> Contact Type (Primary/Secondary), Influence (Decision Maker/Influencer/User/Gatekeeper)</p>
             <p><strong>Dates & Alerts:</strong> Birthday, Birthday Alert, Last Contact Date, Next Contact Date, Next Contact Alert</p>
             <p><strong>Relationship:</strong> Relationship Status, Known Preferences, Notes</p>

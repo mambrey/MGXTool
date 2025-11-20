@@ -967,7 +967,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <SharePointImport onImport={handleImportAccounts} existingAccounts={accounts || []} />
-              <ContactImport onImport={handleImportContacts} existingContacts={contacts || []} />
+              <ContactImport onImport={handleImportContacts} existingContacts={contacts || []} existingAccounts={accounts || []} />
             </div>
             
             <MarketSnapshotUpload 
