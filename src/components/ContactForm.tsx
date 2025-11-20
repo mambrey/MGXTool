@@ -145,11 +145,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [vicePresident, setVicePresident] = useState(contact?.vicePresident || '');
   const [seniorVicePresident, setSeniorVicePresident] = useState(contact?.seniorVicePresident || '');
 
-  // Primary Diageo Relationship Owner(s) state
-  const [salesRoles, setSalesRoles] = useState<string[]>(contact?.primaryDiageoRelationshipOwners?.sales?.roles || []);
-  const [salesCadence, setSalesCadence] = useState<string>(contact?.primaryDiageoRelationshipOwners?.sales?.cadence || '');
-  const [supportRoles, setSupportRoles] = useState<string[]>(contact?.primaryDiageoRelationshipOwners?.support?.roles || []);
-  const [supportCadence, setSupportCadence] = useState<string>(contact?.primaryDiageoRelationshipOwners?.support?.cadence || '');
+  // Primary Diageo Relationship Owner(s) state - UPDATED to store role->cadence mapping
+  const [salesRoles, setSalesRoles] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.sales || {}
+  );
+  const [supportRoles, setSupportRoles] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.support || {}
+  );
 
   const seniorVPOptions = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
 
@@ -267,25 +269,47 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     return formData.responsibilityLevels[key] !== undefined;
   };
 
-  // Primary Diageo Relationship Owner handlers
+  // Primary Diageo Relationship Owner handlers - UPDATED
   const handleSalesRoleToggle = (role: string) => {
     setSalesRoles(prev => {
-      if (prev.includes(role)) {
-        return prev.filter(r => r !== role);
+      const newRoles = { ...prev };
+      if (role in newRoles) {
+        // Remove the role
+        delete newRoles[role];
       } else {
-        return [...prev, role];
+        // Add the role with empty cadence
+        newRoles[role] = '';
       }
+      return newRoles;
     });
+  };
+
+  const handleSalesCadenceChange = (role: string, cadence: string) => {
+    setSalesRoles(prev => ({
+      ...prev,
+      [role]: cadence
+    }));
   };
 
   const handleSupportRoleToggle = (role: string) => {
     setSupportRoles(prev => {
-      if (prev.includes(role)) {
-        return prev.filter(r => r !== role);
+      const newRoles = { ...prev };
+      if (role in newRoles) {
+        // Remove the role
+        delete newRoles[role];
       } else {
-        return [...prev, role];
+        // Add the role with empty cadence
+        newRoles[role] = '';
       }
+      return newRoles;
     });
+  };
+
+  const handleSupportCadenceChange = (role: string, cadence: string) => {
+    setSupportRoles(prev => ({
+      ...prev,
+      [role]: cadence
+    }));
   };
 
   // Event management functions
@@ -424,14 +448,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       vicePresident,
       seniorVicePresident,
       primaryDiageoRelationshipOwners: {
-        sales: {
-          roles: salesRoles,
-          cadence: salesCadence
-        },
-        support: {
-          roles: supportRoles,
-          cadence: supportCadence
-        }
+        sales: salesRoles,
+        support: supportRoles
       },
       contactEvents: contactEvents.map(({ alertEnabled, alertDays, ...event }) => event),
       createdAt: contact?.createdAt || new Date().toISOString(),
@@ -1322,7 +1340,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Primary Diageo Relationship Owner(s) - NEW SECTION */}
+        {/* Primary Diageo Relationship Owner(s) - UPDATED SECTION WITH INDIVIDUAL CADENCE */}
         <Card className="bg-indigo-50 border-indigo-200">
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
@@ -1339,51 +1357,43 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   Sales
                 </h3>
                 
-                {/* Sales Roles Multi-Select */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Select Roles</Label>
-                  <ScrollArea className="h-[180px] border border-gray-200 rounded-md p-3">
-                    <div className="space-y-2">
-                      {SALES_ROLES.map((role) => (
-                        <div key={role} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`sales-${role}`}
-                            checked={salesRoles.includes(role)}
-                            onCheckedChange={() => handleSalesRoleToggle(role)}
-                          />
-                          <Label htmlFor={`sales-${role}`} className="cursor-pointer text-sm">
-                            {role}
-                          </Label>
-                        </div>
-                      ))}
+                {/* Sales Roles with Individual Cadence */}
+                <div className="space-y-2">
+                  {SALES_ROLES.map((role) => (
+                    <div key={role} className="grid grid-cols-12 gap-2 items-center p-2 hover:bg-gray-50 rounded">
+                      <div className="col-span-1">
+                        <Checkbox
+                          id={`sales-${role}`}
+                          checked={role in salesRoles}
+                          onCheckedChange={() => handleSalesRoleToggle(role)}
+                        />
+                      </div>
+                      <Label 
+                        htmlFor={`sales-${role}`} 
+                        className="col-span-5 cursor-pointer text-sm"
+                      >
+                        {role}
+                      </Label>
+                      <div className="col-span-6">
+                        <Select
+                          value={salesRoles[role] || ''}
+                          onValueChange={(value) => handleSalesCadenceChange(role, value)}
+                          disabled={!(role in salesRoles)}
+                        >
+                          <SelectTrigger className={cn("h-9 text-xs", !(role in salesRoles) && "opacity-50")}>
+                            <SelectValue placeholder="Cadence..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CADENCE_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option} className="text-xs">
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </ScrollArea>
-                  {salesRoles.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {salesRoles.map((role) => (
-                        <Badge key={role} variant="secondary" className="text-xs">
-                          {role}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Sales Cadence Dropdown */}
-                <div>
-                  <Label htmlFor="salesCadence" className="text-sm font-medium">Cadence</Label>
-                  <Select value={salesCadence} onValueChange={setSalesCadence}>
-                    <SelectTrigger id="salesCadence">
-                      <SelectValue placeholder="Select cadence..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CADENCE_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  ))}
                 </div>
               </div>
 
@@ -1394,51 +1404,43 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   Support
                 </h3>
                 
-                {/* Support Roles Multi-Select */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Select Roles</Label>
-                  <ScrollArea className="h-[180px] border border-gray-200 rounded-md p-3">
-                    <div className="space-y-2">
-                      {SUPPORT_ROLES.map((role) => (
-                        <div key={role} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`support-${role}`}
-                            checked={supportRoles.includes(role)}
-                            onCheckedChange={() => handleSupportRoleToggle(role)}
-                          />
-                          <Label htmlFor={`support-${role}`} className="cursor-pointer text-sm">
-                            {role}
-                          </Label>
-                        </div>
-                      ))}
+                {/* Support Roles with Individual Cadence */}
+                <div className="space-y-2">
+                  {SUPPORT_ROLES.map((role) => (
+                    <div key={role} className="grid grid-cols-12 gap-2 items-center p-2 hover:bg-gray-50 rounded">
+                      <div className="col-span-1">
+                        <Checkbox
+                          id={`support-${role}`}
+                          checked={role in supportRoles}
+                          onCheckedChange={() => handleSupportRoleToggle(role)}
+                        />
+                      </div>
+                      <Label 
+                        htmlFor={`support-${role}`} 
+                        className="col-span-5 cursor-pointer text-sm"
+                      >
+                        {role}
+                      </Label>
+                      <div className="col-span-6">
+                        <Select
+                          value={supportRoles[role] || ''}
+                          onValueChange={(value) => handleSupportCadenceChange(role, value)}
+                          disabled={!(role in supportRoles)}
+                        >
+                          <SelectTrigger className={cn("h-9 text-xs", !(role in supportRoles) && "opacity-50")}>
+                            <SelectValue placeholder="Cadence..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CADENCE_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option} className="text-xs">
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </ScrollArea>
-                  {supportRoles.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {supportRoles.map((role) => (
-                        <Badge key={role} variant="secondary" className="text-xs">
-                          {role}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Support Cadence Dropdown */}
-                <div>
-                  <Label htmlFor="supportCadence" className="text-sm font-medium">Cadence</Label>
-                  <Select value={supportCadence} onValueChange={setSupportCadence}>
-                    <SelectTrigger id="supportCadence">
-                      <SelectValue placeholder="Select cadence..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CADENCE_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  ))}
                 </div>
               </div>
             </div>

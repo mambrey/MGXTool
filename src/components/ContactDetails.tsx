@@ -452,10 +452,10 @@ export default function ContactDetails({
             </div>
           </div>
 
-          {/* Primary Diageo Relationship Owner(s) Section */}
+          {/* Primary Diageo Relationship Owner(s) Section - UPDATED TO SHOW INDIVIDUAL CADENCE */}
           {contact.primaryDiageoRelationshipOwners && (
-            (contact.primaryDiageoRelationshipOwners.sales?.roles?.length > 0 || 
-             contact.primaryDiageoRelationshipOwners.support?.roles?.length > 0)
+            (Object.keys(contact.primaryDiageoRelationshipOwners.sales || {}).length > 0 || 
+             Object.keys(contact.primaryDiageoRelationshipOwners.support || {}).length > 0)
           ) && (
             <div className="mt-6 pt-6 border-t">
               <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
@@ -464,61 +464,41 @@ export default function ContactDetails({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Sales Section */}
-                {contact.primaryDiageoRelationshipOwners.sales?.roles?.length > 0 && (
+                {contact.primaryDiageoRelationshipOwners.sales && Object.keys(contact.primaryDiageoRelationshipOwners.sales).length > 0 && (
                   <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
                     <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
                       <Briefcase className="w-4 h-4" />
                       Sales
                     </h4>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-600 mb-2">Roles:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {contact.primaryDiageoRelationshipOwners.sales.roles.map((role) => (
-                            <Badge key={role} variant="secondary" className="text-xs">
-                              {role}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      {contact.primaryDiageoRelationshipOwners.sales.cadence && (
-                        <div>
-                          <p className="text-xs text-gray-600 mb-1">Cadence:</p>
+                    <div className="space-y-2">
+                      {Object.entries(contact.primaryDiageoRelationshipOwners.sales).map(([role, cadence]) => (
+                        <div key={role} className="flex items-center justify-between p-2 bg-white rounded border border-indigo-100">
+                          <span className="text-sm font-medium text-gray-700">{role}</span>
                           <Badge variant="outline" className="text-xs">
-                            {contact.primaryDiageoRelationshipOwners.sales.cadence}
+                            {cadence || 'Not set'}
                           </Badge>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
                 )}
 
                 {/* Support Section */}
-                {contact.primaryDiageoRelationshipOwners.support?.roles?.length > 0 && (
+                {contact.primaryDiageoRelationshipOwners.support && Object.keys(contact.primaryDiageoRelationshipOwners.support).length > 0 && (
                   <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
                     <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       Support
                     </h4>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-600 mb-2">Roles:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {contact.primaryDiageoRelationshipOwners.support.roles.map((role) => (
-                            <Badge key={role} variant="secondary" className="text-xs">
-                              {role}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      {contact.primaryDiageoRelationshipOwners.support.cadence && (
-                        <div>
-                          <p className="text-xs text-gray-600 mb-1">Cadence:</p>
+                    <div className="space-y-2">
+                      {Object.entries(contact.primaryDiageoRelationshipOwners.support).map(([role, cadence]) => (
+                        <div key={role} className="flex items-center justify-between p-2 bg-white rounded border border-indigo-100">
+                          <span className="text-sm font-medium text-gray-700">{role}</span>
                           <Badge variant="outline" className="text-xs">
-                            {contact.primaryDiageoRelationshipOwners.support.cadence}
+                            {cadence || 'Not set'}
                           </Badge>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
                 )}

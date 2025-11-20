@@ -131,15 +131,14 @@ export interface Contact {
   director?: string;
   vicePresident?: string;
   seniorVicePresident?: string;
-  // Primary Diageo Relationship Owner(s) - NEW STRUCTURE
+  // Primary Diageo Relationship Owner(s) - UPDATED STRUCTURE
+  // Each role now has its own cadence
   primaryDiageoRelationshipOwners?: {
     sales?: {
-      roles: string[]; // Multi-select: CEO, President, SVP, VP Sales, Director Sales, NAM
-      cadence: string; // Annual, Semi Annual, Quarterly, Monthly, Ongoing
+      [role: string]: string; // role name -> cadence (e.g., "CEO" -> "Monthly")
     };
     support?: {
-      roles: string[]; // Multi-select: VP Customer Development, Director Category Development, etc.
-      cadence: string; // Annual, Semi Annual, Quarterly, Monthly, Ongoing
+      [role: string]: string; // role name -> cadence (e.g., "VP Customer Development" -> "Quarterly")
     };
   };
   // Per-contact notification overrides
