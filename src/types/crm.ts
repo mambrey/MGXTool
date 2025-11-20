@@ -93,14 +93,22 @@ export interface Contact {
   managerId?: string; // ID of the manager contact (for reporting hierarchy)
   accountId?: string;
   isPrimaryContact?: boolean; // UPDATED: Changed from contactType to isPrimaryContact boolean
-  influence?: 'Decision Maker' | 'Influencer' | 'User' | 'Gatekeeper';
-  isInfluencer?: boolean; // NEW: Flag to mark key influencers in the organization
-  influencerLevel?: number; // NEW: Influencer rating from 1-10
-  receptiveness?: 'very-receptive' | 'receptive' | 'neutral' | 'not-very-receptive' | 'not-receptive';
   birthday?: string;
   birthdayAlert?: boolean;
   relationshipStatus?: 'Promoter' | 'Supporter' | 'Neutral' | 'Detractor' | 'At Risk'; // UPDATED: Changed to specific dropdown values
   categorySegmentOwnership?: string[]; // NEW: Multi-select for category/segment ownership
+  // Responsibility Levels - NEW
+  responsibilityLevels?: {
+    influenceLevelResponsibility?: string;
+    assortmentShelf?: string;
+    displayMerchandising?: string;
+    pricePromo?: string;
+    digital?: string;
+    ecommerce?: string;
+    instoreEvents?: string;
+    shrink?: string;
+    buyingPOOwnership?: string;
+  };
   lastContactDate?: string;
   nextContactDate?: string;
   nextContactAlert?: boolean;

@@ -5,10 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Star, TrendingUp, ThumbsUp, Trash2, Package } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, User, Search, Check, Mail, MessageSquare, Users, Package, Trash2, ClipboardList } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -50,6 +49,21 @@ const CATEGORY_OPTIONS = [
   'THC'
 ];
 
+// Responsibility options
+const RESPONSIBILITY_OPTIONS = [
+  { key: 'influenceLevelResponsibility', label: 'Influence level - Responsibility' },
+  { key: 'assortmentShelf', label: 'Assortment/Shelf' },
+  { key: 'displayMerchandising', label: 'Display/Merchandising' },
+  { key: 'pricePromo', label: 'Price/Promo' },
+  { key: 'digital', label: 'Digital' },
+  { key: 'ecommerce', label: 'Ecommerce' },
+  { key: 'instoreEvents', label: 'Instore Events' },
+  { key: 'shrink', label: 'Shrink' },
+  { key: 'buyingPOOwnership', label: 'Buying/PO Ownership' }
+];
+
+const RESPONSIBILITY_LEVEL_OPTIONS = ['High', 'Medium', 'Low', 'None'];
+
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState({
     firstName: contact?.firstName || '',
@@ -66,10 +80,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     isPrimaryContact: contact?.isPrimaryContact || false,
     relationshipStatus: contact?.relationshipStatus || '',
     categorySegmentOwnership: contact?.categorySegmentOwnership || [],
-    influence: contact?.influence || 'User',
-    isInfluencer: contact?.isInfluencer || false,
-    influencerLevel: contact?.influencerLevel || undefined,
-    receptiveness: contact?.receptiveness || undefined,
+    responsibilityLevels: contact?.responsibilityLevels || {},
     birthday: contact?.birthday || '',
     birthdayAlert: contact?.birthdayAlert || false,
     nextContactDate: contact?.nextContactDate || '',
@@ -146,6 +157,41 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   };
 
   const isAllCategoriesSelected = formData.categorySegmentOwnership.length === CATEGORY_OPTIONS.length;
+
+  // Responsibility Level handlers
+  const handleResponsibilityLevelChange = (key: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      responsibilityLevels: {
+        ...prev.responsibilityLevels,
+        [key]: value
+      }
+    }));
+  };
+
+  const handleResponsibilityToggle = (key: string) => {
+    setFormData(prev => {
+      const currentValue = prev.responsibilityLevels[key];
+      const newResponsibilityLevels = { ...prev.responsibilityLevels };
+      
+      if (currentValue) {
+        // If currently has a value, remove it (uncheck)
+        delete newResponsibilityLevels[key];
+      } else {
+        // If currently empty, set to 'None' (check)
+        newResponsibilityLevels[key] = 'None';
+      }
+      
+      return {
+        ...prev,
+        responsibilityLevels: newResponsibilityLevels
+      };
+    });
+  };
+
+  const isResponsibilityEnabled = (key: string) => {
+    return formData.responsibilityLevels[key] !== undefined;
+  };
 
   // Event management functions
   const handleAddEvent = () => {
@@ -390,56 +436,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       ...prev,
       uploadedNotes: prev.uploadedNotes.filter(note => note.id !== noteId)
     }));
-  };
-
-  // Helper function to get color coding for influencer level
-  const getInfluencerLevelColor = (level: number) => {
-    if (level <= 3) return 'bg-gray-100 text-gray-800';
-    if (level <= 6) return 'bg-blue-100 text-blue-800';
-    if (level <= 8) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
-  };
-
-  const getInfluencerLevelLabel = (level: number) => {
-    if (level <= 3) return 'Low';
-    if (level <= 6) return 'Medium';
-    if (level <= 8) return 'High';
-    return 'Very High';
-  };
-
-  // Helper function to get receptiveness badge color
-  const getReceptivenessBadgeColor = (receptiveness?: string) => {
-    switch (receptiveness) {
-      case 'very-receptive':
-        return 'bg-green-500 text-white border-green-600';
-      case 'receptive':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'neutral':
-        return 'bg-gray-100 text-gray-800 border-gray-300';
-      case 'not-very-receptive':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
-      case 'not-receptive':
-        return 'bg-red-500 text-white border-red-600';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-
-  const getReceptivenessLabel = (receptiveness?: string) => {
-    switch (receptiveness) {
-      case 'very-receptive':
-        return 'Very Receptive';
-      case 'receptive':
-        return 'Receptive';
-      case 'neutral':
-        return 'Neutral';
-      case 'not-very-receptive':
-        return 'Not Very Receptive';
-      case 'not-receptive':
-        return 'Not Receptive';
-      default:
-        return 'Not Set';
-    }
   };
 
   return (
@@ -736,13 +732,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Ways of Working (formerly Relationship Information) */}
+        {/* Ways of Working */}
         <Card>
           <CardHeader>
             <CardTitle>Ways of Working</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Relationship Status - MOVED HERE */}
+            {/* Relationship Status */}
             <div>
               <Label htmlFor="relationshipStatus">Relationship Status</Label>
               <Select 
@@ -762,7 +758,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
             </div>
 
-            {/* Category/Segment Ownership - NEW MULTI-SELECT */}
+            {/* Category/Segment Ownership - MULTI-SELECT */}
             <div>
               <Label htmlFor="categorySegmentOwnership" className="flex items-center gap-2">
                 <Package className="w-4 h-4" />
@@ -828,172 +824,52 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </p>
             </div>
 
+            {/* Responsibility Level - NEW */}
             <div>
-              <Label htmlFor="influence">Influence Level</Label>
-              <Select value={formData.influence} onValueChange={(value) => setFormData(prev => ({ ...prev, influence: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Decision Maker">Decision Maker</SelectItem>
-                  <SelectItem value="Influencer">Influencer</SelectItem>
-                  <SelectItem value="User">User</SelectItem>
-                  <SelectItem value="Gatekeeper">Gatekeeper</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500 mt-1">
-                General influence category in the organization
-              </p>
-            </div>
-            
-            {/* NEW: Receptiveness Scale */}
-            <div>
-              <Label htmlFor="receptiveness" className="flex items-center gap-2">
-                <ThumbsUp className="w-4 h-4" />
-                Receptiveness Level
+              <Label className="flex items-center gap-2 mb-3">
+                <ClipboardList className="w-4 h-4" />
+                Responsibility Level
               </Label>
-              <Select 
-                value={formData.receptiveness || ''} 
-                onValueChange={(value) => setFormData(prev => ({ 
-                  ...prev, 
-                  receptiveness: value as 'very-receptive' | 'receptive' | 'neutral' | 'not-very-receptive' | 'not-receptive' | undefined
-                }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select receptiveness level..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="very-receptive">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span>Very Receptive</span>
+              <div className="space-y-2 p-4 border border-gray-200 rounded-lg">
+                {RESPONSIBILITY_OPTIONS.map(({ key, label }) => (
+                  <div key={key} className="grid grid-cols-12 gap-3 items-center p-2 hover:bg-gray-50 rounded">
+                    <div className="col-span-1">
+                      <Checkbox
+                        id={`responsibility-${key}`}
+                        checked={isResponsibilityEnabled(key)}
+                        onCheckedChange={() => handleResponsibilityToggle(key)}
+                      />
                     </div>
-                  </SelectItem>
-                  <SelectItem value="receptive">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-green-300"></div>
-                      <span>Receptive</span>
+                    <Label 
+                      htmlFor={`responsibility-${key}`} 
+                      className="col-span-7 cursor-pointer text-sm"
+                    >
+                      {label}
+                    </Label>
+                    <div className="col-span-4">
+                      <Select
+                        value={formData.responsibilityLevels[key] || ''}
+                        onValueChange={(value) => handleResponsibilityLevelChange(key, value)}
+                        disabled={!isResponsibilityEnabled(key)}
+                      >
+                        <SelectTrigger className={cn("h-9", !isResponsibilityEnabled(key) && "opacity-50")}>
+                          <SelectValue placeholder="Select level..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {RESPONSIBILITY_LEVEL_OPTIONS.map((level) => (
+                            <SelectItem key={level} value={level}>
+                              {level}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </SelectItem>
-                  <SelectItem value="neutral">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                      <span>Neutral</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="not-very-receptive">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-orange-400"></div>
-                      <span>Not Very Receptive</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="not-receptive">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <span>Not Receptive</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {formData.receptiveness && (
-                <div className="mt-2 flex items-center gap-2">
-                  <Badge variant="outline" className={cn("text-xs", getReceptivenessBadgeColor(formData.receptiveness))}>
-                    {getReceptivenessLabel(formData.receptiveness)}
-                  </Badge>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, receptiveness: undefined }))}
-                    className="text-gray-500 hover:text-red-500 h-6 px-2"
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                How receptive is this contact to new ideas, proposals, or changes
-              </p>
-            </div>
-            
-            {/* NEW: Influencer Rating Slider (1-10) */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="influencerLevel" className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Influencer Rating (1-10)
-                </Label>
-                {formData.influencerLevel && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, influencerLevel: undefined }))}
-                    className="text-gray-500 hover:text-red-500 h-8"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
+                  </div>
+                ))}
               </div>
-              
-              {formData.influencerLevel !== undefined ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Slider
-                      id="influencerLevel"
-                      min={1}
-                      max={10}
-                      step={1}
-                      value={[formData.influencerLevel]}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, influencerLevel: value[0] }))}
-                      className="flex-1"
-                    />
-                    <Badge className={cn("min-w-[120px] justify-center", getInfluencerLevelColor(formData.influencerLevel))}>
-                      Rating: {formData.influencerLevel}/10
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <Badge className={cn("text-sm", getInfluencerLevelColor(formData.influencerLevel))}>
-                      {getInfluencerLevelLabel(formData.influencerLevel)} Influence
-                    </Badge>
-                  </div>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setFormData(prev => ({ ...prev, influencerLevel: 5 }))}
-                  className="w-full"
-                >
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  Set Influencer Rating
-                </Button>
-              )}
-              
               <p className="text-xs text-gray-500 mt-2">
-                Rate the contact's influence on a scale of 1 (low) to 10 (high). Drag the slider to adjust.
+                Check the responsibilities this contact has and select their level of involvement
               </p>
-            </div>
-            
-            {/* Influencer Toggle */}
-            <div className="flex items-start space-x-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <Checkbox
-                id="isInfluencer"
-                checked={formData.isInfluencer}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isInfluencer: checked as boolean }))}
-              />
-              <div className="flex-1">
-                <Label 
-                  htmlFor="isInfluencer" 
-                  className="flex items-center gap-2 font-semibold text-amber-900 cursor-pointer"
-                >
-                  <Star className="w-4 h-4 text-amber-600 fill-amber-600" />
-                  Mark as Key Influencer
-                </Label>
-                <p className="text-xs text-amber-700 mt-1">
-                  Key influencers are individuals who have significant impact on decisions and organizational direction, regardless of their formal position in the reporting hierarchy. They will be highlighted in the contact hierarchy view.
-                </p>
-              </div>
             </div>
           </CardContent>
         </Card>
