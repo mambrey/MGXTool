@@ -73,6 +73,7 @@ const SUPPORT_ROLES = [
   'Senior Manager Category',
   'Manager Category',
   'Director OCM',
+  'Senior Manager E-Com',
   'Manager eComm',
   'Senior Manager Shopper',
   'Manager Shopper'
