@@ -58,7 +58,7 @@ const RESPONSIBILITY_OPTIONS = [
   { key: 'pricePromo', label: 'Price/Promo' },
   { key: 'digital', label: 'Digital' },
   { key: 'ecommerce', label: 'Ecommerce' },
-  { key: 'instoreEvents', label: 'Instore Events' },
+  { key: 'instoreEvents', label: 'In-Store Events' },
   { key: 'shrink', label: 'Shrink' },
   { key: 'buyingPOOwnership', label: 'Buying/PO Ownership' }
 ];
