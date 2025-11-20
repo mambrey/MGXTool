@@ -89,6 +89,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     socialHandles: contact?.socialHandles || [],
     knownPreferences: contact?.knownPreferences || '',
     entertainment: contact?.entertainment || '',
+    followThrough: contact?.followThrough || '',
     notes: contact?.notes || '',
     values: contact?.values || '',
     painPoints: contact?.painPoints || '',
@@ -1120,6 +1121,22 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <SelectContent>
                   <SelectItem value="Yes">Yes</SelectItem>
                   <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="followThrough">Follow Through</Label>
+              <Select 
+                value={formData.followThrough} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, followThrough: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>

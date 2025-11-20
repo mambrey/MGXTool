@@ -115,6 +115,7 @@ export interface Contact {
   socialHandles?: string[];
   knownPreferences?: string;
   entertainment?: string; // NEW: Entertainment dropdown (Yes/No)
+  followThrough?: string; // NEW: Follow Through dropdown (High/Medium/Low)
   notes?: string;
   values?: string; // NEW: Values free text
   painPoints?: string; // NEW: Pain Points free text
