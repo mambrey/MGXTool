@@ -496,12 +496,17 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Club">Club</SelectItem>
-                <SelectItem value="Convenience">Convenience</SelectItem>
+                <SelectItem value="C-Store">C-Store</SelectItem>
+                <SelectItem value="DoorDash">DoorDash</SelectItem>
                 <SelectItem value="Drug">Drug</SelectItem>
+                <SelectItem value="Ecommerce">Ecommerce</SelectItem>
                 <SelectItem value="Grocery">Grocery</SelectItem>
+                <SelectItem value="Instacart">Instacart</SelectItem>
                 <SelectItem value="Liquor">Liquor</SelectItem>
                 <SelectItem value="Mass">Mass</SelectItem>
                 <SelectItem value="Military">Military</SelectItem>
+                <SelectItem value="Regional Grocery">Regional Grocery</SelectItem>
+                <SelectItem value="UberEats">UberEats</SelectItem>
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
