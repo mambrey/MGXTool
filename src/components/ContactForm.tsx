@@ -93,6 +93,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     preferredContactMethod: contact?.preferredContactMethod || 'mobile phone',
     preferredShippingAddress: contact?.preferredShippingAddress || '',
     title: contact?.title || '',
+    currentRoleTenure: contact?.currentRoleTenure || '',
     managerId: contact?.managerId || '',
     accountId: contact?.accountId || '',
     isPrimaryContact: contact?.isPrimaryContact || false,
@@ -572,6 +573,25 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="e.g., VP of Sales, Director of Marketing"
+
+            <div>
+              <Label htmlFor="currentRoleTenure">Current Role Tenure</Label>
+              <Select
+                value={formData.currentRoleTenure}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, currentRoleTenure: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tenure..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0-1">0-1</SelectItem>
+                  <SelectItem value="1-3">1-3</SelectItem>
+                  <SelectItem value="3-5">3-5</SelectItem>
+                  <SelectItem value="5-10">5-10</SelectItem>
+                  <SelectItem value="10+">10+</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
               />
             </div>
             
