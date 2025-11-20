@@ -47,13 +47,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     managerId: contact?.managerId || '',
     accountId: contact?.accountId || '',
     isPrimaryContact: contact?.isPrimaryContact || false,
+    relationshipStatus: contact?.relationshipStatus || '',
     influence: contact?.influence || 'User',
     isInfluencer: contact?.isInfluencer || false,
     influencerLevel: contact?.influencerLevel || undefined,
     receptiveness: contact?.receptiveness || undefined,
     birthday: contact?.birthday || '',
     birthdayAlert: contact?.birthdayAlert || false,
-    relationshipStatus: contact?.relationshipStatus || '',
     nextContactDate: contact?.nextContactDate || '',
     nextContactAlert: contact?.nextContactAlert || false,
     lastContactDate: contact?.lastContactDate || '',
@@ -620,6 +620,26 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </p>
               </div>
             </div>
+
+            {/* Relationship Status Dropdown - MOVED HERE */}
+            <div>
+              <Label htmlFor="relationshipStatus">Relationship Status</Label>
+              <Select 
+                value={formData.relationshipStatus} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select relationship status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Promoter">Promoter</SelectItem>
+                  <SelectItem value="Supporter">Supporter</SelectItem>
+                  <SelectItem value="Neutral">Neutral</SelectItem>
+                  <SelectItem value="Detractor">Detractor</SelectItem>
+                  <SelectItem value="At Risk">At Risk</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -858,16 +878,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   Key influencers are individuals who have significant impact on decisions and organizational direction, regardless of their formal position in the reporting hierarchy. They will be highlighted in the contact hierarchy view.
                 </p>
               </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="relationshipStatus">Relationship Status</Label>
-              <Input
-                id="relationshipStatus"
-                value={formData.relationshipStatus}
-                onChange={(e) => setFormData(prev => ({ ...prev, relationshipStatus: e.target.value }))}
-                placeholder="e.g., Alumni, Former Colleague, Industry Contact"
-              />
             </div>
           </CardContent>
         </Card>

@@ -99,7 +99,7 @@ export interface Contact {
   receptiveness?: 'very-receptive' | 'receptive' | 'neutral' | 'not-very-receptive' | 'not-receptive';
   birthday?: string;
   birthdayAlert?: boolean;
-  relationshipStatus?: string;
+  relationshipStatus?: 'Promoter' | 'Supporter' | 'Neutral' | 'Detractor' | 'At Risk'; // UPDATED: Changed to specific dropdown values
   lastContactDate?: string;
   nextContactDate?: string;
   nextContactAlert?: boolean;
