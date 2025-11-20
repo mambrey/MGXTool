@@ -94,7 +94,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     pricingStrategy: 'none',
     privateLabel: 'none',
     innovationAppetite: '',
-    hasEcommerce: false,
+    ecommerceMaturityLevel: 'none',
     fulfillmentTypes: '',
     strategicPriorities: '',
     keyCompetitors: '',
@@ -335,6 +335,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel,
       innovationAppetite: formData.innovationAppetite === 'none' ? '' : formData.innovationAppetite,
       displayMandates: formData.displayMandates === 'none' ? '' : formData.displayMandates,
+      ecommerceMaturityLevel: formData.ecommerceMaturityLevel === 'none' ? '' : formData.ecommerceMaturityLevel,
       // Convert 'none' to empty string for level of influence fields
       influenceAssortmentShelf: formData.influenceAssortmentShelf === 'none' ? '' : formData.influenceAssortmentShelf,
       influencePricePromo: formData.influencePricePromo === 'none' ? '' : formData.influencePricePromo,
@@ -1082,6 +1083,24 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label htmlFor="ecommerceMaturityLevel" className="text-sm font-medium">E-Commerce Maturity Level</Label>
+              <Select 
+                value={formData.ecommerceMaturityLevel || 'none'} 
+                onValueChange={(value) => updateField('ecommerceMaturityLevel', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select e-commerce maturity level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
+                  <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
+                  <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
+                  <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="isJBP"
@@ -1089,14 +1108,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
               />
               <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hasEcommerce"
-                checked={formData.hasEcommerce}
-                onCheckedChange={(checked) => updateField('hasEcommerce', checked as boolean)}
-              />
-              <Label htmlFor="hasEcommerce" className="text-sm font-medium">E-Commerce Available</Label>
             </div>
           </div>
 
