@@ -1038,49 +1038,56 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select Category Captain" />
                 </SelectTrigger>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="Diageo">Diageo</SelectItem>
-                  <SelectItem value="AB-InBev">AB-InBev</SelectItem>
-                  <SelectItem value="Bacardi">Bacardi</SelectItem>
-                  <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
-                  <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
-                  <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
-                  <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
-                  <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
-                  <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
-                  <SelectItem value="PLM">PLM</SelectItem>
-                  <SelectItem value="Suntory">Suntory</SelectItem>
-                  <SelectItem value="Sazerac">Sazerac</SelectItem>
-                  <SelectItem value="SGWS">SGWS</SelectItem>
-                  <SelectItem value="Reyes">Reyes</SelectItem>
-                  <SelectItem value="RNDC">RNDC</SelectItem>
-            <div>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="Diageo">Diageo</SelectItem>
-                  <SelectItem value="AB-InBev">AB-InBev</SelectItem>
-                  <SelectItem value="Bacardi">Bacardi</SelectItem>
-                  <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
-                  <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
-                  <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
-                  <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
-                  <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
-                  <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
-                  <SelectItem value="PLM">PLM</SelectItem>
-                  <SelectItem value="Suntory">Suntory</SelectItem>
-                  <SelectItem value="Sazerac">Sazerac</SelectItem>
-                  <SelectItem value="SGWS">SGWS</SelectItem>
-                  <SelectItem value="Reyes">Reyes</SelectItem>
-                  <SelectItem value="RNDC">RNDC</SelectItem>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="Diageo">Diageo</SelectItem>
+                  <SelectItem value="AB-InBev">AB-InBev</SelectItem>
+                  <SelectItem value="Bacardi">Bacardi</SelectItem>
+                  <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
+                  <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
+                  <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
+                  <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
+                  <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
+                  <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
+                  <SelectItem value="PLM">PLM</SelectItem>
+                  <SelectItem value="Suntory">Suntory</SelectItem>
+                  <SelectItem value="Sazerac">Sazerac</SelectItem>
+                  <SelectItem value="SGWS">SGWS</SelectItem>
+                  <SelectItem value="Reyes">Reyes</SelectItem>
+                  <SelectItem value="RNDC">RNDC</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="categoryAdvisor" className="text-sm font-medium">Category Validator</Label>
+              <Select 
+                value={formData.categoryAdvisor || 'none'} 
+                onValueChange={(value) => updateField('categoryAdvisor', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select Category Validator" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="Diageo">Diageo</SelectItem>
+                  <SelectItem value="AB-InBev">AB-InBev</SelectItem>
+                  <SelectItem value="Bacardi">Bacardi</SelectItem>
+                  <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
+                  <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
+                  <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
+                  <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
+                  <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
+                  <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
+                  <SelectItem value="PLM">PLM</SelectItem>
+                  <SelectItem value="Suntory">Suntory</SelectItem>
+                  <SelectItem value="Sazerac">Sazerac</SelectItem>
+                  <SelectItem value="SGWS">SGWS</SelectItem>
+                  <SelectItem value="Reyes">Reyes</SelectItem>
+                  <SelectItem value="RNDC">RNDC</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-
           <div>
             <Label htmlFor="innovationAppetite" className="text-sm font-medium">Innovation Appetite</Label>
             <Select 
