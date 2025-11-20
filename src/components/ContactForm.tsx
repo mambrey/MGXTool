@@ -940,12 +940,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       </div>
                     </div>
                   </SelectItem>
-                  <SelectItem value="At Risk — Declining relationship signals" className="bg-red-50 hover:bg-red-100">
+                  <SelectItem value="Adversarial — Actively working against" className="bg-red-50 hover:bg-red-100">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-red-500"></div>
                       <div className="flex flex-col">
-                        <span className="font-medium">At Risk</span>
-                        <span className="text-xs text-gray-600">Declining relationship signals</span>
+                        <span className="font-medium">Adversarial</span>
+                        <span className="text-xs text-gray-600">Actively working against</span>
                       </div>
                     </div>
                   </SelectItem>
