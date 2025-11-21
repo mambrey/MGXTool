@@ -111,6 +111,18 @@ const DECISION_BIAS_OPTIONS = {
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 const libraries: ("places")[] = ["places"];
 
+// Phone number formatting function
+const formatPhoneNumber = (value: string): string => {
+  // Remove all non-digit characters
+  const phoneNumber = value.replace(/\D/g, '');
+  
+  // Format as (XXX) XXX-XXXX
+  if (phoneNumber.length === 0) return '';
+  if (phoneNumber.length <= 3) return `(${phoneNumber}`;
+  if (phoneNumber.length <= 6) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+  return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+};
+
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState({
     firstName: contact?.firstName || '',
@@ -264,6 +276,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     // Reset file input
     const fileInput = document.getElementById('headshot') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
+  };
+
+  // Handle phone number change with formatting
+  const handlePhoneChange = (field: 'officePhone' | 'mobilePhone', value: string) => {
+    const formatted = formatPhoneNumber(value);
+    setFormData(prev => ({ ...prev, [field]: formatted }));
   };
 
   // Category/Segment Ownership handlers
@@ -722,7 +740,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Popover>
             </div>
 
-            {/* Manager Selection - UPDATED TO SHOW ALL CONTACTS */}
+            {/* Manager Selection - UPDATED TEXT */}
             <div>
               <Label htmlFor="manager" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
@@ -813,7 +831,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </div>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                Select who this contact reports to in the organizational hierarchy (from any company in your contact list)
+                Select who this contact reports to in the organizational hierarchy (from anyone in the contact list)
               </p>
             </div>
 
@@ -859,8 +877,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Input
                   id="officePhone"
                   value={formData.officePhone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, officePhone: e.target.value }))}
+                  onChange={(e) => handlePhoneChange('officePhone', e.target.value)}
                   placeholder="(555) 123-4567"
+                  maxLength={14}
                 />
               </div>
               <div>
@@ -868,8 +887,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Input
                   id="mobilePhone"
                   value={formData.mobilePhone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, mobilePhone: e.target.value }))}
+                  onChange={(e) => handlePhoneChange('mobilePhone', e.target.value)}
                   placeholder="(555) 987-6543"
+                  maxLength={14}
                 />
               </div>
             </div>
@@ -919,7 +939,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <CardTitle>Ways of Working</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Support Style - UPDATED WITH COLORED DOTS */}
+            {/* Support Style - UPDATED WITH NEW DESCRIPTIONS */}
             <div>
               <Label htmlFor="relationshipStatus">Support Style</Label>
               <Select 
@@ -933,31 +953,31 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   <SelectItem value="Promoter — Champions our partnership">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#166534'}}></div>
-                      <span>Promoter</span>
+                      <span>Promoter — Champions our partnership</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="Supporter — Leans in consistently">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#16a34a'}}></div>
-                      <span>Supporter</span>
+                      <span>Supporter — Leans in consistently</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="Neutral — Transactional, low engagement">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#6b7280'}}></div>
-                      <span>Neutral</span>
+                      <span>Neutral — Transactional, low engagement</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="Detractor — Resists our efforts">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ea580c'}}></div>
-                      <span>Skeptic</span>
+                      <span>Detractor — Resists our efforts</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Adversarial — Actively working against">
+                  <SelectItem value="Adversarial — Actively works against">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#991b1b'}}></div>
-                      <span>Adversarial</span>
+                      <span>Adversarial — Actively works against</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -1319,7 +1339,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
             </div>
             
-            {/* Decision Bias Profile - NEW FIELD */}
+            {/* Decision Bias Profile - UPDATED WITH INLINE DESCRIPTIONS */}
             <div>
               <Label htmlFor="decisionBiasProfile" className="flex items-center gap-2">
                 <Info className="w-4 h-4" />
@@ -1332,28 +1352,48 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <SelectTrigger>
                   <SelectValue placeholder="Select decision bias profile..." />
                 </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(DECISION_BIAS_OPTIONS).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="max-w-md">
+                  <SelectItem value="Data Centric">
+                    <div className="py-1">
+                      <div className="font-medium">Data Centric</div>
+                      <div className="text-xs text-gray-600">Decides based on numbers, scorecards, consumer insights, and test results.</div>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Margin First">
+                    <div className="py-1">
+                      <div className="font-medium">Margin First</div>
+                      <div className="text-xs text-gray-600">Focuses primarily on penny profit, margin mix, and trade terms.</div>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Consumer Trend Focused">
+                    <div className="py-1">
+                      <div className="font-medium">Consumer Trend Focused</div>
+                      <div className="text-xs text-gray-600">Drawn to what is new, premium, multicultural, or fast growing.</div>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Operational Simplicity">
+                    <div className="py-1">
+                      <div className="font-medium">Operational Simplicity</div>
+                      <div className="text-xs text-gray-600">Cares most about ease of execution, low complexity, and low disruption.</div>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Competitor Reactive">
+                    <div className="py-1">
+                      <div className="font-medium">Competitor Reactive</div>
+                      <div className="text-xs text-gray-600">Reacts to what key competitors and local markets are doing.</div>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
               
-              {/* Display commentary when a profile is selected */}
+              {/* Display "Best to lead with" commentary when a profile is selected */}
               {formData.decisionBiasProfile && DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS] && (
                 <Alert className="mt-3 bg-blue-50 border-blue-200">
                   <Info className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-sm">
-                    <div className="space-y-2">
-                      <p className="text-blue-900">
-                        <strong>Profile:</strong> {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].description}
-                      </p>
-                      <p className="text-blue-800">
-                        <strong>Best to lead with:</strong> {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].bestToLeadWith}
-                      </p>
-                    </div>
+                    <p className="text-blue-800">
+                      <strong>Best to lead with:</strong> {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].bestToLeadWith}
+                    </p>
                   </AlertDescription>
                 </Alert>
               )}
