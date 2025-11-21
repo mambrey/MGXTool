@@ -104,6 +104,7 @@ export interface Contact {
   preferredContactMethod?: 'email' | 'mobile phone' | 'office phone' | 'text';
   preferredShippingAddress?: string; // NEW: Preferred shipping address field
   title?: string;
+  currentRoleTenure?: string; // NEW: Current role tenure field
   managerId?: string; // ID of the manager contact (for reporting hierarchy)
   accountId?: string;
   isPrimaryContact?: boolean; // UPDATED: Changed from contactType to isPrimaryContact boolean
@@ -130,11 +131,17 @@ export interface Contact {
   socialHandles?: string[];
   knownPreferences?: string;
   entertainment?: string; // NEW: Entertainment dropdown (Yes/No)
+  decisionBiasProfile?: string; // NEW: Decision Bias Profile dropdown
   followThrough?: string; // NEW: Follow Through dropdown (High/Medium/Low)
   notes?: string;
   values?: string; // NEW: Values free text
   painPoints?: string; // NEW: Pain Points free text
-  uploadedNotes?: string[];
+  uploadedNotes?: Array<{
+    id: string;
+    content: string;
+    timestamp: string;
+    type: 'text' | 'file';
+  }>; // UPDATED: Changed to array of objects
   contactEvents?: CustomerEvent[]; // NEW: Custom events for contacts
   relationshipOwner?: {
     name: string;

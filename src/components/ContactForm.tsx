@@ -83,6 +83,30 @@ const CADENCE_OPTIONS = ['Annual', 'Semi Annual', 'Quarterly', 'Monthly', 'Ongoi
 // SVP dropdown options
 const SVP_OPTIONS = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
 
+// Decision Bias Profile options with commentary
+const DECISION_BIAS_OPTIONS = {
+  'Data Centric': {
+    description: 'Decides based on numbers, scorecards, consumer insights, and test results.',
+    bestToLeadWith: 'category data, shopper insights, P and L impact, test and learn.'
+  },
+  'Margin First': {
+    description: 'Focuses primarily on penny profit, margin mix, and trade terms.',
+    bestToLeadWith: 'trade structure, margin math, mix improvement, cash efficiency.'
+  },
+  'Consumer Trend Focused': {
+    description: 'Drawn to what is new, premium, multicultural, or fast growing.',
+    bestToLeadWith: 'trend decks, social proof, velocity stories, premium trade up.'
+  },
+  'Operational Simplicity': {
+    description: 'Cares most about ease of execution, low complexity, and low disruption.',
+    bestToLeadWith: 'simple plans, fewer SKUs, clean resets, easy to execute displays.'
+  },
+  'Competitor Reactive': {
+    description: 'Reacts to what key competitors and local markets are doing.',
+    bestToLeadWith: 'competitive benchmarks, where they are behind, easy moves to catch up.'
+  }
+};
+
 // Google Maps configuration
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 const libraries: ("places")[] = ["places"];
@@ -115,6 +139,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     socialHandles: contact?.socialHandles || [],
     knownPreferences: contact?.knownPreferences || '',
     entertainment: contact?.entertainment || '',
+    decisionBiasProfile: contact?.decisionBiasProfile || '',
     followThrough: contact?.followThrough || '',
     notes: contact?.notes || '',
     values: contact?.values || '',
@@ -1293,6 +1318,47 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </SelectContent>
               </Select>
             </div>
+            
+            {/* Decision Bias Profile - NEW FIELD */}
+            <div>
+              <Label htmlFor="decisionBiasProfile" className="flex items-center gap-2">
+                <Info className="w-4 h-4" />
+                Decision Bias Profile
+              </Label>
+              <Select 
+                value={formData.decisionBiasProfile} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, decisionBiasProfile: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select decision bias profile..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(DECISION_BIAS_OPTIONS).map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {/* Display commentary when a profile is selected */}
+              {formData.decisionBiasProfile && DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS] && (
+                <Alert className="mt-3 bg-blue-50 border-blue-200">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-sm">
+                    <div className="space-y-2">
+                      <p className="text-blue-900">
+                        <strong>Profile:</strong> {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].description}
+                      </p>
+                      <p className="text-blue-800">
+                        <strong>Best to lead with:</strong> {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].bestToLeadWith}
+                      </p>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+            
             <div>
               <Label htmlFor="followThrough">Follow Through</Label>
               <Select 
