@@ -21,6 +21,8 @@ export interface Account {
   channel?: string;
   footprint?: string;
   operatingStates?: string[]; // Change to array
+  executionReliabilityScore?: string;
+  executionReliabilityRationale?: string;
   publiclyTraded?: boolean;
   tickerSymbol?: string;
   parentCompany?: string;

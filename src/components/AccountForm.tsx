@@ -740,6 +740,39 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             </div>
           </div>
         </CardContent>
+
+            {/* Execution Reliability Score */}
+            <div className="space-y-4 pt-4 border-t">
+              <div>
+                <Label htmlFor="executionReliabilityScore" className="text-sm font-medium">Execution Reliability Score</Label>
+                <Select 
+                  value={formData.executionReliabilityScore || ''} 
+                  onValueChange={(value) => updateField('executionReliabilityScore', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select reliability score" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 – Highly Reliable: Nearly all agreed programs, displays, and resets are executed on time and in full</SelectItem>
+                    <SelectItem value="4">4 – Generally Reliable: Most programs land well with occasional gaps that are usually fixed quickly</SelectItem>
+                    <SelectItem value="3">3 – Mixed Reliability: Some things execute and some do not; performance often varies by store</SelectItem>
+                    <SelectItem value="2">2 – Low Reliability: Many commitments do not materialize or are partial with limited follow through</SelectItem>
+                    <SelectItem value="1">1 – Very Low Reliability: Execution rarely matches agreements; plans often stall or disappear</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="executionReliabilityRationale" className="text-sm font-medium">Rationale/Notes (Optional)</Label>
+                <Textarea
+                  id="executionReliabilityRationale"
+                  value={formData.executionReliabilityRationale || ''}
+                  onChange={(e) => updateField('executionReliabilityRationale', e.target.value)}
+                  placeholder="Add any additional context or notes about execution reliability..."
+                  className="mt-1 min-h-[80px]"
+                />
+              </div>
+            </div>
       </Card>
 
       {/* Contacts Section - Only show when editing existing account */}
