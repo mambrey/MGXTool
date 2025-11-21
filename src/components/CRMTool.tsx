@@ -42,6 +42,8 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const [contactSearchTerm, setContactSearchTerm] = useState('');
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
+  // Track if we're viewing a contact from an account page
+  const [viewingContactFromAccount, setViewingContactFromAccount] = useState<string | null>(null);
 
   // One-time data cleaning on component mount
   useEffect(() => {
@@ -169,6 +171,14 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const handleContactDelete = (contactId: string) => {
     setContacts(prev => (prev || []).filter(c => c.id !== contactId));
     setSelectedContact(null);
+    // If we were viewing from account page, go back to that account
+    if (viewingContactFromAccount) {
+      const account = accounts.find(a => a.id === viewingContactFromAccount);
+      if (account) {
+        setSelectedAccount(account);
+      }
+      setViewingContactFromAccount(null);
+    }
   };
 
   const handleViewAccount = (account: Account) => {
@@ -179,6 +189,27 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setSelectedContact(contact);
   };
 
+  // New handler for viewing contact from account page
+  const handleViewContactFromAccount = (contact: Contact, accountId: string) => {
+    setSelectedContact(contact);
+    setViewingContactFromAccount(accountId);
+    setSelectedAccount(null); // Hide account details while viewing contact
+  };
+
+  // New handler for going back from contact to account
+  const handleBackToAccount = () => {
+    if (viewingContactFromAccount) {
+      const account = accounts.find(a => a.id === viewingContactFromAccount);
+      if (account) {
+        setSelectedAccount(account);
+      }
+      setSelectedContact(null);
+      setViewingContactFromAccount(null);
+    } else {
+      handleBackToList();
+    }
+  };
+
   const handleBackToList = () => {
     setSelectedAccount(null);
     setSelectedContact(null);
@@ -186,6 +217,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setEditingContact(null);
     setShowAccountForm(false);
     setShowContactForm(false);
+    setViewingContactFromAccount(null);
   };
 
   const handleAddAccount = () => {
@@ -490,7 +522,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
           onDelete={handleAccountDelete}
           onBack={handleBackToList}
           onAddContact={handleAddContact}
-          onViewContact={handleViewContact}
+          onViewContact={(contact) => handleViewContactFromAccount(contact, selectedAccount.id)}
           onUpdateAccount={handleAccountUpdate}
         />
       );
@@ -503,7 +535,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
           account={(accounts || []).find(a => a.id === selectedContact.accountId)}
           onEdit={handleContactEdit}
           onDelete={handleContactDelete}
-          onBack={handleBackToList}
+          onBack={handleBackToAccount}
         />
       );
     }

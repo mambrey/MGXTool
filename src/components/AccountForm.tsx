@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Image, Building, TrendingUp } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLoadScript } from '@react-google-maps/api';
 import type { Account, Contact } from '@/types/crm';
 import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
@@ -155,6 +156,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   // Filter contacts for this account
   const accountContacts = account ? contacts.filter(contact => contact.accountId === account.id) : [];
 
+  // JBP validation error state
+  const [jbpValidationError, setJbpValidationError] = useState<string>('');
+
   // Auto-check "Publicly Traded" when ticker symbol is populated
   useEffect(() => {
     if (formData.tickerSymbol && formData.tickerSymbol.trim() !== '') {
@@ -163,6 +167,15 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       }
     }
   }, [formData.tickerSymbol]);
+
+  // Validate JBP Customer and Next JBP date
+  useEffect(() => {
+    if (formData.isJBP && (!formData.nextJBPDate || formData.nextJBPDate.trim() === '')) {
+      setJbpValidationError('Please input the Next JBP date when JBP Customer is selected');
+    } else {
+      setJbpValidationError('');
+    }
+  }, [formData.isJBP, formData.nextJBPDate]);
 
   // Initialize Google Places Autocomplete
   useEffect(() => {
@@ -234,6 +247,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     return [];
   });
 
+  // State outlets mapping - track outlets per state
+  const [stateOutlets, setStateOutlets] = useState<{[state: string]: string}>({});
+
   // Handle fulfillment types multi-select
   const [selectedFulfillmentTypes, setSelectedFulfillmentTypes] = useState<string[]>(() => {
     if (!formData.fulfillmentTypes) return [];
@@ -277,19 +293,11 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   };
 
   /**
-   * Handle Add Banner button click
+   * Handle Add Banner/Buying Office button click
    */
-  const handleAddBanner = () => {
-    console.log('Add Banner clicked - Feature to be implemented');
-    alert('Add Banner feature will be implemented soon');
-  };
-
-  /**
-   * Handle Add Buying Office button click
-   */
-  const handleAddBuyingOffice = () => {
-    console.log('Add Buying Office clicked - Feature to be implemented');
-    alert('Add Buying Office feature will be implemented soon');
+  const handleAddBannerBuyingOffice = () => {
+    console.log('Add Banner/Buying Office clicked - Feature to be implemented');
+    alert('Add Banner/Buying Office feature will be implemented soon');
   };
 
   /**
@@ -345,6 +353,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate JBP Customer and Next JBP date
+    if (formData.isJBP && (!formData.nextJBPDate || formData.nextJBPDate.trim() === '')) {
+      alert('Please input the Next JBP date when JBP Customer is selected');
+      return;
+    }
+    
     const updatedFormData = {
       ...formData,
       operatingStates: selectedStates,
@@ -542,21 +557,11 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleAddBanner}
-                className="flex items-center gap-2"
-              >
-                <Image className="w-4 h-4" />
-                Add a Banner
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddBuyingOffice}
+                onClick={handleAddBannerBuyingOffice}
                 className="flex items-center gap-2"
               >
                 <Building className="w-4 h-4" />
-                Add a Buying Office
+                Add a Banner/Buying Office
               </Button>
             </div>
           </div>
@@ -738,6 +743,27 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </div>
               )}
             </div>
+            
+            {/* # of Spirits Outlets - Show when states are selected */}
+            {selectedStates.length > 0 && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <Label htmlFor="spiritsOutletsCount" className="text-sm font-medium">
+                  # of Spirits Outlets (Total across selected states)
+                </Label>
+                <Input
+                  id="spiritsOutletsCount"
+                  type="number"
+                  value={formData.allSpiritsOutlets}
+                  onChange={(e) => updateField('allSpiritsOutlets', e.target.value)}
+                  placeholder="Enter total number of spirits outlets"
+                  className="mt-2"
+                  min="0"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Enter the total number of spirits outlets across all {selectedStates.length} selected state{selectedStates.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
 
@@ -1181,7 +1207,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 />
               </div>
               <div>
-                <Label htmlFor="nextJBPDate" className="text-sm font-medium">Next JBP</Label>
+                <Label htmlFor="nextJBPDate" className="text-sm font-medium">Next JBP *</Label>
                 <Input
                   id="nextJBPDate"
                   type="date"
@@ -1189,6 +1215,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   onChange={(e) => updateField('nextJBPDate', e.target.value)}
                   className="mt-1"
                 />
+                {jbpValidationError && (
+                  <Alert className="mt-2 bg-red-50 border-red-200">
+                    <AlertDescription className="text-sm text-red-800">
+                      {jbpValidationError}
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </div>
           )}
@@ -1221,9 +1254,60 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 value={formData.ecommerceSalesPercentage}
                 onChange={(e) => updateField('ecommerceSalesPercentage', e.target.value)}
                 placeholder="Enter percentage"
-                className="flex-1"
+                className="w-32"
               />
               <span className="text-sm font-medium text-gray-600">%</span>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium">Available Fulfillment Types</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={selectAllFulfillmentTypes}
+                className="flex items-center gap-1 text-xs h-7"
+              >
+                {isAllFulfillmentTypesSelected ? (
+                  <>
+                    <CheckSquare className="w-3 h-3" />
+                    Deselect All
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-3 h-3" />
+                    Select All
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {FULFILLMENT_TYPES.map(type => (
+                  <div key={type} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`fulfillment-${type}`}
+                      checked={selectedFulfillmentTypes.includes(type)}
+                      onCheckedChange={() => toggleFulfillmentType(type)}
+                    />
+                    <Label htmlFor={`fulfillment-${type}`} className="text-sm cursor-pointer">
+                      {type}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedFulfillmentTypes.length > 0 && (
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-sm font-medium text-gray-700">
+                    Selected ({selectedFulfillmentTypes.length}/{FULFILLMENT_TYPES.length}):
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {selectedFulfillmentTypes.join(', ')}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1279,69 +1363,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Available Fulfillment Types</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={selectAllFulfillmentTypes}
-                className="flex items-center gap-1 text-xs h-7"
-              >
-                {isAllFulfillmentTypesSelected ? (
-                  <>
-                    <CheckSquare className="w-3 h-3" />
-                    Deselect All
-                  </>
-                ) : (
-                  <>
-                    <Square className="w-3 h-3" />
-                    Select All
-                  </>
-                )}
-              </Button>
-            </div>
-            <div className="p-3 border rounded-lg bg-gray-50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {FULFILLMENT_TYPES.map(type => (
-                  <div key={type} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`fulfillment-${type}`}
-                      checked={selectedFulfillmentTypes.includes(type)}
-                      onCheckedChange={() => toggleFulfillmentType(type)}
-                    />
-                    <Label htmlFor={`fulfillment-${type}`} className="text-sm cursor-pointer">
-                      {type}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-              {selectedFulfillmentTypes.length > 0 && (
-                <div className="mt-3 pt-3 border-t">
-                  <p className="text-sm font-medium text-gray-700">
-                    Selected ({selectedFulfillmentTypes.length}/{FULFILLMENT_TYPES.length}):
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {selectedFulfillmentTypes.join(', ')}
-                  </p>
-                </div>
-              )}
-            </div>
+            <Label htmlFor="innovationAppetite" className="text-sm font-medium">Innovation Appetite</Label>
+            <Select 
+              value={formData.innovationAppetite?.toString() || ''} 
+              onValueChange={(value) => updateField('innovationAppetite', value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select innovation appetite" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities">Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities</SelectItem>
+                <SelectItem value="Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge">Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge</SelectItem>
+                <SelectItem value="Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy">Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy</SelectItem>
+                <SelectItem value="Cautious Adopter - Moves slowly on new items and prefers proven success before committing">Cautious Adopter - Moves slowly on new items and prefers proven success before committing</SelectItem>
+                <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="allSpiritsOutlets" className="text-sm font-medium"># of All Spirits Outlets</Label>
-              <Input
-                id="allSpiritsOutlets"
-                type="number"
-                value={formData.allSpiritsOutlets}
-                onChange={(e) => updateField('allSpiritsOutlets', e.target.value)}
-                placeholder="Enter number of all spirits outlets"
-                className="mt-1"
-                min="0"
-              />
-            </div>
             <div>
               <Label htmlFor="fullProofOutlets" className="text-sm font-medium"># of Full Proof Outlets</Label>
               <Input
@@ -1415,24 +1455,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </SelectContent>
               </Select>
             </div>
-          </div>
-          <div>
-            <Label htmlFor="innovationAppetite" className="text-sm font-medium">Innovation Appetite</Label>
-            <Select 
-              value={formData.innovationAppetite?.toString() || ''} 
-              onValueChange={(value) => updateField('innovationAppetite', value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select innovation appetite" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities">Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities</SelectItem>
-                <SelectItem value="Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge">Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge</SelectItem>
-                <SelectItem value="Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy">Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy</SelectItem>
-                <SelectItem value="Cautious Adopter - Moves slowly on new items and prefers proven success before committing">Cautious Adopter - Moves slowly on new items and prefers proven success before committing</SelectItem>
-                <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="flex items-center space-x-2 pt-4 border-t">
