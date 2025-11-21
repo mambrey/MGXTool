@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink, Briefcase, Users } from 'lucide-react';
+import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink, Briefcase, Users, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -222,6 +222,7 @@ export default function ContactDetails({
             ${contact.email ? `<p><span class="label">Email:</span><span class="value">${contact.email}</span></p>` : ''}
             ${contact.mobilePhone ? `<p><span class="label">Mobile:</span><span class="value">${contact.mobilePhone}</span></p>` : ''}
             ${contact.officePhone ? `<p><span class="label">Office:</span><span class="value">${contact.officePhone}</span></p>` : ''}
+            ${contact.preferredShippingAddress ? `<p><span class="label">Shipping Address:</span><span class="value">${contact.preferredShippingAddress}</span></p>` : ''}
           </div>
           
           ${contact.relationshipStatus || contact.preferredContactMethod ? `
@@ -374,6 +375,17 @@ export default function ContactDetails({
                     </div>
                   </div>
                 )}
+                {contact.preferredShippingAddress && (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500 mb-1">Shipping Address</p>
+                      <p className="text-sm text-gray-700">
+                        {contact.preferredShippingAddress}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {contact.socialHandles && contact.socialHandles.length > 0 && (
                   <div>
                     <p className="text-xs text-gray-500 mb-2">LinkedIn Profile</p>
@@ -440,7 +452,7 @@ export default function ContactDetails({
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Birthday</p>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                      <p className="text-sm">{new Date(contact.birthday).toLocaleDateString()}</p>
+                      <p className="text-sm">{contact.birthday}</p>
                       {contact.birthdayAlert && (
                         <Badge variant="secondary" className="text-xs">
                           Alert On

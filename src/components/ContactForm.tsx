@@ -65,7 +65,7 @@ const RESPONSIBILITY_OPTIONS = [
 
 const RESPONSIBILITY_LEVEL_OPTIONS = ['High', 'Medium', 'Low', 'None'];
 
-// Primary Diageo Relationship Owner options
+// Primary Diageo Relationship Owner options - UPDATED E-COMM TITLES
 const SALES_ROLES = ['CEO', 'President', 'SVP', 'VP Sales', 'Director Sales', 'NAM'];
 const SUPPORT_ROLES = [
   'VP Customer Development',
@@ -73,8 +73,8 @@ const SUPPORT_ROLES = [
   'Senior Manager Category',
   'Manager Category',
   'Director OCM',
-  'Senior Manager E-Com',
-  'Manager eComm',
+  'Senior Manager E-Comm',
+  'Manager E-Comm',
   'Senior Manager Shopper',
   'Manager Shopper'
 ];
@@ -121,6 +121,16 @@ const formatPhoneNumber = (value: string): string => {
   if (phoneNumber.length <= 3) return `(${phoneNumber}`;
   if (phoneNumber.length <= 6) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
   return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+};
+
+// Month/Day formatting for birthday (MM-DD format)
+const formatBirthdayMonthDay = (value: string): string => {
+  // Remove all non-digit characters
+  const digits = value.replace(/\D/g, '');
+  
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}-${digits.slice(2, 4)}`;
 };
 
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
@@ -282,6 +292,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handlePhoneChange = (field: 'officePhone' | 'mobilePhone', value: string) => {
     const formatted = formatPhoneNumber(value);
     setFormData(prev => ({ ...prev, [field]: formatted }));
+  };
+
+  // Handle birthday change with MM-DD formatting
+  const handleBirthdayChange = (value: string) => {
+    const formatted = formatBirthdayMonthDay(value);
+    setFormData(prev => ({ ...prev, birthday: formatted }));
   };
 
   // Category/Segment Ownership handlers
@@ -608,11 +624,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </p>
               </div>
             </div>
-            {/* Headshot File Upload */}
+            {/* Headshot File Upload - UPDATED LABEL */}
             <div>
               <Label htmlFor="headshot" className="flex items-center gap-2">
                 <Image className="w-4 h-4" />
-                Headshot
+                Headshot (Linkedin Only)
               </Label>
               <div className="space-y-2">
                 <Input
@@ -1110,13 +1126,16 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             {/* System Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="birthday">Birthday</Label>
+                <Label htmlFor="birthday">Birthday (Month & Day)</Label>
                 <Input
                   id="birthday"
-                  type="date"
+                  type="text"
                   value={formData.birthday}
-                  onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                  onChange={(e) => handleBirthdayChange(e.target.value)}
+                  placeholder="MM-DD"
+                  maxLength={5}
                 />
+                <p className="text-xs text-gray-500">Format: MM-DD (e.g., 03-15)</p>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
@@ -1307,7 +1326,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Preferences & Notes - REORDERED */}
+        {/* Preferences & Notes - UPDATED WITH SUBHEADER */}
         <Card>
           <CardHeader>
             <CardTitle>Preferences & Notes</CardTitle>
@@ -1415,26 +1434,35 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="values">What do they value from a business perspective (ie Communication style, Data, Details, etc)</Label>
-              <Textarea
-                id="values"
-                value={formData.values}
-                onChange={(e) => setFormData(prev => ({ ...prev, values: e.target.value }))}
-                placeholder="Communication style, Data, Details, etc."
-                rows={3}
-              />
+            
+            {/* SUBHEADER ADDED */}
+            <div className="pt-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">As it pertains to the business:</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="values">What do they value from a business perspective (ie Communication style, Data, Details, etc)</Label>
+                  <Textarea
+                    id="values"
+                    value={formData.values}
+                    onChange={(e) => setFormData(prev => ({ ...prev, values: e.target.value }))}
+                    placeholder="Communication style, Data, Details, etc."
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="painPoints">What are their pain points?</Label>
+                  <Textarea
+                    id="painPoints"
+                    value={formData.painPoints}
+                    onChange={(e) => setFormData(prev => ({ ...prev, painPoints: e.target.value }))}
+                    placeholder="Enter pain points..."
+                    rows={3}
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="painPoints">Pain Points</Label>
-              <Textarea
-                id="painPoints"
-                value={formData.painPoints}
-                onChange={(e) => setFormData(prev => ({ ...prev, painPoints: e.target.value }))}
-                placeholder="Enter pain points..."
-                rows={3}
-              />
-            </div>
+            
             <div>
               <Label htmlFor="notes">General Notes</Label>
               <Textarea
