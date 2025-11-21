@@ -21,6 +21,7 @@ export interface Account {
   channel?: string;
   footprint?: string;
   operatingStates?: string[]; // Change to array
+  spiritsOutletsByState?: { state: string; outletCount: string }[]; // NEW: State-specific outlet counts
   executionReliabilityScore?: string;
   executionReliabilityRationale?: string;
   publiclyTraded?: boolean;
@@ -65,6 +66,9 @@ export interface Account {
   resetFrequency?: string; // Annual Reset, Bi-Annual Reset, Quarterly Reset, Monthly / Rolling Reset, As Needed / Opportunistic
   resetWindowLeadTime?: string; // 3 Months, 6 Months, 9 Months, 12 Months
   resetWindowMonths?: string[]; // Selected months for reset window
+  affectedCategories?: string[]; // NEW: Affected Categories multi-select
+  hasDifferentResetWindows?: string; // NEW: Yes/No for different reset windows per category
+  categoryResetWindows?: { id: string; category: string; months: string[] }[]; // NEW: Category-specific reset windows
   displayMandates?: string; // UPDATED: Changed from boolean to string for dropdown (All/Some/None)
   fulfillmentTypes?: string[]; // UPDATED: Changed to array for multi-select dropdown
   allSpiritsOutlets?: string; // UPDATED: Changed from spiritsOutlets to allSpiritsOutlets

@@ -26,6 +26,17 @@ interface CustomerEvent {
   date: string;
 }
 
+interface CategoryResetWindow {
+  id: string;
+  category: string;
+  months: string[];
+}
+
+interface StateOutlet {
+  state: string;
+  outletCount: string;
+}
+
 // US States for multi-select
 const US_STATES = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -67,6 +78,21 @@ const RESET_LEAD_TIME_OPTIONS = [
   '6 Months',
   '9 Months',
   '12 Months'
+];
+
+// Affected Categories options - NEW
+const AFFECTED_CATEGORIES = [
+  'Cordials',
+  'Gin',
+  'NAM Whiskey',
+  'Rum',
+  'RTD',
+  'RTS',
+  'Scotch',
+  'Tequila',
+  'Vodka',
+  'Whiskey Other',
+  'Non-Alc'
 ];
 
 // Months for Reset Window multi-select - NEW
@@ -122,6 +148,10 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     resetFrequency: '',
     resetWindowLeadTime: '',
     resetWindowMonths: [],
+    affectedCategories: [],
+    hasDifferentResetWindows: '',
+    categoryResetWindows: [],
+    spiritsOutletsByState: [],
     categoryCaptain: 'none',
     categoryAdvisor: 'none',
     isJBP: false,
@@ -273,8 +303,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     return [];
   });
 
-  // State outlets mapping - track outlets per state
-  const [stateOutlets, setStateOutlets] = useState<{[state: string]: string}>({});
+  // State outlets by state - NEW
+  const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
+    if (formData.spiritsOutletsByState && Array.isArray(formData.spiritsOutletsByState)) {
+      return formData.spiritsOutletsByState;
+    }
+    return [];
+  });
+
+  // Update stateOutlets when selectedStates changes
+  useEffect(() => {
+    if (selectedStates.length > 1) {
+      // Create state outlets for newly selected states
+      const newStateOutlets = selectedStates.map(state => {
+        const existing = stateOutlets.find(so => so.state === state);
+        return existing || { state, outletCount: '' };
+      });
+      setStateOutlets(newStateOutlets);
+    }
+  }, [selectedStates]);
 
   // Handle fulfillment types multi-select
   const [selectedFulfillmentTypes, setSelectedFulfillmentTypes] = useState<string[]>(() => {
@@ -310,6 +357,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       return formData.resetWindowMonths;
     }
     
+    return [];
+  });
+
+  // Handle affected categories multi-select - NEW
+  const [selectedAffectedCategories, setSelectedAffectedCategories] = useState<string[]>(() => {
+    if (!formData.affectedCategories) return [];
+    
+    if (Array.isArray(formData.affectedCategories)) {
+      return formData.affectedCategories;
+    }
+    
+    return [];
+  });
+
+  // Handle category reset windows - NEW
+  const [categoryResetWindows, setCategoryResetWindows] = useState<CategoryResetWindow[]>(() => {
+    if (formData.categoryResetWindows && Array.isArray(formData.categoryResetWindows)) {
+      return formData.categoryResetWindows;
+    }
     return [];
   });
 
@@ -400,9 +466,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     const updatedFormData = {
       ...formData,
       operatingStates: selectedStates,
+      spiritsOutletsByState: selectedStates.length > 1 ? stateOutlets : [],
       fulfillmentTypes: selectedFulfillmentTypes,
       ecommercePartners: selectedEcommercePartners,
       resetWindowMonths: selectedResetMonths,
+      affectedCategories: selectedAffectedCategories,
+      categoryResetWindows: categoryResetWindows,
       customerEvents: customerEvents,
       lastModified: new Date().toISOString(),
       categoryCaptain: formData.categoryCaptain === 'none' ? '' : formData.categoryCaptain,
@@ -462,6 +531,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     setSelectedStates([]);
   };
 
+  const updateStateOutletCount = (state: string, count: string) => {
+    setStateOutlets(prev => 
+      prev.map(so => so.state === state ? { ...so, outletCount: count } : so)
+    );
+  };
+
   const toggleFulfillmentType = (type: string) => {
     setSelectedFulfillmentTypes(prev => {
       if (prev.includes(type)) {
@@ -514,6 +589,71 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     } else {
       setSelectedResetMonths([...MONTHS]);
     }
+  };
+
+  const toggleAffectedCategory = (category: string) => {
+    setSelectedAffectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  const selectAllAffectedCategories = () => {
+    if (selectedAffectedCategories.length === AFFECTED_CATEGORIES.length) {
+      setSelectedAffectedCategories([]);
+    } else {
+      setSelectedAffectedCategories([...AFFECTED_CATEGORIES]);
+    }
+  };
+
+  const addCategoryResetWindow = () => {
+    const newCategoryWindow: CategoryResetWindow = {
+      id: Date.now().toString(),
+      category: '',
+      months: []
+    };
+    setCategoryResetWindows(prev => [...prev, newCategoryWindow]);
+  };
+
+  const updateCategoryResetWindow = (id: string, field: 'category', value: string) => {
+    setCategoryResetWindows(prev => 
+      prev.map(crw => 
+        crw.id === id ? { ...crw, [field]: value } : crw
+      )
+    );
+  };
+
+  const toggleCategoryMonth = (categoryId: string, month: string) => {
+    setCategoryResetWindows(prev => 
+      prev.map(crw => {
+        if (crw.id === categoryId) {
+          const months = crw.months.includes(month)
+            ? crw.months.filter(m => m !== month)
+            : [...crw.months, month];
+          return { ...crw, months };
+        }
+        return crw;
+      })
+    );
+  };
+
+  const selectAllCategoryMonths = (categoryId: string) => {
+    setCategoryResetWindows(prev => 
+      prev.map(crw => {
+        if (crw.id === categoryId) {
+          const allSelected = crw.months.length === MONTHS.length;
+          return { ...crw, months: allSelected ? [] : [...MONTHS] };
+        }
+        return crw;
+      })
+    );
+  };
+
+  const removeCategoryResetWindow = (id: string) => {
+    setCategoryResetWindows(prev => prev.filter(crw => crw.id !== id));
   };
 
   const addCustomerEvent = () => {
@@ -573,6 +713,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const isAllFulfillmentTypesSelected = selectedFulfillmentTypes.length === FULFILLMENT_TYPES.length;
   const isAllEcommercePartnersSelected = selectedEcommercePartners.length === ECOMMERCE_PARTNERS.length;
   const isAllResetMonthsSelected = selectedResetMonths.length === MONTHS.length;
+  const isAllAffectedCategoriesSelected = selectedAffectedCategories.length === AFFECTED_CATEGORIES.length;
 
   const willSendToPA = 
     powerAutomateService.isTickerSymbolWorkflowEnabled() && 
@@ -801,11 +942,11 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               )}
             </div>
             
-            {/* # of Spirits Outlets - Show when states are selected */}
-            {selectedStates.length > 0 && (
+            {/* # of Spirits Outlets - Show different UI based on number of states selected */}
+            {selectedStates.length === 1 && (
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <Label htmlFor="spiritsOutletsCount" className="text-sm font-medium">
-                  # of Spirits Outlets (Total across selected states)
+                  # of Spirits Outlets
                 </Label>
                 <Input
                   id="spiritsOutletsCount"
@@ -817,7 +958,33 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   min="0"
                 />
                 <p className="text-xs text-gray-600 mt-1">
-                  Enter the total number of spirits outlets across all {selectedStates.length} selected state{selectedStates.length !== 1 ? 's' : ''}
+                  Enter the total number of spirits outlets for {selectedStates[0]}
+                </p>
+              </div>
+            )}
+
+            {selectedStates.length > 1 && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <Label className="text-sm font-medium mb-3 block">
+                  # of Spirits Stores by State
+                </Label>
+                <div className="space-y-3">
+                  {stateOutlets.map((stateOutlet) => (
+                    <div key={stateOutlet.state} className="flex items-center gap-3">
+                      <Label className="text-sm font-medium w-12">{stateOutlet.state}:</Label>
+                      <Input
+                        type="number"
+                        value={stateOutlet.outletCount}
+                        onChange={(e) => updateStateOutletCount(stateOutlet.state, e.target.value)}
+                        placeholder="Enter number"
+                        className="flex-1"
+                        min="0"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-600 mt-3">
+                  Enter the number of spirits stores for each selected state
                 </p>
               </div>
             )}
@@ -1527,9 +1694,61 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg space-y-6">
               <Label className="text-lg font-medium block flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                Planogram Configuration
+                Planogram Information
               </Label>
               
+              {/* Affected Categories Multi-Select */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Affected Categories</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllAffectedCategories}
+                    className="flex items-center gap-1 text-xs h-7"
+                  >
+                    {isAllAffectedCategoriesSelected ? (
+                      <>
+                        <CheckSquare className="w-3 h-3" />
+                        Deselect All
+                      </>
+                    ) : (
+                      <>
+                        <Square className="w-3 h-3" />
+                        Select All
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="p-4 border rounded-lg bg-white">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {AFFECTED_CATEGORIES.map(category => (
+                      <div key={category} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`category-${category}`}
+                          checked={selectedAffectedCategories.includes(category)}
+                          onCheckedChange={() => toggleAffectedCategory(category)}
+                        />
+                        <Label htmlFor={`category-${category}`} className="text-sm cursor-pointer">
+                          {category}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedAffectedCategories.length > 0 && (
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="text-sm font-medium text-gray-700">
+                        Selected Categories ({selectedAffectedCategories.length}/{AFFECTED_CATEGORIES.length}):
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {selectedAffectedCategories.join(', ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Reset Frequency Dropdown */}
               <div>
                 <Label htmlFor="resetFrequency" className="text-sm font-medium">Reset Frequency</Label>
@@ -1617,6 +1836,138 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   )}
                 </div>
               </div>
+
+              {/* Different Reset Windows Per Category */}
+              <div>
+                <Label htmlFor="hasDifferentResetWindows" className="text-sm font-medium">
+                  If we have different reset windows for different categories
+                </Label>
+                <Select 
+                  value={formData.hasDifferentResetWindows || ''} 
+                  onValueChange={(value) => updateField('hasDifferentResetWindows', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select yes or no" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category-Specific Reset Windows */}
+              {formData.hasDifferentResetWindows === 'Yes' && (
+                <div className="space-y-4 p-4 bg-white border border-gray-300 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Category-Specific Reset Windows</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addCategoryResetWindow}
+                      className="flex items-center gap-1"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Add Category Reset Window
+                    </Button>
+                  </div>
+
+                  {categoryResetWindows.length === 0 ? (
+                    <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500">
+                      <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm">No category-specific reset windows added yet</p>
+                      <p className="text-xs text-gray-400">Click "Add Category Reset Window" to add one</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {categoryResetWindows.map((crw, index) => (
+                        <div key={crw.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                          <div className="flex items-center justify-between mb-3">
+                            <Label className="text-xs font-medium text-gray-600">Category Reset Window #{index + 1}</Label>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeCategoryResetWindow(crw.id)}
+                              className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div>
+                              <Label htmlFor={`crw-category-${crw.id}`} className="text-xs font-medium text-gray-600">Category</Label>
+                              <Select 
+                                value={crw.category} 
+                                onValueChange={(value) => updateCategoryResetWindow(crw.id, 'category', value)}
+                              >
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {AFFECTED_CATEGORIES.map(category => (
+                                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <Label className="text-xs font-medium text-gray-600">Reset Window Months</Label>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => selectAllCategoryMonths(crw.id)}
+                                  className="flex items-center gap-1 text-xs h-6"
+                                >
+                                  {crw.months.length === MONTHS.length ? (
+                                    <>
+                                      <CheckSquare className="w-3 h-3" />
+                                      Deselect All
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Square className="w-3 h-3" />
+                                      Select All
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                              <div className="p-3 border rounded-lg bg-white">
+                                <div className="grid grid-cols-6 gap-2">
+                                  {MONTHS.map(month => (
+                                    <div key={month} className="flex items-center space-x-1">
+                                      <Checkbox
+                                        id={`crw-${crw.id}-${month}`}
+                                        checked={crw.months.includes(month)}
+                                        onCheckedChange={() => toggleCategoryMonth(crw.id, month)}
+                                      />
+                                      <Label htmlFor={`crw-${crw.id}-${month}`} className="text-xs cursor-pointer">
+                                        {month}
+                                      </Label>
+                                    </div>
+                                  ))}
+                                </div>
+                                {crw.months.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t">
+                                    <p className="text-xs font-medium text-gray-700">
+                                      Selected ({crw.months.length}/{MONTHS.length}): {crw.months.join(', ')}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </CardContent>
