@@ -52,6 +52,29 @@ const ECOMMERCE_PARTNERS = [
   'GoPuff'
 ];
 
+// Reset Frequency options - NEW
+const RESET_FREQUENCY_OPTIONS = [
+  'Annual Reset',
+  'Bi-Annual Reset',
+  'Quarterly Reset',
+  'Monthly / Rolling Reset',
+  'As Needed / Opportunistic'
+];
+
+// Reset Window Lead Time options - NEW
+const RESET_LEAD_TIME_OPTIONS = [
+  '3 Months',
+  '6 Months',
+  '9 Months',
+  '12 Months'
+];
+
+// Months for Reset Window multi-select - NEW
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 // Google Maps libraries to load
 const libraries: ("places")[] = ["places"];
 
@@ -96,6 +119,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     hasPlanograms: false,
     planogramWrittenBy: '',
     resetWindows: '',
+    resetFrequency: '',
+    resetWindowLeadTime: '',
+    resetWindowMonths: [],
     categoryCaptain: 'none',
     categoryAdvisor: 'none',
     isJBP: false,
@@ -276,6 +302,17 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     return [];
   });
 
+  // Handle reset window months multi-select - NEW
+  const [selectedResetMonths, setSelectedResetMonths] = useState<string[]>(() => {
+    if (!formData.resetWindowMonths) return [];
+    
+    if (Array.isArray(formData.resetWindowMonths)) {
+      return formData.resetWindowMonths;
+    }
+    
+    return [];
+  });
+
   const [customerEvents, setCustomerEvents] = useState<CustomerEvent[]>(
     formData.customerEvents || []
   );
@@ -365,6 +402,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       operatingStates: selectedStates,
       fulfillmentTypes: selectedFulfillmentTypes,
       ecommercePartners: selectedEcommercePartners,
+      resetWindowMonths: selectedResetMonths,
       customerEvents: customerEvents,
       lastModified: new Date().toISOString(),
       categoryCaptain: formData.categoryCaptain === 'none' ? '' : formData.categoryCaptain,
@@ -460,6 +498,24 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     }
   };
 
+  const toggleResetMonth = (month: string) => {
+    setSelectedResetMonths(prev => {
+      if (prev.includes(month)) {
+        return prev.filter(m => m !== month);
+      } else {
+        return [...prev, month];
+      }
+    });
+  };
+
+  const selectAllResetMonths = () => {
+    if (selectedResetMonths.length === MONTHS.length) {
+      setSelectedResetMonths([]);
+    } else {
+      setSelectedResetMonths([...MONTHS]);
+    }
+  };
+
   const addCustomerEvent = () => {
     const newEvent: CustomerEvent = {
       id: Date.now().toString(),
@@ -516,6 +572,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const isSomeStatesSelected = selectedStates.length > 0 && selectedStates.length < US_STATES.length;
   const isAllFulfillmentTypesSelected = selectedFulfillmentTypes.length === FULFILLMENT_TYPES.length;
   const isAllEcommercePartnersSelected = selectedEcommercePartners.length === ECOMMERCE_PARTNERS.length;
+  const isAllResetMonthsSelected = selectedResetMonths.length === MONTHS.length;
 
   const willSendToPA = 
     powerAutomateService.isTickerSymbolWorkflowEnabled() && 
@@ -1467,101 +1524,97 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
 
           {formData.hasPlanograms && (
-            <div className="mt-6">
-              <Label className="text-lg font-medium mb-4 block flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Reset Windows
+            <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg space-y-6">
+              <Label className="text-lg font-medium block flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Planogram Configuration
               </Label>
               
-              <div className="mb-4">
-                <Label className="text-sm font-medium mb-2 block">Quarterly Reset Windows</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div>
-                    <Label htmlFor="resetWindowQ1" className="text-xs font-medium text-gray-600">Q1 Reset</Label>
-                    <Input
-                      id="resetWindowQ1"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowQ1 || '')}
-                      onChange={(e) => updateField('resetWindowQ1', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="resetWindowQ2" className="text-xs font-medium text-gray-600">Q2 Reset</Label>
-                    <Input
-                      id="resetWindowQ2"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowQ2 || '')}
-                      onChange={(e) => updateField('resetWindowQ2', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="resetWindowQ3" className="text-xs font-medium text-gray-600">Q3 Reset</Label>
-                    <Input
-                      id="resetWindowQ3"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowQ3 || '')}
-                      onChange={(e) => updateField('resetWindowQ3', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="resetWindowQ4" className="text-xs font-medium text-gray-600">Q4 Reset</Label>
-                    <Input
-                      id="resetWindowQ4"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowQ4 || '')}
-                      onChange={(e) => updateField('resetWindowQ4', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
+              {/* Reset Frequency Dropdown */}
+              <div>
+                <Label htmlFor="resetFrequency" className="text-sm font-medium">Reset Frequency</Label>
+                <Select 
+                  value={formData.resetFrequency || ''} 
+                  onValueChange={(value) => updateField('resetFrequency', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select reset frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RESET_FREQUENCY_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
+              {/* Reset Window Lead Time Dropdown */}
               <div>
-                <Label className="text-sm font-medium mb-2 block">Seasonal Reset Windows</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div>
-                    <Label htmlFor="resetWindowSpring" className="text-xs font-medium text-gray-600">Spring Reset</Label>
-                    <Input
-                      id="resetWindowSpring"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowSpring || '')}
-                      onChange={(e) => updateField('resetWindowSpring', e.target.value)}
-                      className="mt-1"
-                    />
+                <Label htmlFor="resetWindowLeadTime" className="text-sm font-medium">Reset Window Lead Time Requirement</Label>
+                <Select 
+                  value={formData.resetWindowLeadTime || ''} 
+                  onValueChange={(value) => updateField('resetWindowLeadTime', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select lead time requirement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RESET_LEAD_TIME_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Reset Window Months Multi-Select Grid */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Reset Window</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllResetMonths}
+                    className="flex items-center gap-1 text-xs h-7"
+                  >
+                    {isAllResetMonthsSelected ? (
+                      <>
+                        <CheckSquare className="w-3 h-3" />
+                        Deselect All
+                      </>
+                    ) : (
+                      <>
+                        <Square className="w-3 h-3" />
+                        Select All
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="p-4 border rounded-lg bg-white">
+                  <div className="grid grid-cols-6 gap-3">
+                    {MONTHS.map(month => (
+                      <div key={month} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`month-${month}`}
+                          checked={selectedResetMonths.includes(month)}
+                          onCheckedChange={() => toggleResetMonth(month)}
+                        />
+                        <Label htmlFor={`month-${month}`} className="text-sm cursor-pointer">
+                          {month}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <Label htmlFor="resetWindowSummer" className="text-xs font-medium text-gray-600">Summer Reset</Label>
-                    <Input
-                      id="resetWindowSummer"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowSummer || '')}
-                      onChange={(e) => updateField('resetWindowSummer', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="resetWindowFall" className="text-xs font-medium text-gray-600">Fall Reset</Label>
-                    <Input
-                      id="resetWindowFall"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowFall || '')}
-                      onChange={(e) => updateField('resetWindowFall', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="resetWindowWinter" className="text-xs font-medium text-gray-600">Winter Reset</Label>
-                    <Input
-                      id="resetWindowWinter"
-                      type="date"
-                      value={formatDateForInput(formData.resetWindowWinter || '')}
-                      onChange={(e) => updateField('resetWindowWinter', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
+                  {selectedResetMonths.length > 0 && (
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="text-sm font-medium text-gray-700">
+                        Selected Months ({selectedResetMonths.length}/{MONTHS.length}):
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {selectedResetMonths.join(', ')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

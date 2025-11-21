@@ -61,6 +61,10 @@ export interface Account {
   nextJBPDate?: string;
   hasPlanograms?: boolean;
   planogramWrittenBy?: string; // NEW: Author of the planogram
+  // NEW: Planogram Reset Configuration fields
+  resetFrequency?: string; // Annual Reset, Bi-Annual Reset, Quarterly Reset, Monthly / Rolling Reset, As Needed / Opportunistic
+  resetWindowLeadTime?: string; // 3 Months, 6 Months, 9 Months, 12 Months
+  resetWindowMonths?: string[]; // Selected months for reset window
   displayMandates?: string; // UPDATED: Changed from boolean to string for dropdown (All/Some/None)
   fulfillmentTypes?: string[]; // UPDATED: Changed to array for multi-select dropdown
   allSpiritsOutlets?: string; // UPDATED: Changed from spiritsOutlets to allSpiritsOutlets
