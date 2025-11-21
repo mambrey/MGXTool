@@ -894,60 +894,45 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <CardTitle>Ways of Working</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Support Style - UPDATED WITH DARKER COLORS */}
+            {/* Support Style - UPDATED WITH COLORED DOTS */}
             <div>
               <Label htmlFor="relationshipStatus">Support Style</Label>
               <Select 
                 value={formData.relationshipStatus} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
               >
-                <SelectTrigger className="bg-gradient-to-r from-green-50 to-blue-50 border-2">
+                <SelectTrigger>
                   <SelectValue placeholder="Select support style..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Promoter — Champions our partnership" style={{backgroundColor: '#166534', color: 'white'}}>
+                  <SelectItem value="Promoter — Champions our partnership">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-white"></div>
-                      <div className="flex flex-col">
-                        <span className="font-medium">Promoter</span>
-                        <span className="text-xs text-gray-200">Champions our partnership</span>
-                      </div>
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#166534'}}></div>
+                      <span>Promoter</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Supporter — Leans in consistently" style={{backgroundColor: '#16a34a', color: 'white'}}>
+                  <SelectItem value="Supporter — Leans in consistently">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-white"></div>
-                      <div className="flex flex-col">
-                        <span className="font-medium">Supporter</span>
-                        <span className="text-xs text-gray-200">Leans in consistently</span>
-                      </div>
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#16a34a'}}></div>
+                      <span>Supporter</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Neutral — Transactional, low engagement" style={{backgroundColor: '#eab308', color: '#1f2937'}}>
+                  <SelectItem value="Neutral — Transactional, low engagement">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-gray-700"></div>
-                      <div className="flex flex-col">
-                        <span className="font-medium">Neutral</span>
-                        <span className="text-xs text-gray-700">Transactional, low engagement</span>
-                      </div>
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#6b7280'}}></div>
+                      <span>Neutral</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Detractor — Resists our efforts" style={{backgroundColor: '#ea580c', color: 'white'}}>
+                  <SelectItem value="Detractor — Resists our efforts">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-white"></div>
-                      <div className="flex flex-col">
-                        <span className="font-medium">Detractor</span>
-                        <span className="text-xs text-gray-200">Resists our efforts</span>
-                      </div>
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ea580c'}}></div>
+                      <span>Skeptic</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Adversarial — Actively working against" style={{backgroundColor: '#991b1b', color: 'white'}}>
+                  <SelectItem value="Adversarial — Actively working against">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-white"></div>
-                      <div className="flex flex-col">
-                        <span className="font-medium">Adversarial</span>
-                        <span className="text-xs text-gray-200">Actively working against</span>
-                      </div>
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#991b1b'}}></div>
+                      <span>Adversarial</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
