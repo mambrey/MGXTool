@@ -50,6 +50,21 @@ const defaultCenter = {
   lng: -122.4194
 };
 
+// Helper function to get Support Style color matching ContactForm
+const getSupportStyleColor = (status: string) => {
+  if (status.startsWith('Promoter')) return '#166534'; // dark green
+  if (status.startsWith('Supporter')) return '#16a34a'; // green
+  if (status.startsWith('Neutral')) return '#6b7280'; // gray
+  if (status.startsWith('Detractor')) return '#ea580c'; // orange
+  if (status.startsWith('Adversarial')) return '#991b1b'; // red
+  return '#6b7280'; // default gray
+};
+
+// Helper function to get Support Style label (first word only)
+const getSupportStyleLabel = (status: string) => {
+  return status.split(' ')[0]; // Get first word only (Promoter, Supporter, Neutral, Detractor, Adversarial)
+};
+
 export default function AccountDetails({ 
   account, 
   contacts, 
@@ -895,15 +910,10 @@ export default function AccountDetails({
                               </div>
                               {contact.relationshipStatus && (
                                 <Badge 
-                                  variant={
-                                    contact.relationshipStatus === 'Excellent' ? 'default' :
-                                    contact.relationshipStatus === 'Good' ? 'secondary' :
-                                    contact.relationshipStatus === 'Neutral' ? 'outline' :
-                                    'destructive'
-                                  }
-                                  className="text-xs"
+                                  className="text-xs text-white"
+                                  style={{ backgroundColor: getSupportStyleColor(contact.relationshipStatus) }}
                                 >
-                                  {contact.relationshipStatus}
+                                  {getSupportStyleLabel(contact.relationshipStatus)}
                                 </Badge>
                               )}
                             </div>
