@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff } from 'lucide-react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +63,82 @@ const getSupportStyleColor = (status: string) => {
 // Helper function to get Support Style label (first word only)
 const getSupportStyleLabel = (status: string) => {
   return status.split(' ')[0]; // Get first word only (Promoter, Supporter, Neutral, Detractor, Adversarial)
+};
+
+// Helper function to get preferred contact info based on preferredContactMethod
+const getPreferredContactInfo = (contact: Contact): { 
+  value: string | undefined; 
+  icon: React.ComponentType<{ className?: string }>; 
+  label: string;
+  href: string;
+} | null => {
+  const method = contact.preferredContactMethod;
+  
+  if (!method) {
+    // Fallback: show email if available, otherwise mobile, otherwise office
+    if (contact.email) {
+      return {
+        value: contact.email,
+        icon: Mail,
+        label: 'Email',
+        href: `mailto:${contact.email}`
+      };
+    }
+    if (contact.mobilePhone) {
+      return {
+        value: contact.mobilePhone,
+        icon: Phone,
+        label: 'Mobile',
+        href: `tel:${contact.mobilePhone}`
+      };
+    }
+    if (contact.officePhone) {
+      return {
+        value: contact.officePhone,
+        icon: Phone,
+        label: 'Office',
+        href: `tel:${contact.officePhone}`
+      };
+    }
+    return null;
+  }
+
+  switch (method) {
+    case 'email':
+      return contact.email ? {
+        value: contact.email,
+        icon: Mail,
+        label: 'Email (Preferred)',
+        href: `mailto:${contact.email}`
+      } : null;
+    
+    case 'mobile phone':
+      return contact.mobilePhone ? {
+        value: contact.mobilePhone,
+        icon: Phone,
+        label: 'Mobile (Preferred)',
+        href: `tel:${contact.mobilePhone}`
+      } : null;
+    
+    case 'office phone':
+      return contact.officePhone ? {
+        value: contact.officePhone,
+        icon: Phone,
+        label: 'Office (Preferred)',
+        href: `tel:${contact.officePhone}`
+      } : null;
+    
+    case 'text':
+      return contact.mobilePhone ? {
+        value: contact.mobilePhone,
+        icon: MessageSquare,
+        label: 'Text (Preferred)',
+        href: `sms:${contact.mobilePhone}`
+      } : null;
+    
+    default:
+      return null;
+  }
 };
 
 export default function AccountDetails({ 
@@ -885,65 +961,82 @@ export default function AccountDetails({
                       </Button>
                     </div>
                   ) : (
-                    contacts.map((contact, index) => (
-                      <div key={contact.id}>
-                        <Card 
-                          className="p-3 hover:shadow-md transition-shadow cursor-pointer"
-                          onClick={() => onViewContact(contact)}
-                        >
-                          <div className="space-y-2">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-semibold text-sm">
-                                    {contact.firstName} {contact.lastName}
-                                  </h3>
+                    contacts.map((contact, index) => {
+                      const preferredContactInfo = getPreferredContactInfo(contact);
+                      
+                      return (
+                        <div key={contact.id}>
+                          <Card 
+                            className="p-3 hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => onViewContact(contact)}
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-sm">
+                                      {contact.firstName} {contact.lastName}
+                                    </h3>
+                                  </div>
+                                  {contact.title && (
+                                    <p className="text-xs text-gray-600">{contact.title}</p>
+                                  )}
+                                  {contact.contactType && (
+                                    <Badge variant={contact.contactType === 'Primary' ? 'default' : 'secondary'} className="text-xs mt-1">
+                                      {contact.contactType}
+                                    </Badge>
+                                  )}
                                 </div>
-                                {contact.title && (
-                                  <p className="text-xs text-gray-600">{contact.title}</p>
-                                )}
-                                {contact.contactType && (
-                                  <Badge variant={contact.contactType === 'Primary' ? 'default' : 'secondary'} className="text-xs mt-1">
-                                    {contact.contactType}
+                                {contact.relationshipStatus && (
+                                  <Badge 
+                                    className="text-xs text-white"
+                                    style={{ backgroundColor: getSupportStyleColor(contact.relationshipStatus) }}
+                                  >
+                                    {getSupportStyleLabel(contact.relationshipStatus)}
                                   </Badge>
                                 )}
                               </div>
-                              {contact.relationshipStatus && (
-                                <Badge 
-                                  className="text-xs text-white"
-                                  style={{ backgroundColor: getSupportStyleColor(contact.relationshipStatus) }}
-                                >
-                                  {getSupportStyleLabel(contact.relationshipStatus)}
-                                </Badge>
-                              )}
+                              
+                              <div className="space-y-1">
+                                {/* Display preferred contact method */}
+                                {preferredContactInfo && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <a 
+                                      href={preferredContactInfo.href}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      <preferredContactInfo.icon className="w-3 h-3" />
+                                      <span className="truncate">{preferredContactInfo.value}</span>
+                                    </a>
+                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      {preferredContactInfo.label}
+                                    </Badge>
+                                  </div>
+                                )}
+                                
+                                {/* Show "Not specified" if no preferred contact method data available */}
+                                {!preferredContactInfo && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <Mail className="w-3 h-3" />
+                                    <span>Contact method not specified</span>
+                                  </div>
+                                )}
+                                
+                                {contact.influence && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <Badge variant="outline" className="text-xs">
+                                      {contact.influence}
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            
-                            <div className="space-y-1">
-                              {contact.email && (
-                                <div className="flex items-center gap-2 text-xs text-gray-600">
-                                  <Mail className="w-3 h-3" />
-                                  <span className="truncate">{contact.email}</span>
-                                </div>
-                              )}
-                              {(contact.phone || contact.officePhone) && (
-                                <div className="flex items-center gap-2 text-xs text-gray-600">
-                                  <Phone className="w-3 h-3" />
-                                  <span>{contact.phone || contact.officePhone}</span>
-                                </div>
-                              )}
-                              {contact.influence && (
-                                <div className="flex items-center gap-2 text-xs">
-                                  <Badge variant="outline" className="text-xs">
-                                    {contact.influence}
-                                  </Badge>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </Card>
-                        {index < contacts.length - 1 && <Separator className="my-2" />}
-                      </div>
-                    ))
+                          </Card>
+                          {index < contacts.length - 1 && <Separator className="my-2" />}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </ScrollArea>
