@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink, Briefcase, Users, MapPin } from 'lucide-react';
+import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink, Briefcase, Users, MapPin, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -257,7 +257,15 @@ export default function ContactDetails({
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex-1">
           <Button variant="ghost" onClick={onBack} className="mb-2">
-            ← Back to Contacts
+            {account ? (
+              <>
+                ← Back to {account.accountName}
+              </>
+            ) : (
+              <>
+                ← Back to Contacts
+              </>
+            )}
           </Button>
           <div className="flex items-center gap-4">
             {/* Headshot Display */}
@@ -280,7 +288,10 @@ export default function ContactDetails({
               <h1 className="text-3xl font-bold">{contact.firstName} {contact.lastName}</h1>
               <p className="text-gray-600">{contact.title || 'No title specified'}</p>
               {account && (
-                <p className="text-blue-600 text-sm mt-1">{account.accountName}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                  <p className="text-blue-600 text-sm font-medium">{account.accountName}</p>
+                </div>
               )}
             </div>
           </div>
