@@ -1358,7 +1358,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
             </div>
             
-            {/* Decision Bias Profile - UPDATED WITH INLINE DESCRIPTIONS */}
+            {/* Decision Bias Profile - UPDATED WITH FULL DESCRIPTION IN TRIGGER */}
             <div>
               <Label htmlFor="decisionBiasProfile" className="flex items-center gap-2">
                 <Info className="w-4 h-4" />
@@ -1368,8 +1368,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 value={formData.decisionBiasProfile} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, decisionBiasProfile: value }))}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select decision bias profile..." />
+                <SelectTrigger className="h-auto text-left">
+                  <SelectValue placeholder="Select decision bias profile...">
+                    {formData.decisionBiasProfile && DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS] && (
+                      <div className="text-left py-1">
+                        <div className="font-medium">{formData.decisionBiasProfile}</div>
+                        <div className="text-xs text-gray-600 mt-0.5">
+                          {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].description}
+                        </div>
+                      </div>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="max-w-md">
                   <SelectItem value="Data Centric">
