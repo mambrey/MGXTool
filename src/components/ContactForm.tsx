@@ -389,7 +389,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleSalesCadenceChange = (role: string, cadence: string) => {
     setSalesRoles(prev => ({
       ...prev,
-      [role]: cadence
+      [role]: cadence === 'clear' ? '' : cadence
     }));
   };
 
@@ -410,7 +410,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleSupportCadenceChange = (role: string, cadence: string) => {
     setSupportRoles(prev => ({
       ...prev,
-      [role]: cadence
+      [role]: cadence === 'clear' ? '' : cadence
     }));
   };
 
@@ -729,12 +729,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Label htmlFor="currentRoleTenure">Current Role Tenure</Label>
               <Select
                 value={formData.currentRoleTenure}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, currentRoleTenure: value }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, currentRoleTenure: value === 'clear' ? '' : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select tenure..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="0-1 Years">0-1 Years</SelectItem>
                   <SelectItem value="1-3 Years">1-3 Years</SelectItem>
                   <SelectItem value="3-5 Years">3-5 Years</SelectItem>
@@ -955,11 +956,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
             <div>
               <Label htmlFor="preferredContactMethod">Preferred Contact Method</Label>
-              <Select value={formData.preferredContactMethod} onValueChange={(value) => setFormData(prev => ({ ...prev, preferredContactMethod: value }))}>
+              <Select value={formData.preferredContactMethod} onValueChange={(value) => setFormData(prev => ({ ...prev, preferredContactMethod: value === 'clear' ? '' : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select contact method..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="mobile phone">Mobile</SelectItem>
                   <SelectItem value="text">Text</SelectItem>
                   <SelectItem value="email">Email</SelectItem>
@@ -1004,12 +1006,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Label htmlFor="relationshipStatus">Support Style</Label>
               <Select 
                 value={formData.relationshipStatus} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value === 'clear' ? '' : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select support style..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="Promoter — Champions our partnership">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#166534'}}></div>
@@ -1390,12 +1393,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Label htmlFor="entertainment">Allowed to Entertain</Label>
               <Select 
                 value={formData.entertainment} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, entertainment: value }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, entertainment: value === 'clear' ? '' : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="Yes">Yes</SelectItem>
                   <SelectItem value="No">No</SelectItem>
                 </SelectContent>
@@ -1410,7 +1414,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Label>
               <Select 
                 value={formData.decisionBiasProfile} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, decisionBiasProfile: value }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, decisionBiasProfile: value === 'clear' ? '' : value }))}
               >
                 <SelectTrigger className="h-auto min-h-[60px] text-left items-start py-2">
                   {formData.decisionBiasProfile && DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS] ? (
@@ -1426,6 +1430,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   <ChevronDown className="h-4 w-4 opacity-50 absolute right-3 top-1/2 -translate-y-1/2" />
                 </SelectTrigger>
                 <SelectContent className="max-w-md">
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="Data Centric">
                     <div className="py-1">
                       <div className="font-medium">Data Centric</div>
@@ -1476,12 +1481,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Label htmlFor="followThrough">Follow Through</Label>
               <Select 
                 value={formData.followThrough} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, followThrough: value }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, followThrough: value === 'clear' ? '' : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select level..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="High">High</SelectItem>
                   <SelectItem value="Medium">Medium</SelectItem>
                   <SelectItem value="Low">Low</SelectItem>
@@ -1597,6 +1603,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                             <SelectValue placeholder="Cadence..." />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="clear" className="text-gray-500 italic text-xs">Clear</SelectItem>
                             {CADENCE_OPTIONS.map((option) => (
                               <SelectItem key={option} value={option} className="text-xs">
                                 {option}
@@ -1644,6 +1651,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                             <SelectValue placeholder="Cadence..." />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="clear" className="text-gray-500 italic text-xs">Clear</SelectItem>
                             {CADENCE_OPTIONS.map((option) => (
                               <SelectItem key={option} value={option} className="text-xs">
                                 {option}

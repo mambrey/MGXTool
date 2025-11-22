@@ -224,10 +224,23 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     }
   }, [formData.tickerSymbol]);
 
-  // Validate JBP Customer and Next JBP date
+  // Validate JBP Customer and Next JBP date - UPDATED TO CHECK FOR FUTURE DATE
   useEffect(() => {
-    if (formData.isJBP && (!formData.nextJBPDate || formData.nextJBPDate.trim() === '')) {
-      setJbpValidationError('Please input the Next JBP date when JBP Customer is selected');
+    if (formData.isJBP) {
+      if (!formData.nextJBPDate || formData.nextJBPDate.trim() === '') {
+        setJbpValidationError('Please input the Next JBP date when JBP Customer is selected');
+      } else {
+        // Check if the date is in the future
+        const selectedDate = new Date(formData.nextJBPDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+        
+        if (selectedDate < today) {
+          setJbpValidationError('Next JBP date must be a future date');
+        } else {
+          setJbpValidationError('');
+        }
+      }
     } else {
       setJbpValidationError('');
     }
@@ -457,10 +470,22 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate JBP Customer and Next JBP date
-    if (formData.isJBP && (!formData.nextJBPDate || formData.nextJBPDate.trim() === '')) {
-      alert('Please input the Next JBP date when JBP Customer is selected');
-      return;
+    // Validate JBP Customer and Next JBP date - UPDATED TO CHECK FOR FUTURE DATE
+    if (formData.isJBP) {
+      if (!formData.nextJBPDate || formData.nextJBPDate.trim() === '') {
+        alert('Please input the Next JBP date when JBP Customer is selected');
+        return;
+      }
+      
+      // Check if the date is in the future
+      const selectedDate = new Date(formData.nextJBPDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+      
+      if (selectedDate < today) {
+        alert('Next JBP date must be a future date');
+        return;
+      }
     }
     
     const updatedFormData = {
@@ -841,11 +866,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
           <div>
             <Label htmlFor="channel" className="text-sm font-medium">Channel</Label>
-            <Select value={formData.channel} onValueChange={(value) => updateField('channel', value)}>
+            <Select value={formData.channel || ''} onValueChange={(value) => updateField('channel', value === 'clear' ? '' : value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select channel" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                 <SelectItem value="Club">Club</SelectItem>
                 <SelectItem value="C-Store">C-Store</SelectItem>
                 <SelectItem value="DoorDash">DoorDash</SelectItem>
@@ -864,11 +890,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
           <div>
             <Label htmlFor="footprint" className="text-sm font-medium">Channel Mapping</Label>
-            <Select value={formData.footprint} onValueChange={(value) => updateField('footprint', value)}>
+            <Select value={formData.footprint || ''} onValueChange={(value) => updateField('footprint', value === 'clear' ? '' : value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select channel mapping" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                 <SelectItem value="National Retailer">National Retailer</SelectItem>
                 <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
                 <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
@@ -997,12 +1024,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 <Label htmlFor="executionReliabilityScore" className="text-sm font-medium">Execution Reliability Score</Label>
                 <Select 
                   value={formData.executionReliabilityScore || ''} 
-                  onValueChange={(value) => updateField('executionReliabilityScore', value)}
+                  onValueChange={(value) => updateField('executionReliabilityScore', value === 'clear' ? '' : value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select reliability score" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                     <SelectItem value="5">5 – Highly Reliable: Nearly all agreed programs, displays, and resets are executed on time and in full</SelectItem>
                     <SelectItem value="4">4 – Generally Reliable: Most programs land well with occasional gaps that are usually fixed quickly</SelectItem>
                     <SelectItem value="3">3 – Mixed Reliability: Some things execute and some do not; performance often varies by store</SelectItem>
@@ -1590,12 +1618,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             <Label htmlFor="innovationAppetite" className="text-sm font-medium">Innovation Appetite</Label>
             <Select 
               value={formData.innovationAppetite?.toString() || ''} 
-              onValueChange={(value) => updateField('innovationAppetite', value)}
+              onValueChange={(value) => updateField('innovationAppetite', value === 'clear' ? '' : value)}
             >
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select innovation appetite" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                 <SelectItem value="Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities">Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities</SelectItem>
                 <SelectItem value="Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge">Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge</SelectItem>
                 <SelectItem value="Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy">Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy</SelectItem>
@@ -1754,12 +1783,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 <Label htmlFor="resetFrequency" className="text-sm font-medium">Reset Frequency</Label>
                 <Select 
                   value={formData.resetFrequency || ''} 
-                  onValueChange={(value) => updateField('resetFrequency', value)}
+                  onValueChange={(value) => updateField('resetFrequency', value === 'clear' ? '' : value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select reset frequency" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                     {RESET_FREQUENCY_OPTIONS.map(option => (
                       <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}
@@ -1772,12 +1802,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 <Label htmlFor="resetWindowLeadTime" className="text-sm font-medium">Reset Window Lead Time Requirement</Label>
                 <Select 
                   value={formData.resetWindowLeadTime || ''} 
-                  onValueChange={(value) => updateField('resetWindowLeadTime', value)}
+                  onValueChange={(value) => updateField('resetWindowLeadTime', value === 'clear' ? '' : value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select lead time requirement" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                     {RESET_LEAD_TIME_OPTIONS.map(option => (
                       <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}
@@ -1844,12 +1875,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Label>
                 <Select 
                   value={formData.hasDifferentResetWindows || ''} 
-                  onValueChange={(value) => updateField('hasDifferentResetWindows', value)}
+                  onValueChange={(value) => updateField('hasDifferentResetWindows', value === 'clear' ? '' : value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select yes or no" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                     <SelectItem value="Yes">Yes</SelectItem>
                     <SelectItem value="No">No</SelectItem>
                   </SelectContent>
@@ -1901,12 +1933,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                               <Label htmlFor={`crw-category-${crw.id}`} className="text-xs font-medium text-gray-600">Category</Label>
                               <Select 
                                 value={crw.category} 
-                                onValueChange={(value) => updateCategoryResetWindow(crw.id, 'category', value)}
+                                onValueChange={(value) => updateCategoryResetWindow(crw.id, 'category', value === 'clear' ? '' : value)}
                               >
                                 <SelectTrigger className="mt-1">
                                   <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                                   {AFFECTED_CATEGORIES.map(category => (
                                     <SelectItem key={category} value={category}>{category}</SelectItem>
                                   ))}
