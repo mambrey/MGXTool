@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -131,6 +131,19 @@ const formatBirthdayMonthDay = (value: string): string => {
   if (digits.length === 0) return '';
   if (digits.length <= 2) return digits;
   return `${digits.slice(0, 2)}-${digits.slice(2, 4)}`;
+};
+
+// Format date for display
+const formatDate = (dateString: string): string => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
@@ -558,10 +571,41 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
-          {contact ? 'Edit Contact' : 'Add New Contact'}
-        </h2>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold">
+            {contact ? 'Edit Contact' : 'Add New Contact'}
+          </h2>
+        </div>
+        
+        {/* Record Information Summary Card */}
+        <Card className="w-80 bg-slate-50 border-slate-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Record Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-1">Date Created</p>
+              <p className="text-sm text-slate-900">
+                {contact?.createdAt ? formatDate(contact.createdAt) : 'New Record'}
+              </p>
+            </div>
+            <Separator />
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-1">Date Modified</p>
+              <p className="text-sm text-slate-900">
+                {contact?.lastModified ? formatDate(contact.lastModified) : 'Not yet saved'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cancel Button Row */}
+      <div className="flex justify-end">
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
