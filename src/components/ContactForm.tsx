@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -1358,7 +1358,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
             </div>
             
-            {/* Decision Bias Profile - UPDATED WITH FULL DESCRIPTION IN TRIGGER */}
+            {/* Decision Bias Profile - CUSTOM TRIGGER WITH FULL DESCRIPTION */}
             <div>
               <Label htmlFor="decisionBiasProfile" className="flex items-center gap-2">
                 <Info className="w-4 h-4" />
@@ -1368,17 +1368,18 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 value={formData.decisionBiasProfile} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, decisionBiasProfile: value }))}
               >
-                <SelectTrigger className="h-auto text-left">
-                  <SelectValue placeholder="Select decision bias profile...">
-                    {formData.decisionBiasProfile && DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS] && (
-                      <div className="text-left py-1">
-                        <div className="font-medium">{formData.decisionBiasProfile}</div>
-                        <div className="text-xs text-gray-600 mt-0.5">
-                          {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].description}
-                        </div>
+                <SelectTrigger className="h-auto min-h-[60px] text-left items-start py-2">
+                  {formData.decisionBiasProfile && DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS] ? (
+                    <div className="text-left w-full pr-4">
+                      <div className="font-medium text-sm">{formData.decisionBiasProfile}</div>
+                      <div className="text-xs text-gray-600 mt-1 leading-relaxed">
+                        {DECISION_BIAS_OPTIONS[formData.decisionBiasProfile as keyof typeof DECISION_BIAS_OPTIONS].description}
                       </div>
-                    )}
-                  </SelectValue>
+                    </div>
+                  ) : (
+                    <span className="text-gray-500">Select decision bias profile...</span>
+                  )}
+                  <ChevronDown className="h-4 w-4 opacity-50 absolute right-3 top-1/2 -translate-y-1/2" />
                 </SelectTrigger>
                 <SelectContent className="max-w-md">
                   <SelectItem value="Data Centric">
