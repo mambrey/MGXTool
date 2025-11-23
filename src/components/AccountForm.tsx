@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,17 @@ interface CategoryResetWindow {
 interface StateOutlet {
   state: string;
   outletCount: string;
+}
+
+interface BannerBuyingOffice {
+  id: string;
+  accountName: string;
+  address: string;
+  website: string;
+  channel: string;
+  footprint: string;
+  operatingStates: string[];
+  allSpiritsOutlets: string;
 }
 
 // US States for multi-select
@@ -192,6 +203,10 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     resetWindowFall: '',
     resetWindowWinter: ''
   });
+
+  // Banner/Buying Offices state
+  const [bannerBuyingOffices, setBannerBuyingOffices] = useState<BannerBuyingOffice[]>([]);
+  const [showBannerSection, setShowBannerSection] = useState(false);
 
   // Track the original ticker symbol to detect when a new one is added
   const [originalTickerSymbol, setOriginalTickerSymbol] = useState<string>(account?.tickerSymbol || '');
@@ -412,8 +427,51 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
    * Handle Add Banner/Buying Office button click
    */
   const handleAddBannerBuyingOffice = () => {
-    console.log('Add Banner/Buying Office clicked - Feature to be implemented');
-    alert('Add Banner/Buying Office feature will be implemented soon');
+    const newBanner: BannerBuyingOffice = {
+      id: Date.now().toString(),
+      accountName: '',
+      address: '',
+      website: '',
+      channel: '',
+      footprint: '',
+      operatingStates: [],
+      allSpiritsOutlets: ''
+    };
+    setBannerBuyingOffices(prev => [...prev, newBanner]);
+    setShowBannerSection(true);
+  };
+
+  /**
+   * Update Banner/Buying Office field
+   */
+  const updateBannerField = (id: string, field: keyof BannerBuyingOffice, value: any) => {
+    setBannerBuyingOffices(prev =>
+      prev.map(banner => banner.id === id ? { ...banner, [field]: value } : banner)
+    );
+  };
+
+  /**
+   * Remove Banner/Buying Office
+   */
+  const removeBannerBuyingOffice = (id: string) => {
+    setBannerBuyingOffices(prev => prev.filter(banner => banner.id !== id));
+  };
+
+  /**
+   * Toggle state for Banner/Buying Office
+   */
+  const toggleBannerState = (bannerId: string, state: string) => {
+    setBannerBuyingOffices(prev =>
+      prev.map(banner => {
+        if (banner.id === bannerId) {
+          const states = banner.operatingStates.includes(state)
+            ? banner.operatingStates.filter(s => s !== state)
+            : [...banner.operatingStates, state].sort();
+          return { ...banner, operatingStates: states };
+        }
+        return banner;
+      })
+    );
   };
 
   /**
@@ -1052,6 +1110,203 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
       </Card>
+
+      {/* Banner/Buying Offices Section */}
+      {bannerBuyingOffices.length > 0 && (
+        <Card className="border-2 border-purple-200 bg-purple-50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                Banner/Buying Offices ({bannerBuyingOffices.length})
+              </CardTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowBannerSection(!showBannerSection)}
+                className="flex items-center gap-1"
+              >
+                {showBannerSection ? (
+                  <>
+                    <ChevronUp className="w-4 h-4" />
+                    Collapse
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4" />
+                    Expand
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          {showBannerSection && (
+            <CardContent className="space-y-4">
+              {bannerBuyingOffices.map((banner, index) => (
+                <Card key={banner.id} className="bg-white border-purple-200">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold text-purple-700">
+                        Banner/Buying Office #{index + 1}
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeBannerBuyingOffice(banner.id)}
+                        className="h-7 w-7 p-0 text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Parent Company - Pre-populated and read-only */}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Parent Company</Label>
+                      <Input
+                        value={formData.accountName || 'Current Account'}
+                        disabled
+                        className="mt-1 bg-gray-100 text-gray-600"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Automatically set to the current account being created/edited
+                      </p>
+                    </div>
+
+                    {/* Account Name */}
+                    <div>
+                      <Label className="text-sm font-medium">Banner/Buying Office Name *</Label>
+                      <Input
+                        value={banner.accountName}
+                        onChange={(e) => updateBannerField(banner.id, 'accountName', e.target.value)}
+                        placeholder="Enter banner/buying office name"
+                        className="mt-1"
+                        required
+                      />
+                    </div>
+
+                    {/* Address */}
+                    <div>
+                      <Label className="text-sm font-medium">Address</Label>
+                      <Input
+                        value={banner.address}
+                        onChange={(e) => updateBannerField(banner.id, 'address', e.target.value)}
+                        placeholder="Enter address"
+                        className="mt-1"
+                      />
+                    </div>
+
+                    {/* Website */}
+                    <div>
+                      <Label className="text-sm font-medium">Website</Label>
+                      <Input
+                        value={banner.website}
+                        onChange={(e) => updateBannerField(banner.id, 'website', e.target.value)}
+                        placeholder="Enter website URL"
+                        className="mt-1"
+                      />
+                    </div>
+
+                    {/* Channel */}
+                    <div>
+                      <Label className="text-sm font-medium">Channel</Label>
+                      <Select 
+                        value={banner.channel || ''} 
+                        onValueChange={(value) => updateBannerField(banner.id, 'channel', value === 'clear' ? '' : value)}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select channel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                          <SelectItem value="Club">Club</SelectItem>
+                          <SelectItem value="C-Store">C-Store</SelectItem>
+                          <SelectItem value="DoorDash">DoorDash</SelectItem>
+                          <SelectItem value="Drug">Drug</SelectItem>
+                          <SelectItem value="Ecommerce">Ecommerce</SelectItem>
+                          <SelectItem value="Grocery">Grocery</SelectItem>
+                          <SelectItem value="Instacart">Instacart</SelectItem>
+                          <SelectItem value="Liquor">Liquor</SelectItem>
+                          <SelectItem value="Mass">Mass</SelectItem>
+                          <SelectItem value="Military">Military</SelectItem>
+                          <SelectItem value="Regional Grocery">Regional Grocery</SelectItem>
+                          <SelectItem value="UberEats">UberEats</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Channel Mapping */}
+                    <div>
+                      <Label className="text-sm font-medium">Channel Mapping</Label>
+                      <Select 
+                        value={banner.footprint || ''} 
+                        onValueChange={(value) => updateBannerField(banner.id, 'footprint', value === 'clear' ? '' : value)}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select channel mapping" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                          <SelectItem value="National Retailer">National Retailer</SelectItem>
+                          <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
+                          <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Operating States */}
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Operating States</Label>
+                      <div className="p-3 border rounded-lg bg-gray-50 max-h-40 overflow-y-auto">
+                        <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-2">
+                          {US_STATES.map(state => (
+                            <div key={state} className="flex items-center space-x-1">
+                              <Checkbox
+                                id={`banner-${banner.id}-state-${state}`}
+                                checked={banner.operatingStates.includes(state)}
+                                onCheckedChange={() => toggleBannerState(banner.id, state)}
+                              />
+                              <Label htmlFor={`banner-${banner.id}-state-${state}`} className="text-xs cursor-pointer">
+                                {state}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                        {banner.operatingStates.length > 0 && (
+                          <div className="mt-3 pt-3 border-t">
+                            <p className="text-sm font-medium text-gray-700">
+                              Selected States ({banner.operatingStates.length}/{US_STATES.length}):
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {banner.operatingStates.join(', ')}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* # of Spirits Outlets */}
+                    <div>
+                      <Label className="text-sm font-medium"># of Spirits Outlets</Label>
+                      <Input
+                        type="number"
+                        value={banner.allSpiritsOutlets}
+                        onChange={(e) => updateBannerField(banner.id, 'allSpiritsOutlets', e.target.value)}
+                        placeholder="Enter total number of spirits outlets"
+                        className="mt-1"
+                        min="0"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* Contacts Section - Only show when editing existing account */}
       {account && accountContacts.length > 0 && (
