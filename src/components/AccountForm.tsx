@@ -826,6 +826,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       categoryResetWindows: categoryResetWindows,
       customerEvents: customerEvents,
       bannerBuyingOffices: bannerBuyingOffices, // Include Banner/Buying Offices
+      bannerBuyingOffices: bannerBuyingOffices, // Include Banner/Buying Offices
       lastModified: new Date().toISOString(),
       categoryCaptain: formData.categoryCaptain === 'none' ? '' : formData.categoryCaptain,
       categoryAdvisor: formData.categoryAdvisor === 'none' ? '' : formData.categoryAdvisor,
