@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Trash2, Calendar, Target, TrendingUp, Plus, CheckSquare, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -20,6 +20,11 @@ interface CategoryResetWindow {
   months: string[];
 }
 
+interface StateOutlet {
+  state: string;
+  outletCount: string;
+}
+
 interface BannerBuyingOffice {
   id: string;
   accountName: string;
@@ -29,6 +34,7 @@ interface BannerBuyingOffice {
   footprint: string;
   operatingStates: string[];
   allSpiritsOutlets: string;
+  spiritsOutletsByState?: StateOutlet[];
   influenceAssortmentShelf: string;
   influencePricePromo: string;
   influenceDisplayMerchandising: string;
@@ -122,6 +128,61 @@ export default function BannerBuyingOfficeCard({
   onRemove,
   formatDateForInput
 }: BannerBuyingOfficeCardProps) {
+  // JBP validation error state
+  const [jbpValidationError, setJbpValidationError] = useState<string>('');
+
+  // State outlets by state for multiple states
+  const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
+    if (banner.spiritsOutletsByState && Array.isArray(banner.spiritsOutletsByState)) {
+      return banner.spiritsOutletsByState;
+    }
+    return [];
+  });
+
+  // Validate JBP Customer and Next JBP date
+  useEffect(() => {
+    if (banner.isJBP) {
+      if (!banner.nextJBPDate || banner.nextJBPDate.trim() === '') {
+        setJbpValidationError('Please input the Next JBP date when JBP Customer is selected');
+      } else {
+        // Check if the date is in the future
+        const selectedDate = new Date(banner.nextJBPDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+        
+        if (selectedDate < today) {
+          setJbpValidationError('Next JBP date must be a future date');
+        } else {
+          setJbpValidationError('');
+        }
+      }
+    } else {
+      setJbpValidationError('');
+    }
+  }, [banner.isJBP, banner.nextJBPDate]);
+
+  // Update stateOutlets when operatingStates changes
+  useEffect(() => {
+    if (banner.operatingStates.length > 1) {
+      // Create state outlets for newly selected states
+      const newStateOutlets = banner.operatingStates.map(state => {
+        const existing = stateOutlets.find(so => so.state === state);
+        return existing || { state, outletCount: '' };
+      });
+      setStateOutlets(newStateOutlets);
+      // Update parent with new state outlets
+      onUpdateField(banner.id, 'spiritsOutletsByState', newStateOutlets);
+    }
+  }, [banner.operatingStates]);
+
+  const updateStateOutletCount = (state: string, count: string) => {
+    const updatedStateOutlets = stateOutlets.map(so => 
+      so.state === state ? { ...so, outletCount: count } : so
+    );
+    setStateOutlets(updatedStateOutlets);
+    onUpdateField(banner.id, 'spiritsOutletsByState', updatedStateOutlets);
+  };
+
   return (
     <Card className="bg-white border-purple-200">
       <CardHeader className="pb-3">
@@ -263,17 +324,50 @@ export default function BannerBuyingOfficeCard({
             </div>
           </div>
 
-          <div>
-            <Label className="text-sm font-medium"># of Spirits Outlets</Label>
-            <Input
-              type="number"
-              value={banner.allSpiritsOutlets}
-              onChange={(e) => onUpdateField(banner.id, 'allSpiritsOutlets', e.target.value)}
-              placeholder="Enter total number of spirits outlets"
-              className="mt-1"
-              min="0"
-            />
-          </div>
+          {/* Single State - Show single input */}
+          {banner.operatingStates.length === 1 && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <Label className="text-sm font-medium"># of Spirits Outlets</Label>
+              <Input
+                type="number"
+                value={banner.allSpiritsOutlets}
+                onChange={(e) => onUpdateField(banner.id, 'allSpiritsOutlets', e.target.value)}
+                placeholder="Enter total number of spirits outlets"
+                className="mt-2"
+                min="0"
+              />
+              <p className="text-xs text-gray-600 mt-1">
+                Enter the total number of spirits outlets for {banner.operatingStates[0]}
+              </p>
+            </div>
+          )}
+
+          {/* Multiple States - Show breakdown by state */}
+          {banner.operatingStates.length > 1 && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <Label className="text-sm font-medium mb-3 block">
+                # of Spirits Stores by State
+              </Label>
+              <div className="space-y-3">
+                {stateOutlets.map((stateOutlet) => (
+                  <div key={stateOutlet.state} className="flex items-center gap-3">
+                    <Label className="text-sm font-medium w-12">{stateOutlet.state}:</Label>
+                    <Input
+                      type="number"
+                      value={stateOutlet.outletCount}
+                      onChange={(e) => updateStateOutletCount(stateOutlet.state, e.target.value)}
+                      placeholder="Enter number"
+                      className="flex-1"
+                      min="0"
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-600 mt-3">
+                Enter the number of spirits stores for each selected state
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Strategy and Capabilities Section */}
@@ -521,6 +615,9 @@ export default function BannerBuyingOfficeCard({
                     onChange={(e) => onUpdateField(banner.id, 'nextJBPDate', e.target.value)}
                     className="mt-1"
                   />
+                  {jbpValidationError && (
+                    <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
+                  )}
                 </div>
               </div>
             )}
