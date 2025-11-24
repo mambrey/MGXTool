@@ -4,6 +4,61 @@ export interface CustomerEvent {
   date: string;
 }
 
+export interface CategoryResetWindow {
+  id: string;
+  category: string;
+  months: string[];
+}
+
+export interface BannerBuyingOffice {
+  id: string;
+  isSaved?: boolean;
+  accountName: string;
+  address: string;
+  website: string;
+  channel: string;
+  footprint: string;
+  operatingStates: string[];
+  spiritsOutletsByState?: { state: string; outletCount: string }[];
+  allSpiritsOutlets: string;
+  // Strategy and Capabilities fields
+  influenceAssortmentShelf: string;
+  influencePricePromo: string;
+  influenceDisplayMerchandising: string;
+  influenceDigital: string;
+  influenceEcommerce: string;
+  influenceInStoreEvents: string;
+  influenceShrinkManagement: string;
+  influenceBuyingPOOwnership: string;
+  isJBP: boolean;
+  lastJBPDate: string;
+  nextJBPDate: string;
+  pricingStrategy: string;
+  privateLabel: string;
+  displayMandates: string;
+  ecommerceMaturityLevel: string;
+  ecommerceSalesPercentage: string;
+  fulfillmentTypes: string[];
+  ecommercePartners: string[];
+  innovationAppetite: string;
+  fullProofOutlets: string;
+  categoryCaptain: string;
+  categoryAdvisor: string;
+  hasPlanograms: boolean;
+  planogramWrittenBy: string;
+  resetFrequency: string;
+  resetWindowLeadTime: string;
+  resetWindowMonths: string[];
+  affectedCategories: string[];
+  hasDifferentResetWindows: string;
+  categoryResetWindows: CategoryResetWindow[];
+  // Additional Information fields
+  strategicPriorities: string;
+  keyCompetitors: string;
+  designatedCharities: string;
+  customerEvents: CustomerEvent[];
+}
+
 export interface Account {
   id: string;
   accountName: string;
@@ -96,6 +151,8 @@ export interface Account {
   influenceInStoreEvents?: string;
   influenceShrinkManagement?: string;
   influenceBuyingPOOwnership?: string;
+  // Banner/Buying Offices - NEW
+  bannerBuyingOffices?: BannerBuyingOffice[];
   createdAt: string;
   lastModified: string;
 }
