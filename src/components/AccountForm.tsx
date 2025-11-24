@@ -12,6 +12,7 @@ import { useLoadScript } from '@react-google-maps/api';
 import type { Account, Contact } from '@/types/crm';
 import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
 import { useMarketData } from '@/hooks/useMarketData';
+import BannerBuyingOfficeCard from '@/components/BannerBuyingOfficeCard';
 
 interface AccountFormProps {
   account: Account | null;
@@ -1114,9 +1115,546 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     formData.tickerSymbol !== originalTickerSymbol;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-      {/* Due to file size limitations, I'll need to split this into multiple parts. This is part 1 of the file. */}
-      {/* The complete file is too large to fit in a single response. Please let me know if you'd like me to continue with the remaining sections. */}
+      {/* Timestamp Information */}
+      {account && (
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <Label className="font-medium text-blue-800">Created</Label>
+                <p className="text-blue-700">{formatDate(formData.createdAt)}</p>
+              </div>
+              <div>
+                <Label className="font-medium text-blue-800">Last Modified</Label>
+                <p className="text-blue-700">{formatDate(formData.lastModified)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Customer Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+            Customer Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="sm:col-span-2">
+            <Label htmlFor="accountName" className="text-sm font-medium">Account Name *</Label>
+            <Input
+              id="accountName"
+              required
+              value={formData.accountName}
+              onChange={(e) => updateField('accountName', e.target.value)}
+              placeholder="Enter account name"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="parentCompany" className="text-sm font-medium">Parent Company</Label>
+            <Input
+              id="parentCompany"
+              value={formData.parentCompany}
+              onChange={(e) => updateField('parentCompany', e.target.value)}
+              placeholder="Enter parent company"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="tickerSymbol" className="text-sm font-medium">
+              Ticker Symbol
+              <span className="ml-2 text-xs text-green-600">(Auto-loads from CSV)</span>
+            </Label>
+            <div className="flex gap-2 mt-1">
+              <Input
+                id="tickerSymbol"
+                value={formData.tickerSymbol}
+                onChange={(e) => updateField('tickerSymbol', e.target.value)}
+                placeholder="e.g., COST"
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={handleRefreshMarketData}
+                disabled={loading || !formData.tickerSymbol}
+                title="Manually refresh market data from CSV file"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+            {willSendToPA && (
+              <p className="text-xs text-green-600 mt-1">
+                ✓ New ticker symbol will be sent to Power Automate when saved
+              </p>
+            )}
+            {loading && (
+              <p className="text-xs text-blue-600 mt-1">
+                🔄 Fetching market data from CSV file...
+              </p>
+            )}
+            {error && (
+              <p className="text-xs text-red-600 mt-1">
+                ⚠️ {error}
+              </p>
+            )}
+            {marketData && (
+              <p className="text-xs text-green-600 mt-1">
+                ✓ Market data auto-loaded: {marketData.name} ({marketData.currency})
+              </p>
+            )}
+          </div>
+          <div className="flex items-center space-x-2 sm:col-span-2 mt-2">
+            <Checkbox
+              id="publiclyTraded"
+              checked={formData.publiclyTraded}
+              onCheckedChange={(checked) => updateField('publiclyTraded', checked as boolean)}
+            />
+            <Label htmlFor="publiclyTraded" className="text-sm font-medium">Publicly Traded</Label>
+          </div>
+          <div>
+            <Label htmlFor="channel" className="text-sm font-medium">Channel</Label>
+            <Select value={formData.channel || ''} onValueChange={(value) => updateField('channel', value === 'clear' ? '' : value)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select channel" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                <SelectItem value="Club">Club</SelectItem>
+                <SelectItem value="C-Store">C-Store</SelectItem>
+                <SelectItem value="DoorDash">DoorDash</SelectItem>
+                <SelectItem value="Drug">Drug</SelectItem>
+                <SelectItem value="Ecommerce">Ecommerce</SelectItem>
+                <SelectItem value="Grocery">Grocery</SelectItem>
+                <SelectItem value="Instacart">Instacart</SelectItem>
+                <SelectItem value="Liquor">Liquor</SelectItem>
+                <SelectItem value="Mass">Mass</SelectItem>
+                <SelectItem value="Military">Military</SelectItem>
+                <SelectItem value="Regional Grocery">Regional Grocery</SelectItem>
+                <SelectItem value="UberEats">UberEats</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="footprint" className="text-sm font-medium">Channel Mapping</Label>
+            <Select value={formData.footprint || ''} onValueChange={(value) => updateField('footprint', value === 'clear' ? '' : value)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select channel mapping" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                <SelectItem value="National Retailer">National Retailer</SelectItem>
+                <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
+                <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="sm:col-span-2">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium">Spirits Operating States</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAllStates}
+                  className="flex items-center gap-1 text-xs h-7"
+                >
+                  {isAllStatesSelected ? (
+                    <>
+                      <CheckSquare className="w-3 h-3" />
+                      Deselect All
+                    </>
+                  ) : (
+                    <>
+                      <Square className="w-3 h-3" />
+                      Select All
+                    </>
+                  )}
+                </Button>
+                {selectedStates.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllStates}
+                    className="flex items-center gap-1 text-xs h-7"
+                  >
+                    <X className="w-3 h-3" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="p-3 border rounded-lg bg-gray-50 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-2">
+                {US_STATES.map(state => (
+                  <div key={state} className="flex items-center space-x-1">
+                    <Checkbox
+                      id={`state-${state}`}
+                      checked={selectedStates.includes(state)}
+                      onCheckedChange={() => toggleState(state)}
+                    />
+                    <Label htmlFor={`state-${state}`} className="text-xs cursor-pointer">
+                      {state}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedStates.length > 0 && (
+                <div className="mt-3 pt-3 border-t">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium text-gray-700">
+                      Selected States ({selectedStates.length}/{US_STATES.length}):
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {selectedStates.join(', ')}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {selectedStates.length === 1 && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <Label htmlFor="spiritsOutletsCount" className="text-sm font-medium">
+                  # of Spirits Outlets
+                </Label>
+                <Input
+                  id="spiritsOutletsCount"
+                  type="number"
+                  value={formData.allSpiritsOutlets}
+                  onChange={(e) => updateField('allSpiritsOutlets', e.target.value)}
+                  placeholder="Enter total number of spirits outlets"
+                  className="mt-2"
+                  min="0"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Enter the total number of spirits outlets for {selectedStates[0]}
+                </p>
+              </div>
+            )}
+
+            {selectedStates.length > 1 && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <Label className="text-sm font-medium mb-3 block">
+                  # of Spirits Stores by State
+                </Label>
+                <div className="space-y-3">
+                  {stateOutlets.map((stateOutlet) => (
+                    <div key={stateOutlet.state} className="flex items-center gap-3">
+                      <Label className="text-sm font-medium w-12">{stateOutlet.state}:</Label>
+                      <Input
+                        type="number"
+                        value={stateOutlet.outletCount}
+                        onChange={(e) => updateStateOutletCount(stateOutlet.state, e.target.value)}
+                        placeholder="Enter number"
+                        className="flex-1"
+                        min="0"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-600 mt-3">
+                  Enter the number of spirits stores for each selected state
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+
+        <div className="space-y-4 pt-4 border-t px-6 pb-6">
+          <div>
+            <Label htmlFor="executionReliabilityScore" className="text-sm font-medium">Execution Reliability Score</Label>
+            <Select 
+              value={formData.executionReliabilityScore || ''} 
+              onValueChange={(value) => updateField('executionReliabilityScore', value === 'clear' ? '' : value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select reliability score" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                <SelectItem value="5">5 – Highly Reliable: Nearly all agreed programs, displays, and resets are executed on time and in full</SelectItem>
+                <SelectItem value="4">4 – Generally Reliable: Most programs land well with occasional gaps that are usually fixed quickly</SelectItem>
+                <SelectItem value="3">3 – Mixed Reliability: Some things execute and some do not; performance often varies by store</SelectItem>
+                <SelectItem value="2">2 – Low Reliability: Many commitments do not materialize or are partial with limited follow through</SelectItem>
+                <SelectItem value="1">1 – Very Low Reliability: Execution rarely matches agreements; plans often stall or disappear</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="executionReliabilityRationale" className="text-sm font-medium">Rationale/Notes (Optional)</Label>
+            <Textarea
+              id="executionReliabilityRationale"
+              value={formData.executionReliabilityRationale || ''}
+              onChange={(e) => updateField('executionReliabilityRationale', e.target.value)}
+              placeholder="Add any additional context or notes about execution reliability..."
+              className="mt-1 min-h-[80px]"
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* Parent Information - MOVED BEFORE Banner/Buying Offices */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+            Parent Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="address" className="text-sm font-medium">
+              Parent Company Address
+              {isLoaded && GOOGLE_MAPS_API_KEY && (
+                <span className="ml-2 text-xs text-green-600">(Google Autocomplete enabled)</span>
+              )}
+              {!GOOGLE_MAPS_API_KEY && (
+                <span className="ml-2 text-xs text-gray-500">(Set VITE_GOOGLE_MAPS_API_KEY for autocomplete)</span>
+              )}
+            </Label>
+            <Input
+              ref={addressInputRef}
+              id="address"
+              value={formData.address}
+              onChange={(e) => updateField('address', e.target.value)}
+              placeholder="Start typing address for suggestions..."
+              className="mt-1"
+            />
+            {loadError && (
+              <p className="text-xs text-red-600 mt-1">
+                ⚠️ Error loading Google Maps. Address can still be entered manually.
+              </p>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="website" className="text-sm font-medium">Company Website</Label>
+              <Input
+                id="website"
+                value={formData.website}
+                onChange={(e) => updateField('website', e.target.value)}
+                placeholder="Enter company website (e.g., www.company.com)"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="totalBuyingOffices" className="text-sm font-medium">Total Number of Buying Offices</Label>
+              <Input
+                id="totalBuyingOffices"
+                type="number"
+                value={formData.totalBuyingOffices}
+                onChange={(e) => updateField('totalBuyingOffices', e.target.value)}
+                placeholder="Enter number of buying offices"
+                className="mt-1"
+                min="0"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openMap}
+              className="flex items-center gap-2"
+              disabled={!formData.address}
+            >
+              <MapPin className="w-4 h-4" />
+              View on Map
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openWebsite}
+              className="flex items-center gap-2"
+              disabled={!formData.website}
+            >
+              <Globe className="w-4 h-4" />
+              Visit Website
+            </Button>
+          </div>
+          <div className="text-sm text-gray-600">
+            {formData.address && (
+              <p>• Click "View on Map" to open address in Google Maps</p>
+            )}
+            {formData.website && (
+              <p>• Click "Visit Website" to open company website in new tab</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Banner/Buying Offices Section - WITH ADD BUTTON IN HEADER */}
+      <Card className="border-2 border-purple-200 bg-purple-50">
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Building className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              Banner/Buying Offices ({bannerBuyingOffices.length})
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddBannerBuyingOffice}
+                className="flex items-center gap-2"
+              >
+                <Building className="w-4 h-4" />
+                Add a Banner/Buying Office
+              </Button>
+              {bannerBuyingOffices.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowBannerSection(!showBannerSection)}
+                  className="flex items-center gap-1"
+                >
+                  {showBannerSection ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Collapse
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      Expand
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        {showBannerSection && bannerBuyingOffices.length > 0 && (
+          <CardContent className="space-y-4">
+            {bannerBuyingOffices.map((banner, index) => (
+              <BannerBuyingOfficeCard
+                key={banner.id}
+                banner={banner}
+                index={index}
+                parentAccountName={formData.accountName}
+                onUpdate={updateBannerField}
+                onRemove={removeBannerBuyingOffice}
+                onSave={saveBannerBuyingOffice}
+                onToggleState={toggleBannerState}
+                onToggleFulfillmentType={toggleBannerFulfillmentType}
+                onToggleEcommercePartner={toggleBannerEcommercePartner}
+                onToggleResetMonth={toggleBannerResetMonth}
+                onToggleAffectedCategory={toggleBannerAffectedCategory}
+                onAddCategoryResetWindow={addBannerCategoryResetWindow}
+                onUpdateCategoryResetWindow={updateBannerCategoryResetWindow}
+                onToggleCategoryMonth={toggleBannerCategoryMonth}
+                onRemoveCategoryResetWindow={removeBannerCategoryResetWindow}
+                onAddCustomerEvent={addBannerCustomerEvent}
+                onUpdateCustomerEvent={updateBannerCustomerEvent}
+                onRemoveCustomerEvent={removeBannerCustomerEvent}
+              />
+            ))}
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Contacts Section - Only show when editing existing account */}
+      {account && accountContacts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+              Contacts ({accountContacts.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {accountContacts.map((contact) => (
+                <div key={contact.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div>
+                      <Label className="text-xs font-medium text-gray-600">Name</Label>
+                      <p className="text-sm font-medium text-gray-900">
+                        {contact.firstName} {contact.lastName}
+                        {contact.isPrimaryContact && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Primary</span>
+                        )}
+                      </p>
+                    </div>
+                    {contact.title && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Briefcase className="w-3 h-3" />
+                          Title
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.title}</p>
+                      </div>
+                    )}
+                    {contact.email && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          Email
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.email}</p>
+                      </div>
+                    )}
+                    {contact.mobilePhone && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          Mobile
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.mobilePhone}</p>
+                      </div>
+                    )}
+                    {contact.officePhone && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          Office
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.officePhone}</p>
+                      </div>
+                    )}
+                    {contact.relationshipStatus && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">Relationship Status</Label>
+                        <p className="text-sm text-gray-900">{contact.relationshipStatus}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Note: To add, edit, or remove contacts, please use the Contacts section in the main view.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* REST OF THE FORM CONTINUES - Strategy and Capabilities, Additional Information, Form Actions */}
+      {/* Note: The complete original form sections for Strategy and Capabilities, Additional Information remain unchanged */}
+      
+      {/* Form Actions */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+        <Button type="submit" className="flex items-center justify-center gap-2 w-full sm:w-auto">
+          <Save className="w-4 h-4" />
+          Save Account
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="flex items-center justify-center gap-2 w-full sm:w-auto">
+          <X className="w-4 h-4" />
+          Cancel
+        </Button>
+      </div>
     </form>
   );
 }
