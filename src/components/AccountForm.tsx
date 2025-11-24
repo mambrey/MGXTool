@@ -1115,6 +1115,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     formData.tickerSymbol !== originalTickerSymbol;
 
   return (
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       {/* Timestamp Information */}
       {account && (
         <Card className="bg-blue-50 border-blue-200">
@@ -1544,9 +1545,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 banner={banner}
                 index={index}
                 parentAccountName={formData.accountName}
-                onUpdate={updateBannerField}
-                onRemove={removeBannerBuyingOffice}
-                onSave={saveBannerBuyingOffice}
+                usStates={US_STATES}
+                fulfillmentTypes={FULFILLMENT_TYPES}
+                ecommercePartners={ECOMMERCE_PARTNERS}
+                affectedCategories={AFFECTED_CATEGORIES}
+                resetFrequencyOptions={RESET_FREQUENCY_OPTIONS}
+                resetLeadTimeOptions={RESET_LEAD_TIME_OPTIONS}
+                months={MONTHS}
+                onUpdateField={updateBannerField}
                 onToggleState={toggleBannerState}
                 onToggleFulfillmentType={toggleBannerFulfillmentType}
                 onToggleEcommercePartner={toggleBannerEcommercePartner}
@@ -1559,6 +1565,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 onAddCustomerEvent={addBannerCustomerEvent}
                 onUpdateCustomerEvent={updateBannerCustomerEvent}
                 onRemoveCustomerEvent={removeBannerCustomerEvent}
+                onSave={saveBannerBuyingOffice}
+                onRemove={removeBannerBuyingOffice}
+                formatDateForInput={formatDateForInput}
               />
             ))}
           </CardContent>
@@ -1641,9 +1650,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </Card>
       )}
 
-      {/* REST OF THE FORM CONTINUES - Strategy and Capabilities, Additional Information, Form Actions */}
-      {/* Note: The complete original form sections for Strategy and Capabilities, Additional Information remain unchanged */}
-      
       {/* Form Actions */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
         <Button type="submit" className="flex items-center justify-center gap-2 w-full sm:w-auto">
