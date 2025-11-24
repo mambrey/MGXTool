@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare } from 'lucide-react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Switch } from '@/components/ui/switch';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
-import type { Account, Contact, CustomerEvent } from '@/types/crm';
+import type { Account, Contact, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
 
 interface AccountDetailsProps {
@@ -448,7 +448,7 @@ export default function AccountDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Collapsible Sections */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'events', 'tasks'] : undefined}>
+          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'banners', 'events', 'tasks'] : undefined}>
             
             {/* Customer Overview */}
             <AccordionItem value="overview">
@@ -739,6 +739,222 @@ export default function AccountDetails({
                         <p className="text-gray-500 text-sm">No strategic information available</p>
                       )}
                     </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Banners/Buying Offices */}
+            <AccordionItem value="banners">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Building className="w-5 h-5" />
+                  Banners/Buying Offices ({(account.bannerBuyingOffices || []).length})
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    {(!account.bannerBuyingOffices || account.bannerBuyingOffices.length === 0) ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Building className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-sm">No Banner/Buying Offices added to this account</p>
+                      </div>
+                    ) : (
+                      <ScrollArea className="h-[500px] pr-4">
+                        <div className="space-y-4">
+                          {account.bannerBuyingOffices.map((banner, index) => (
+                            <Card key={index} className="p-4 border-l-4 border-l-blue-500">
+                              <div className="space-y-4">
+                                {/* Banner Header */}
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <h4 className="font-semibold text-lg flex items-center gap-2">
+                                      <Building className="w-5 h-5 text-blue-600" />
+                                      {banner.name}
+                                    </h4>
+                                    {banner.channel && (
+                                      <Badge variant="outline" className="mt-1">
+                                        {banner.channel}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Basic Information */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {banner.address && (
+                                    <div>
+                                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                        <MapPin className="w-4 h-4" />
+                                        Address
+                                      </label>
+                                      <p className="text-sm mt-1">{banner.address}</p>
+                                    </div>
+                                  )}
+                                  {banner.operatingStates && banner.operatingStates.length > 0 && (
+                                    <div>
+                                      <label className="text-sm font-medium text-gray-600">Operating States</label>
+                                      <p className="text-sm mt-1">
+                                        {banner.operatingStates.join(', ')} ({banner.operatingStates.length} states)
+                                      </p>
+                                    </div>
+                                  )}
+                                  {banner.spiritsOutlets !== undefined && (
+                                    <InfoItem label="Spirits Outlets" value={banner.spiritsOutlets} />
+                                  )}
+                                  {banner.fullProofOutlets !== undefined && (
+                                    <InfoItem label="Full Proof Outlets" value={banner.fullProofOutlets} />
+                                  )}
+                                </div>
+
+                                {/* Strategy Fields */}
+                                {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
+                                  banner.privateLabel || banner.innovationAppetite || banner.displayMandates || 
+                                  banner.ecommerceMaturityLevel) && (
+                                  <>
+                                    <Separator />
+                                    <div>
+                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                        <Target className="w-4 h-4" />
+                                        Strategy
+                                      </h5>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <InfoItem label="Category Captain" value={banner.categoryCaptain} />
+                                        <InfoItem label="Category Advisor" value={banner.categoryAdvisor} />
+                                        <InfoItem label="Pricing Strategy" value={banner.pricingStrategy} />
+                                        <InfoItem label="Private Label" value={banner.privateLabel} />
+                                        <InfoItem label="Innovation Appetite" value={banner.innovationAppetite} />
+                                        <InfoItem label="Display Mandates" value={banner.displayMandates} />
+                                        <InfoItem label="E-commerce Maturity" value={banner.ecommerceMaturityLevel} />
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* JBP Information */}
+                                {(banner.isJBP || banner.nextJBPDate) && (
+                                  <>
+                                    <Separator />
+                                    <div>
+                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                        <Calendar className="w-4 h-4" />
+                                        JBP Information
+                                      </h5>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                          <label className="text-sm font-medium text-gray-600">JBP Customer</label>
+                                          <p className="text-sm mt-1">{banner.isJBP ? 'Yes' : 'No'}</p>
+                                        </div>
+                                        {banner.nextJBPDate && (
+                                          <InfoItem label="Next JBP Date" value={banner.nextJBPDate} />
+                                        )}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* Fulfillment & E-commerce */}
+                                {(banner.fulfillmentTypes && banner.fulfillmentTypes.length > 0) && (
+                                  <>
+                                    <Separator />
+                                    <div>
+                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                        <Truck className="w-4 h-4" />
+                                        Fulfillment & E-commerce
+                                      </h5>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                          <label className="text-sm font-medium text-gray-600">Fulfillment Types</label>
+                                          <div className="flex flex-wrap gap-1 mt-1">
+                                            {banner.fulfillmentTypes.map((type, idx) => (
+                                              <Badge key={idx} variant="secondary" className="text-xs">
+                                                {type}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        {banner.ecommercePartners && banner.ecommercePartners.length > 0 && (
+                                          <div>
+                                            <label className="text-sm font-medium text-gray-600">E-commerce Partners</label>
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                              {banner.ecommercePartners.map((partner, idx) => (
+                                                <Badge key={idx} variant="secondary" className="text-xs">
+                                                  {partner}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* Planogram Information */}
+                                {(banner.planograms || banner.planogramWrittenBy) && (
+                                  <>
+                                    <Separator />
+                                    <div>
+                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                        <Package className="w-4 h-4" />
+                                        Planogram
+                                      </h5>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <InfoItem label="Planograms" value={banner.planograms} />
+                                        <InfoItem label="Written By" value={banner.planogramWrittenBy} />
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* Level of Influence */}
+                                {(banner.influenceAssortmentShelf || banner.influencePricePromo || 
+                                  banner.influenceDisplayMerchandising || banner.influenceDigital || 
+                                  banner.influenceEcommerce || banner.influenceInStoreEvents || 
+                                  banner.influenceShrinkManagement || banner.influenceBuyingPOOwnership) && (
+                                  <>
+                                    <Separator />
+                                    <div>
+                                      <h5 className="font-semibold mb-3">Level of Influence</h5>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <InfoItem label="Assortment/Shelf" value={banner.influenceAssortmentShelf} />
+                                        <InfoItem label="Price/Promo" value={banner.influencePricePromo} />
+                                        <InfoItem label="Display/Merchandising" value={banner.influenceDisplayMerchandising} />
+                                        <InfoItem label="Digital" value={banner.influenceDigital} />
+                                        <InfoItem label="E-commerce" value={banner.influenceEcommerce} />
+                                        <InfoItem label="In-Store Events" value={banner.influenceInStoreEvents} />
+                                        <InfoItem label="Shrink Management" value={banner.influenceShrinkManagement} />
+                                        <InfoItem label="Buying/PO Ownership" value={banner.influenceBuyingPOOwnership} />
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* Spirits Stores by State */}
+                                {banner.spiritsStoresByState && banner.spiritsStoresByState.length > 0 && (
+                                  <>
+                                    <Separator />
+                                    <div>
+                                      <h5 className="font-semibold mb-3">Spirits Stores by State</h5>
+                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        {banner.spiritsStoresByState.map((stateData, idx) => (
+                                          <div key={idx} className="text-sm">
+                                            <span className="font-medium">{stateData.state}:</span> {stateData.count}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    )}
                   </CardContent>
                 </Card>
               </AccordionContent>
