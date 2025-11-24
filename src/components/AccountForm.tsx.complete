@@ -241,16 +241,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     resetWindowWinter: ''
   });
 
-  // Banner/Buying Offices state - Load from account if editing
-  const [bannerBuyingOffices, setBannerBuyingOffices] = useState<BannerBuyingOffice[]>(() => {
-    if (account?.bannerBuyingOffices && Array.isArray(account.bannerBuyingOffices)) {
-      return account.bannerBuyingOffices;
-    }
-    return [];
-  });
-  const [showBannerSection, setShowBannerSection] = useState(() => {
-    return account?.bannerBuyingOffices && account.bannerBuyingOffices.length > 0;
-  });
+  // Banner/Buying Offices state
+  const [bannerBuyingOffices, setBannerBuyingOffices] = useState<BannerBuyingOffice[]>([]);
+  const [showBannerSection, setShowBannerSection] = useState(false);
 
   // Track the original ticker symbol to detect when a new one is added
   const [originalTickerSymbol, setOriginalTickerSymbol] = useState<string>(account?.tickerSymbol || '');
@@ -865,7 +858,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     const updatedFormData = {
       ...formData,
       operatingStates: selectedStates,
-      bannerBuyingOffices: bannerBuyingOffices, // Include Banner/Buying Offices
       spiritsOutletsByState: selectedStates.length > 1 ? stateOutlets : [],
       fulfillmentTypes: selectedFulfillmentTypes,
       ecommercePartners: selectedEcommercePartners,
