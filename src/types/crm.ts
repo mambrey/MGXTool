@@ -115,6 +115,8 @@ export interface Account {
   isJBP?: boolean;
   lastJBPDate?: string;
   nextJBPDate?: string;
+  nextJBPAlert?: boolean;
+  nextJBPAlertDays?: number;
   hasPlanograms?: boolean;
   planogramWrittenBy?: string; // NEW: Author of the planogram
   // NEW: Planogram Reset Configuration fields

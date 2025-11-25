@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp, ChevronDown, ChevronUp, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 import { useLoadScript } from '@react-google-maps/api';
 import type { Account, Contact } from '@/types/crm';
 import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
@@ -205,6 +206,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     isJBP: false,
     lastJBPDate: '',
     nextJBPDate: '',
+    nextJBPAlert: false,
+    nextJBPAlertDays: 7,
     pricingStrategy: 'none',
     privateLabel: 'none',
     innovationAppetite: '',
@@ -873,6 +876,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       affectedCategories: selectedAffectedCategories,
       categoryResetWindows: categoryResetWindows,
       customerEvents: customerEvents,
+      nextJBPAlert: formData.nextJBPAlert,
+      nextJBPAlertDays: formData.nextJBPAlertDays,
       lastModified: new Date().toISOString(),
       categoryCaptain: formData.categoryCaptain === 'none' ? '' : formData.categoryCaptain,
       categoryAdvisor: formData.categoryAdvisor === 'none' ? '' : formData.categoryAdvisor,
@@ -1730,26 +1735,68 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
 
           {formData.isJBP && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div>
-                <Label className="text-xs font-medium">Last JBP</Label>
-                <Input
-                  type="date"
-                  value={formatDateForInput(formData.lastJBPDate || '')}
-                  onChange={(e) => updateField('lastJBPDate', e.target.value)}
-                  className="mt-1"
-                />
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-medium">Last JBP</Label>
+                  <Input
+                    type="date"
+                    value={formatDateForInput(formData.lastJBPDate || '')}
+                    onChange={(e) => updateField('lastJBPDate', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium">Next JBP *</Label>
+                  <Input
+                    type="date"
+                    value={formatDateForInput(formData.nextJBPDate || '')}
+                    onChange={(e) => updateField('nextJBPDate', e.target.value)}
+                    className="mt-1"
+                  />
+                  {jbpValidationError && (
+                    <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
+                  )}
+                </div>
               </div>
-              <div>
-                <Label className="text-xs font-medium">Next JBP *</Label>
-                <Input
-                  type="date"
-                  value={formatDateForInput(formData.nextJBPDate || '')}
-                  onChange={(e) => updateField('nextJBPDate', e.target.value)}
-                  className="mt-1"
-                />
-                {jbpValidationError && (
-                  <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
+              
+              {/* NEW: Alert Section */}
+              <div className="space-y-3 pt-2 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-orange-600" />
+                    <Label htmlFor="nextjbp-alert" className="text-sm font-medium cursor-pointer">
+                      Enable Alert
+                    </Label>
+                  </div>
+                  <Switch
+                    id="nextjbp-alert"
+                    checked={formData.nextJBPAlert || false}
+                    onCheckedChange={(checked) => updateField('nextJBPAlert', checked)}
+                  />
+                </div>
+                
+                {formData.nextJBPAlert && (
+                  <div className="space-y-2 pl-6">
+                    <Label htmlFor="nextjbp-alert-days" className="text-sm text-gray-600">
+                      Alert me (days before event):
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="nextjbp-alert-days"
+                        type="number"
+                        min="1"
+                        max="90"
+                        value={formData.nextJBPAlertDays || 7}
+                        onChange={(e) => updateField('nextJBPAlertDays', parseInt(e.target.value) || 7)}
+                        className="w-24 h-9"
+                      />
+                      <span className="text-sm text-gray-500">days before</span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      You'll receive an alert {formData.nextJBPAlertDays || 7} {(formData.nextJBPAlertDays || 7) === 1 ? 'day' : 'days'} before this date
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
