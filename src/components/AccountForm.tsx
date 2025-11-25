@@ -279,15 +279,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   // JBP validation error state
   const [jbpValidationError, setJbpValidationError] = useState<string>('');
 
-  // Auto-check "Publicly Traded" when ticker symbol is populated
-  useEffect(() => {
-    if (formData.tickerSymbol && formData.tickerSymbol.trim() !== '') {
-      if (!formData.publiclyTraded) {
-        setFormData(prev => ({ ...prev, publiclyTraded: true }));
-      }
-    }
-  }, [formData.tickerSymbol]);
-
   // Validate JBP Customer and Next JBP date - UPDATED TO CHECK FOR FUTURE DATE
   useEffect(() => {
     if (formData.isJBP) {
@@ -1243,14 +1234,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 ✓ Market data auto-loaded: {marketData.name} ({marketData.currency})
               </p>
             )}
-          </div>
-          <div className="flex items-center space-x-2 sm:col-span-2 mt-2">
-            <Checkbox
-              id="publiclyTraded"
-              checked={formData.publiclyTraded}
-              onCheckedChange={(checked) => updateField('publiclyTraded', checked as boolean)}
-            />
-            <Label htmlFor="publiclyTraded" className="text-sm font-medium">Publicly Traded</Label>
           </div>
           <div>
             <Label htmlFor="channel" className="text-sm font-medium">Channel</Label>
