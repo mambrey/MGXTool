@@ -1863,7 +1863,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
           {/* E-Commerce Partners */}
           <div>
-            <Label className="text-xs font-medium mb-2 block">Who Are Your Primary E-Commerce Partners?</Label>
+            <Label className="text-xs font-medium mb-2 block">Primary E-Commerce Partners</Label>
             <div className="p-3 border rounded-lg bg-gray-50">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {ECOMMERCE_PARTNERS.map(partner => (
@@ -1900,18 +1900,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div>
-            <Label className="text-xs font-medium"># of Full Proof Outlets</Label>
-            <Input
-              type="number"
-              value={formData.fullProofOutlets}
-              onChange={(e) => updateField('fullProofOutlets', e.target.value)}
-              placeholder="Enter number of full proof outlets"
-              className="mt-1"
-              min="0"
-            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
