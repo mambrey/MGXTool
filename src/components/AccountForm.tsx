@@ -26,6 +26,8 @@ interface CustomerEvent {
   id: string;
   title: string;
   date: string;
+  alertEnabled?: boolean;
+  alertDays?: number;
 }
 
 interface CategoryResetWindow {
@@ -715,7 +717,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           const newEvent: CustomerEvent = {
             id: Date.now().toString(),
             title: '',
-            date: ''
+            date: '',
+            alertEnabled: false,
+            alertDays: 7
           };
           return { ...banner, customerEvents: [...banner.customerEvents, newEvent] };
         }
@@ -1065,7 +1069,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     const newEvent: CustomerEvent = {
       id: Date.now().toString(),
       title: '',
-      date: ''
+      date: '',
+      alertEnabled: false,
+      alertDays: 7
     };
     setCustomerEvents(prev => [...prev, newEvent]);
   };
@@ -1074,6 +1080,22 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     setCustomerEvents(prev => 
       prev.map(event => 
         event.id === id ? { ...event, [field]: value } : event
+      )
+    );
+  };
+
+  const toggleEventAlert = (id: string) => {
+    setCustomerEvents(prev =>
+      prev.map(event =>
+        event.id === id ? { ...event, alertEnabled: !event.alertEnabled } : event
+      )
+    );
+  };
+
+  const updateEventAlertDays = (id: string, days: number) => {
+    setCustomerEvents(prev =>
+      prev.map(event =>
+        event.id === id ? { ...event, alertDays: days } : event
       )
     );
   };
@@ -2266,6 +2288,48 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                           onChange={(e) => updateCustomerEvent(event.id, 'date', e.target.value)}
                           className="mt-1"
                         />
+                      </div>
+                    </div>
+                    
+                    {/* Alert Section for Customer Events */}
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Bell className="w-4 h-4 text-orange-600" />
+                            <Label htmlFor={`event-alert-${event.id}`} className="text-sm font-medium cursor-pointer">
+                              Enable Alert
+                            </Label>
+                          </div>
+                          <Switch
+                            id={`event-alert-${event.id}`}
+                            checked={event.alertEnabled || false}
+                            onCheckedChange={() => toggleEventAlert(event.id)}
+                          />
+                        </div>
+                        
+                        {event.alertEnabled && (
+                          <div className="space-y-2 pl-6">
+                            <Label htmlFor={`event-alert-days-${event.id}`} className="text-sm text-gray-600">
+                              Alert me (days before event):
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id={`event-alert-days-${event.id}`}
+                                type="number"
+                                min="1"
+                                max="90"
+                                value={event.alertDays || 7}
+                                onChange={(e) => updateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
+                                className="w-24 h-9"
+                              />
+                              <span className="text-sm text-gray-500">days before</span>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              You'll receive an alert {event.alertDays || 7} {(event.alertDays || 7) === 1 ? 'day' : 'days'} before this event
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
