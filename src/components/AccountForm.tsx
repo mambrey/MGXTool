@@ -2082,9 +2082,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                              {AFFECTED_CATEGORIES.map(category => (
-                                <SelectItem key={category} value={category}>{category}</SelectItem>
-                              ))}
+                              {selectedAffectedCategories.length > 0 ? (
+                                selectedAffectedCategories.map(category => (
+                                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="" disabled>No categories selected</SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
