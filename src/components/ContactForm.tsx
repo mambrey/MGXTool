@@ -168,8 +168,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     responsibilityLevels: contact?.responsibilityLevels || {},
     birthday: contact?.birthday || '',
     birthdayAlert: contact?.birthdayAlert || false,
+    birthdayAlertDays: contact?.birthdayAlertDays || 7,
     nextContactDate: contact?.nextContactDate || '',
     nextContactAlert: contact?.nextContactAlert || false,
+    nextContactAlertDays: contact?.nextContactAlertDays || 7,
     lastContactDate: contact?.lastContactDate || '',
     socialHandles: contact?.socialHandles || [],
     knownPreferences: contact?.knownPreferences || '',
@@ -1183,19 +1185,48 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   maxLength={5}
                 />
                 <p className="text-xs text-gray-500">Format: MM-DD (e.g., 03-15)</p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={formData.birthdayAlert ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, birthdayAlert: !prev.birthdayAlert }))}
-                    className="flex items-center gap-1"
-                  >
-                    <Bell className="w-3 h-3" />
-                    {formData.birthdayAlert ? 'Alert On' : 'Alert Off'}
-                  </Button>
+                
+                {/* Birthday Alert Section - NEW STRUCTURE */}
+                <div className="space-y-3 pt-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-orange-600" />
+                      <Label htmlFor="birthday-alert" className="text-sm font-medium cursor-pointer">
+                        Enable Alert
+                      </Label>
+                    </div>
+                    <Switch
+                      id="birthday-alert"
+                      checked={formData.birthdayAlert}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, birthdayAlert: checked }))}
+                    />
+                  </div>
+                  
+                  {formData.birthdayAlert && (
+                    <div className="space-y-2 pl-6">
+                      <Label htmlFor="birthday-alert-days" className="text-sm text-gray-600">
+                        Alert me (days before event):
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="birthday-alert-days"
+                          type="number"
+                          min="1"
+                          max="90"
+                          value={formData.birthdayAlertDays}
+                          onChange={(e) => setFormData(prev => ({ ...prev, birthdayAlertDays: parseInt(e.target.value) || 7 }))}
+                          className="w-24 h-9"
+                        />
+                        <span className="text-sm text-gray-500">days before</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        You'll receive an alert {formData.birthdayAlertDays} {formData.birthdayAlertDays === 1 ? 'day' : 'days'} before this date
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="nextContactDate">Next Contact Date</Label>
                 <Input
@@ -1204,20 +1235,49 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   value={formData.nextContactDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, nextContactDate: e.target.value }))}
                 />
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={formData.nextContactAlert ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, nextContactAlert: !prev.nextContactAlert }))}
-                    className="flex items-center gap-1"
-                  >
-                    <Calendar className="w-3 h-3" />
-                    {formData.nextContactAlert ? 'Alert On' : 'Alert Off'}
-                  </Button>
+                
+                {/* Next Contact Date Alert Section - NEW STRUCTURE */}
+                <div className="space-y-3 pt-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-orange-600" />
+                      <Label htmlFor="next-contact-alert" className="text-sm font-medium cursor-pointer">
+                        Enable Alert
+                      </Label>
+                    </div>
+                    <Switch
+                      id="next-contact-alert"
+                      checked={formData.nextContactAlert}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, nextContactAlert: checked }))}
+                    />
+                  </div>
+                  
+                  {formData.nextContactAlert && (
+                    <div className="space-y-2 pl-6">
+                      <Label htmlFor="next-contact-alert-days" className="text-sm text-gray-600">
+                        Alert me (days before event):
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="next-contact-alert-days"
+                          type="number"
+                          min="1"
+                          max="90"
+                          value={formData.nextContactAlertDays}
+                          onChange={(e) => setFormData(prev => ({ ...prev, nextContactAlertDays: parseInt(e.target.value) || 7 }))}
+                          className="w-24 h-9"
+                        />
+                        <span className="text-sm text-gray-500">days before</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        You'll receive an alert {formData.nextContactAlertDays} {formData.nextContactAlertDays === 1 ? 'day' : 'days'} before this date
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+            
             <div>
               <Label htmlFor="lastContactDate">Last Contact Date</Label>
               <Input

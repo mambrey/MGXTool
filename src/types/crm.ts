@@ -176,6 +176,7 @@ export interface Contact {
   contactActiveStatus?: 'Active' | 'Inactive'; // NEW: Contact active status field
   birthday?: string;
   birthdayAlert?: boolean;
+  birthdayAlertDays?: number;
   relationshipStatus?: 'Promoter' | 'Supporter' | 'Neutral' | 'Detractor' | 'At Risk'; // UPDATED: Changed to specific dropdown values
   categorySegmentOwnership?: string[]; // NEW: Multi-select for category/segment ownership
   // Responsibility Levels - NEW
@@ -193,6 +194,7 @@ export interface Contact {
   lastContactDate?: string;
   nextContactDate?: string;
   nextContactAlert?: boolean;
+  nextContactAlertDays?: number;
   socialHandles?: string[];
   knownPreferences?: string;
   entertainment?: string; // NEW: Entertainment dropdown (Yes/No)
