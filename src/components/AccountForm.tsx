@@ -1997,6 +1997,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              <div>
+                <Label className="text-xs font-medium">
+                  Are there different reset windows for different categories?
+                </Label>
+                <Select 
+                  value={formData.hasDifferentResetWindows || ""} 
+                  onValueChange={(value) => updateField("hasDifferentResetWindows", value === "clear" ? "" : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select yes or no" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Reset Window Months */}
               <div>
                 <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
@@ -2018,24 +2037,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </div>
               </div>
 
-              <div>
-                <Label className="text-xs font-medium">
-                  If we have different reset windows for different categories
-                </Label>
-                <Select 
-                  value={formData.hasDifferentResetWindows || ''} 
-                  onValueChange={(value) => updateField('hasDifferentResetWindows', value === 'clear' ? '' : value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select yes or no" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
               {formData.hasDifferentResetWindows === 'Yes' && (
                 <div className="space-y-3 p-3 bg-white border border-gray-300 rounded-lg">
