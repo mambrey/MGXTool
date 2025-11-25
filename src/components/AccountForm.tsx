@@ -524,7 +524,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   /**
    * Update Banner/Buying Office field
    */
-  const updateBannerField = (id: string, field: keyof BannerBuyingOffice, value: any) => {
+  const updateBannerField = (id: string, field: keyof BannerBuyingOffice, value: unknown) => {
     setBannerBuyingOffices(prev =>
       prev.map(banner => banner.id === id ? { ...banner, [field]: value } : banner)
     );
@@ -2016,27 +2016,28 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Reset Window Months */}
-              <div>
-                <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
-                <div className="p-3 border rounded-lg bg-white">
-                  <div className="grid grid-cols-6 gap-2">
-                    {MONTHS.map(month => (
-                      <div key={month} className="flex items-center space-x-1">
-                        <Checkbox
-                          id={`month-${month}`}
-                          checked={selectedResetMonths.includes(month)}
-                          onCheckedChange={() => toggleResetMonth(month)}
-                        />
-                        <Label htmlFor={`month-${month}`} className="text-xs cursor-pointer">
-                          {month}
-                        </Label>
-                      </div>
-                    ))}
+              {/* Reset Window Months - Only show when NOT using different reset windows per category */}
+              {formData.hasDifferentResetWindows !== 'Yes' && (
+                <div>
+                  <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
+                  <div className="p-3 border rounded-lg bg-white">
+                    <div className="grid grid-cols-6 gap-2">
+                      {MONTHS.map(month => (
+                        <div key={month} className="flex items-center space-x-1">
+                          <Checkbox
+                            id={`month-${month}`}
+                            checked={selectedResetMonths.includes(month)}
+                            onCheckedChange={() => toggleResetMonth(month)}
+                          />
+                          <Label htmlFor={`month-${month}`} className="text-xs cursor-pointer">
+                            {month}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-
+              )}
 
               {formData.hasDifferentResetWindows === 'Yes' && (
                 <div className="space-y-3 p-3 bg-white border border-gray-300 rounded-lg">

@@ -82,7 +82,7 @@ interface BannerBuyingOfficeCardProps {
   resetFrequencyOptions: string[];
   resetLeadTimeOptions: string[];
   months: string[];
-  onUpdateField: (id: string, field: keyof BannerBuyingOffice, value: any) => void;
+  onUpdateField: (id: string, field: keyof BannerBuyingOffice, value: unknown) => void;
   onToggleState: (bannerId: string, state: string) => void;
   onToggleFulfillmentType: (bannerId: string, type: string) => void;
   onToggleEcommercePartner: (bannerId: string, partner: string) => void;
