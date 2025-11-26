@@ -766,12 +766,12 @@ export default function AccountDetails({
                           {account.bannerBuyingOffices.map((banner, index) => (
                             <Card key={index} className="p-4 border-l-4 border-l-blue-500">
                               <div className="space-y-4">
-                                {/* Banner Header */}
+                                {/* Banner Header - FIXED: Changed banner.name to banner.accountName */}
                                 <div className="flex items-start justify-between">
                                   <div>
                                     <h4 className="font-semibold text-lg flex items-center gap-2">
                                       <Building className="w-5 h-5 text-blue-600" />
-                                      {banner.name}
+                                      {banner.accountName || `Banner/Buying Office #${index + 1}`}
                                     </h4>
                                     {banner.channel && (
                                       <Badge variant="outline" className="mt-1">
