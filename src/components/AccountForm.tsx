@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp, ChevronDown, ChevronUp, Bell } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp, ChevronDown, ChevronUp, Bell, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -255,6 +255,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   });
   const [showBannerSection, setShowBannerSection] = useState(() => {
     return account?.bannerBuyingOffices && account.bannerBuyingOffices.length > 0;
+  });
+
+  // Track expanded/collapsed state for each Banner/Buying Office
+  const [expandedBanners, setExpandedBanners] = useState<Set<string>>(() => {
+    // New banners start expanded, existing ones start collapsed
+    return new Set();
   });
 
   // Track the original ticker symbol to detect when a new one is added
@@ -517,6 +523,23 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     };
     setBannerBuyingOffices(prev => [...prev, newBanner]);
     setShowBannerSection(true);
+    // New banners start expanded
+    setExpandedBanners(prev => new Set(prev).add(newBanner.id));
+  };
+
+  /**
+   * Toggle expand/collapse for a Banner/Buying Office
+   */
+  const toggleBannerExpanded = (bannerId: string) => {
+    setExpandedBanners(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bannerId)) {
+        newSet.delete(bannerId);
+      } else {
+        newSet.add(bannerId);
+      }
+      return newSet;
+    });
   };
 
   /**
@@ -533,6 +556,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
    */
   const removeBannerBuyingOffice = (id: string) => {
     setBannerBuyingOffices(prev => prev.filter(banner => banner.id !== id));
+    // Remove from expanded set
+    setExpandedBanners(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
   };
 
   /**
@@ -786,6 +815,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         return;
       }
     }
+
+    // Collapse the banner after saving
+    setExpandedBanners(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(bannerId);
+      return newSet;
+    });
 
     alert(`Banner/Buying Office "${banner.accountName}" saved successfully!`);
   };
@@ -1383,7 +1419,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </div>
       </Card>
 
-      {/* Parent Information */}
+      {/* Parent Information - keeping existing code */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -1473,7 +1509,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Strategy and Capabilities Section - NEW FOR MAIN ACCOUNT FORM */}
+      {/* Strategy and Capabilities Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -1726,7 +1762,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </div>
               </div>
               
-              {/* NEW: Alert Section */}
+              {/* Alert Section */}
               <div className="space-y-3 pt-2 border-t border-gray-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -2123,7 +2159,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Additional Information Section - NEW FOR MAIN ACCOUNT FORM */}
+      {/* Additional Information Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -2272,7 +2308,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Banner/Buying Offices Section - WITH ADD BUTTON IN HEADER */}
+      {/* Banner/Buying Offices Section - UPDATED WITH COLLAPSED VIEW */}
       <Card className="border-2 border-purple-200 bg-purple-50">
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -2302,12 +2338,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   {showBannerSection ? (
                     <>
                       <ChevronUp className="w-4 h-4" />
-                      Collapse
+                      Collapse All
                     </>
                   ) : (
                     <>
                       <ChevronDown className="w-4 h-4" />
-                      Expand
+                      Expand All
                     </>
                   )}
                 </Button>
@@ -2317,42 +2353,99 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardHeader>
         {showBannerSection && bannerBuyingOffices.length > 0 && (
           <CardContent className="space-y-4">
-            {bannerBuyingOffices.map((banner, index) => (
-              <BannerBuyingOfficeCard
-                key={banner.id}
-                banner={banner}
-                index={index}
-                parentAccountName={formData.accountName}
-                usStates={US_STATES}
-                fulfillmentTypes={FULFILLMENT_TYPES}
-                ecommercePartners={ECOMMERCE_PARTNERS}
-                affectedCategories={AFFECTED_CATEGORIES}
-                resetFrequencyOptions={RESET_FREQUENCY_OPTIONS}
-                resetLeadTimeOptions={RESET_LEAD_TIME_OPTIONS}
-                months={MONTHS}
-                onUpdateField={updateBannerField}
-                onToggleState={toggleBannerState}
-                onToggleFulfillmentType={toggleBannerFulfillmentType}
-                onToggleEcommercePartner={toggleBannerEcommercePartner}
-                onToggleResetMonth={toggleBannerResetMonth}
-                onToggleAffectedCategory={toggleBannerAffectedCategory}
-                onAddCategoryResetWindow={addBannerCategoryResetWindow}
-                onUpdateCategoryResetWindow={updateBannerCategoryResetWindow}
-                onToggleCategoryMonth={toggleBannerCategoryMonth}
-                onRemoveCategoryResetWindow={removeBannerCategoryResetWindow}
-                onAddCustomerEvent={addBannerCustomerEvent}
-                onUpdateCustomerEvent={updateBannerCustomerEvent}
-                onRemoveCustomerEvent={removeBannerCustomerEvent}
-                onSave={saveBannerBuyingOffice}
-                onRemove={removeBannerBuyingOffice}
-                formatDateForInput={formatDateForInput}
-              />
-            ))}
+            {bannerBuyingOffices.map((banner, index) => {
+              const isExpanded = expandedBanners.has(banner.id);
+              
+              return (
+                <div key={banner.id}>
+                  {isExpanded ? (
+                    // Expanded view - show full form
+                    <BannerBuyingOfficeCard
+                      banner={banner}
+                      index={index}
+                      parentAccountName={formData.accountName}
+                      usStates={US_STATES}
+                      fulfillmentTypes={FULFILLMENT_TYPES}
+                      ecommercePartners={ECOMMERCE_PARTNERS}
+                      affectedCategories={AFFECTED_CATEGORIES}
+                      resetFrequencyOptions={RESET_FREQUENCY_OPTIONS}
+                      resetLeadTimeOptions={RESET_LEAD_TIME_OPTIONS}
+                      months={MONTHS}
+                      onUpdateField={updateBannerField}
+                      onToggleState={toggleBannerState}
+                      onToggleFulfillmentType={toggleBannerFulfillmentType}
+                      onToggleEcommercePartner={toggleBannerEcommercePartner}
+                      onToggleResetMonth={toggleBannerResetMonth}
+                      onToggleAffectedCategory={toggleBannerAffectedCategory}
+                      onAddCategoryResetWindow={addBannerCategoryResetWindow}
+                      onUpdateCategoryResetWindow={updateBannerCategoryResetWindow}
+                      onToggleCategoryMonth={toggleBannerCategoryMonth}
+                      onRemoveCategoryResetWindow={removeBannerCategoryResetWindow}
+                      onAddCustomerEvent={addBannerCustomerEvent}
+                      onUpdateCustomerEvent={updateBannerCustomerEvent}
+                      onRemoveCustomerEvent={removeBannerCustomerEvent}
+                      onSave={saveBannerBuyingOffice}
+                      onRemove={removeBannerBuyingOffice}
+                      formatDateForInput={formatDateForInput}
+                    />
+                  ) : (
+                    // Collapsed view - show only name with expand/edit button
+                    <Card className="bg-white border-purple-200 hover:border-purple-300 transition-colors">
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <Building className="w-5 h-5 text-purple-600" />
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {banner.accountName || `Banner/Buying Office #${index + 1}`}
+                              </p>
+                              {banner.channel && (
+                                <p className="text-sm text-gray-600">{banner.channel}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleBannerExpanded(banner.id)}
+                              className="flex items-center gap-1"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeBannerBuyingOffice(banner.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleBannerExpanded(banner.id)}
+                              className="flex items-center gap-1"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              );
+            })}
           </CardContent>
         )}
       </Card>
 
-      {/* Contacts Section - Only show when editing existing account */}
+      {/* Contacts Section - keeping existing code */}
       {account && accountContacts.length > 0 && (
         <Card>
           <CardHeader>
