@@ -15,12 +15,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 import type { Contact, Account, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
-import { format } from 'date-fns';
 
 interface ContactFormProps {
   contact?: Contact | null;
@@ -138,28 +136,20 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-// Helper function to convert MM-DD string to Date object (using current year)
-const birthdayStringToDate = (birthday: string): Date | undefined => {
-  if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return undefined;
-  const [month, day] = birthday.split('-').map(Number);
-  const currentYear = new Date().getFullYear();
-  return new Date(currentYear, month - 1, day);
-};
-
-// Helper function to format Date to MM-DD string
-const dateToBirthdayString = (date: Date | undefined): string => {
-  if (!date) return '';
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${month}-${day}`;
-};
-
-// Helper function to format birthday for display
-const formatBirthdayDisplay = (birthday: string): string => {
+// Convert MM-DD to date input format (YYYY-MM-DD) using current year
+const birthdayToDateInput = (birthday: string): string => {
   if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return '';
-  const date = birthdayStringToDate(birthday);
-  if (!date) return '';
-  return format(date, 'MMMM d');
+  const currentYear = new Date().getFullYear();
+  const [month, day] = birthday.split('-');
+  return `${currentYear}-${month}-${day}`;
+};
+
+// Convert date input format (YYYY-MM-DD) to MM-DD
+const dateInputToBirthday = (dateInput: string): string => {
+  if (!dateInput) return '';
+  const parts = dateInput.split('-');
+  if (parts.length !== 3) return '';
+  return `${parts[1]}-${parts[2]}`;
 };
 
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
@@ -199,9 +189,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     painPoints: contact?.painPoints || '',
     uploadedNotes: contact?.uploadedNotes || []
   });
-
-  // Birthday calendar state
-  const [birthdayCalendarOpen, setBirthdayCalendarOpen] = useState(false);
 
   // Contact Events state with alert functionality
   const [contactEvents, setContactEvents] = useState<ContactEventWithAlert[]>(
@@ -328,13 +315,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setFormData(prev => ({ ...prev, [field]: formatted }));
   };
 
-  // Handle birthday selection from calendar
-  const handleBirthdaySelect = (date: Date | undefined) => {
-    if (date) {
-      const birthdayString = dateToBirthdayString(date);
-      setFormData(prev => ({ ...prev, birthday: birthdayString }));
-      setBirthdayCalendarOpen(false);
-    }
+  // Handle birthday change from date input
+  const handleBirthdayChange = (dateInput: string) => {
+    const birthday = dateInputToBirthday(dateInput);
+    setFormData(prev => ({ ...prev, birthday }));
   };
 
   // Category/Segment Ownership handlers
@@ -1198,29 +1182,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="birthday">Birthday (Month & Day)</Label>
-                <Popover open={birthdayCalendarOpen} onOpenChange={setBirthdayCalendarOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.birthday && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.birthday ? formatBirthdayDisplay(formData.birthday) : "Select birthday"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={birthdayStringToDate(formData.birthday)}
-                      onSelect={handleBirthdaySelect}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <p className="text-xs text-gray-500">Select month and day (year not stored)</p>
+                <Input
+                  id="birthday"
+                  type="date"
+                  value={birthdayToDateInput(formData.birthday)}
+                  onChange={(e) => handleBirthdayChange(e.target.value)}
+                />
                 
                 {/* Birthday Alert Section - NEW STRUCTURE */}
                 <div className="space-y-3 pt-2 border-t border-gray-200">
