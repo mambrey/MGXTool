@@ -223,6 +223,7 @@ export interface Contact {
   seniorVicePresident?: string;
   // Primary Diageo Relationship Owner(s) - UPDATED STRUCTURE
   // Each role now has its own cadence, plus owner info and SVP
+  // UPDATED: Added lastCheckIn tracking for each role
   primaryDiageoRelationshipOwners?: {
     ownerName?: string; // NEW: Owner name field
     ownerEmail?: string; // NEW: Owner email field
@@ -232,6 +233,12 @@ export interface Contact {
     };
     support?: {
       [role: string]: string; // role name -> cadence (e.g., "VP Customer Development" -> "Quarterly")
+    };
+    salesLastCheckIn?: {
+      [role: string]: string; // role name -> last check-in date (e.g., "CEO" -> "2024-01-15")
+    };
+    supportLastCheckIn?: {
+      [role: string]: string; // role name -> last check-in date (e.g., "VP Customer Development" -> "2024-01-20")
     };
   };
   // Per-contact notification overrides

@@ -223,6 +223,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [supportRoles, setSupportRoles] = useState<{[role: string]: string}>(
     contact?.primaryDiageoRelationshipOwners?.support || {}
   );
+  
+  // NEW: Last Check In state for Sales and Support roles
+  const [salesLastCheckIn, setSalesLastCheckIn] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.salesLastCheckIn || {}
+  );
+  const [supportLastCheckIn, setSupportLastCheckIn] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.supportLastCheckIn || {}
+  );
 
   // Google Places Autocomplete state
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -392,12 +400,29 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       }
       return newRoles;
     });
+    
+    // Also remove last check-in when role is unchecked
+    if (role in salesRoles) {
+      setSalesLastCheckIn(prev => {
+        const newLastCheckIn = { ...prev };
+        delete newLastCheckIn[role];
+        return newLastCheckIn;
+      });
+    }
   };
 
   const handleSalesCadenceChange = (role: string, cadence: string) => {
     setSalesRoles(prev => ({
       ...prev,
       [role]: cadence === 'clear' ? '' : cadence
+    }));
+  };
+  
+  // NEW: Handle Sales Last Check In change
+  const handleSalesLastCheckInChange = (role: string, date: string) => {
+    setSalesLastCheckIn(prev => ({
+      ...prev,
+      [role]: date
     }));
   };
 
@@ -413,12 +438,29 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       }
       return newRoles;
     });
+    
+    // Also remove last check-in when role is unchecked
+    if (role in supportRoles) {
+      setSupportLastCheckIn(prev => {
+        const newLastCheckIn = { ...prev };
+        delete newLastCheckIn[role];
+        return newLastCheckIn;
+      });
+    }
   };
 
   const handleSupportCadenceChange = (role: string, cadence: string) => {
     setSupportRoles(prev => ({
       ...prev,
       [role]: cadence === 'clear' ? '' : cadence
+    }));
+  };
+  
+  // NEW: Handle Support Last Check In change
+  const handleSupportLastCheckInChange = (role: string, date: string) => {
+    setSupportLastCheckIn(prev => ({
+      ...prev,
+      [role]: date
     }));
   };
 
@@ -517,7 +559,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         ownerEmail,
         svp,
         sales: salesRoles,
-        support: supportRoles
+        support: supportRoles,
+        salesLastCheckIn,
+        supportLastCheckIn
       },
       contactEvents: contactEvents.map(({ alertEnabled, alertDays, ...event }) => event),
       createdAt: contact?.createdAt || new Date().toISOString(),
@@ -1599,7 +1643,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Primary Diageo Relationship Owner(s) - REMOVED DIRECTOR/VP/SVP HIERARCHY */}
+        {/* Primary Diageo Relationship Owner(s) - UPDATED WITH LAST CHECK IN */}
         <Card className="bg-indigo-50 border-indigo-200">
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
@@ -1632,14 +1676,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Sales Section */}
+              {/* Sales Section - UPDATED WITH LAST CHECK IN */}
               <div className="space-y-4 p-4 bg-white border border-indigo-200 rounded-lg">
                 <h3 className="font-semibold text-indigo-900 flex items-center gap-2">
                   <Briefcase className="w-4 h-4" />
                   Sales
                 </h3>
                 
-                {/* Sales Roles with Individual Cadence */}
+                {/* Sales Roles with Individual Cadence and Last Check In */}
                 <div className="space-y-2">
                   {SALES_ROLES.map((role) => (
                     <div key={role} className="grid grid-cols-12 gap-2 items-center p-2 hover:bg-gray-50 rounded">
@@ -1652,11 +1696,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       </div>
                       <Label 
                         htmlFor={`sales-${role}`} 
-                        className="col-span-5 cursor-pointer text-sm"
+                        className="col-span-4 cursor-pointer text-sm"
                       >
                         {role}
                       </Label>
-                      <div className="col-span-6">
+                      <div className="col-span-3">
                         <Select
                           value={salesRoles[role] || ''}
                           onValueChange={(value) => handleSalesCadenceChange(role, value)}
@@ -1675,19 +1719,29 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           </SelectContent>
                         </Select>
                       </div>
+                      <div className="col-span-4">
+                        <Input
+                          type="date"
+                          value={salesLastCheckIn[role] || ''}
+                          onChange={(e) => handleSalesLastCheckInChange(role, e.target.value)}
+                          disabled={!(role in salesRoles)}
+                          className={cn("h-9 text-xs", !(role in salesRoles) && "opacity-50")}
+                          placeholder="Last Check In"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Support Section */}
+              {/* Support Section - UPDATED WITH LAST CHECK IN */}
               <div className="space-y-4 p-4 bg-white border border-indigo-200 rounded-lg">
                 <h3 className="font-semibold text-indigo-900 flex items-center gap-2">
                   <Users className="w-4 h-4" />
                   Support
                 </h3>
                 
-                {/* Support Roles with Individual Cadence */}
+                {/* Support Roles with Individual Cadence and Last Check In */}
                 <div className="space-y-2">
                   {SUPPORT_ROLES.map((role) => (
                     <div key={role} className="grid grid-cols-12 gap-2 items-center p-2 hover:bg-gray-50 rounded">
@@ -1700,11 +1754,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       </div>
                       <Label 
                         htmlFor={`support-${role}`} 
-                        className="col-span-5 cursor-pointer text-sm"
+                        className="col-span-4 cursor-pointer text-sm"
                       >
                         {role}
                       </Label>
-                      <div className="col-span-6">
+                      <div className="col-span-3">
                         <Select
                           value={supportRoles[role] || ''}
                           onValueChange={(value) => handleSupportCadenceChange(role, value)}
@@ -1722,6 +1776,16 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                             ))}
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div className="col-span-4">
+                        <Input
+                          type="date"
+                          value={supportLastCheckIn[role] || ''}
+                          onChange={(e) => handleSupportLastCheckInChange(role, e.target.value)}
+                          disabled={!(role in supportRoles)}
+                          className={cn("h-9 text-xs", !(role in supportRoles) && "opacity-50")}
+                          placeholder="Last Check In"
+                        />
                       </div>
                     </div>
                   ))}
