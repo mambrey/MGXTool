@@ -469,7 +469,7 @@ export default function AccountDetails({
                       <InfoItem label="Channel" value={account.channel} />
                       <InfoItem label="Sub-Channel" value={account.subChannel} />
                       <InfoItem label="Footprint" value={account.footprint} />
-                      <InfoItem label="Operating States" value={account.operatingStates} />
+                      <InfoItem label="Operating States" value={Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates} />
                       <InfoItem label="Spirits Outlets" value={account.spiritsOutlets} />
                       <InfoItem label="HQ Influence" value={account.hqInfluence} />
                       <InfoItem label="Display Mandates" value={account.displayMandates} />
