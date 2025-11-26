@@ -371,7 +371,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     return [];
   });
 
-  // State outlets by state - NEW
+  // State outlets by state - UPDATED to track outlets for ALL selected states
   const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
     if (formData.spiritsOutletsByState && Array.isArray(formData.spiritsOutletsByState)) {
       return formData.spiritsOutletsByState;
@@ -379,15 +379,17 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     return [];
   });
 
-  // Update stateOutlets when selectedStates changes
+  // Update stateOutlets when selectedStates changes - UPDATED to work for ANY number of states
   useEffect(() => {
-    if (selectedStates.length > 1) {
-      // Create state outlets for newly selected states
+    if (selectedStates.length > 0) {
+      // Create state outlets for all selected states
       const newStateOutlets = selectedStates.map(state => {
         const existing = stateOutlets.find(so => so.state === state);
         return existing || { state, outletCount: '' };
       });
       setStateOutlets(newStateOutlets);
+    } else {
+      setStateOutlets([]);
     }
   }, [selectedStates]);
 
@@ -864,7 +866,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       ...formData,
       operatingStates: selectedStates,
       bannerBuyingOffices: bannerBuyingOffices, // Include Banner/Buying Offices
-      spiritsOutletsByState: selectedStates.length > 1 ? stateOutlets : [],
+      spiritsOutletsByState: stateOutlets,
       fulfillmentTypes: selectedFulfillmentTypes,
       ecommercePartners: selectedEcommercePartners,
       resetWindowMonths: selectedResetMonths,
@@ -1276,7 +1278,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
           <div className="sm:col-span-2">
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Spirits Operating States</Label>
+              <Label className="text-sm font-medium">Spirits Operating States (enter number of spirits outlets in state upon selecting state)</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -1311,80 +1313,49 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 )}
               </div>
             </div>
-            <div className="p-3 border rounded-lg bg-gray-50 max-h-40 overflow-y-auto">
-              <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-2">
-                {US_STATES.map(state => (
-                  <div key={state} className="flex items-center space-x-1">
-                    <Checkbox
-                      id={`state-${state}`}
-                      checked={selectedStates.includes(state)}
-                      onCheckedChange={() => toggleState(state)}
-                    />
-                    <Label htmlFor={`state-${state}`} className="text-xs cursor-pointer">
-                      {state}
-                    </Label>
-                  </div>
-                ))}
+            <div className="p-3 border rounded-lg bg-gray-50 max-h-96 overflow-y-auto">
+              <div className="space-y-2">
+                {US_STATES.map(state => {
+                  const isSelected = selectedStates.includes(state);
+                  const stateOutlet = stateOutlets.find(so => so.state === state);
+                  
+                  return (
+                    <div key={state} className="flex items-center gap-3">
+                      <div className="flex items-center space-x-2 min-w-[80px]">
+                        <Checkbox
+                          id={`state-${state}`}
+                          checked={isSelected}
+                          onCheckedChange={() => toggleState(state)}
+                        />
+                        <Label htmlFor={`state-${state}`} className="text-sm cursor-pointer font-medium">
+                          {state}
+                        </Label>
+                      </div>
+                      {isSelected && (
+                        <Input
+                          type="number"
+                          value={stateOutlet?.outletCount || ''}
+                          onChange={(e) => updateStateOutletCount(state, e.target.value)}
+                          placeholder="Enter outlet count"
+                          className="flex-1 h-8"
+                          min="0"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               {selectedStates.length > 0 && (
                 <div className="mt-3 pt-3 border-t">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium text-gray-700">
-                      Selected States ({selectedStates.length}/{US_STATES.length}):
-                    </p>
-                  </div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">
+                    Selected States ({selectedStates.length}/{US_STATES.length}):
+                  </p>
                   <p className="text-sm text-gray-600">
                     {selectedStates.join(', ')}
                   </p>
                 </div>
               )}
             </div>
-            
-            {selectedStates.length === 1 && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <Label htmlFor="spiritsOutletsCount" className="text-sm font-medium">
-                  # of Spirits Outlets
-                </Label>
-                <Input
-                  id="spiritsOutletsCount"
-                  type="number"
-                  value={formData.allSpiritsOutlets}
-                  onChange={(e) => updateField('allSpiritsOutlets', e.target.value)}
-                  placeholder="Enter total number of spirits outlets"
-                  className="mt-2"
-                  min="0"
-                />
-                <p className="text-xs text-gray-600 mt-1">
-                  Enter the total number of spirits outlets for {selectedStates[0]}
-                </p>
-              </div>
-            )}
-
-            {selectedStates.length > 1 && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <Label className="text-sm font-medium mb-3 block">
-                  # of Spirits Stores by State
-                </Label>
-                <div className="space-y-3">
-                  {stateOutlets.map((stateOutlet) => (
-                    <div key={stateOutlet.state} className="flex items-center gap-3">
-                      <Label className="text-sm font-medium w-12">{stateOutlet.state}:</Label>
-                      <Input
-                        type="number"
-                        value={stateOutlet.outletCount}
-                        onChange={(e) => updateStateOutletCount(stateOutlet.state, e.target.value)}
-                        placeholder="Enter number"
-                        className="flex-1"
-                        min="0"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-600 mt-3">
-                  Enter the number of spirits stores for each selected state
-                </p>
-              </div>
-            )}
           </div>
         </CardContent>
 
