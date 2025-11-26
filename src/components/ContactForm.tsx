@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { useLoadScript, Autocomplete } from '@react-google-maps/api';
+import { useLoadScript } from '@react-google-maps/api';
 import type { Contact, Account, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
 
@@ -261,6 +261,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       });
       
       autocompleteRef.current.addListener('place_changed', onPlaceChanged);
+      
+      // Sync the input value with formData after autocomplete is initialized
+      if (inputRef.current) {
+        inputRef.current.value = formData.preferredShippingAddress;
+      }
     }
 
     return () => {
@@ -269,6 +274,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       }
     };
   }, [isLoaded]);
+
+  // Sync input ref value when formData.preferredShippingAddress changes
+  useEffect(() => {
+    if (inputRef.current && isLoaded) {
+      inputRef.current.value = formData.preferredShippingAddress;
+    }
+  }, [formData.preferredShippingAddress, isLoaded]);
 
   // Handle headshot file upload
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -327,6 +339,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleBirthdayChange = (dateInput: string) => {
     const birthday = dateInputToBirthday(dateInput);
     setFormData(prev => ({ ...prev, birthday }));
+  };
+
+  // Handle shipping address change
+  const handleShippingAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, preferredShippingAddress: value }));
   };
 
   // Category/Segment Ownership handlers
@@ -1027,8 +1045,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Input
                   ref={inputRef}
                   id="preferredShippingAddress"
-                  value={formData.preferredShippingAddress}
-                  onChange={(e) => setFormData(prev => ({ ...prev, preferredShippingAddress: e.target.value }))}
+                  onChange={handleShippingAddressChange}
                   placeholder="Start typing address..."
                   className="w-full"
                 />
@@ -1036,7 +1053,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Input
                   id="preferredShippingAddress"
                   value={formData.preferredShippingAddress}
-                  onChange={(e) => setFormData(prev => ({ ...prev, preferredShippingAddress: e.target.value }))}
+                  onChange={handleShippingAddressChange}
                   placeholder="Street address, City, State, ZIP"
                 />
               )}
