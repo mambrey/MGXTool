@@ -1314,14 +1314,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
             <div className="p-3 border rounded-lg bg-gray-50 max-h-96 overflow-y-auto">
-              <div className="space-y-2">
+              <div className="grid grid-cols-5 gap-3">
                 {US_STATES.map(state => {
                   const isSelected = selectedStates.includes(state);
                   const stateOutlet = stateOutlets.find(so => so.state === state);
                   
                   return (
-                    <div key={state} className="flex items-center gap-3">
-                      <div className="flex items-center space-x-2 min-w-[80px]">
+                    <div key={state} className="space-y-2">
+                      <div className="flex items-center space-x-2">
                         <Checkbox
                           id={`state-${state}`}
                           checked={isSelected}
@@ -1334,10 +1334,10 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                       {isSelected && (
                         <Input
                           type="number"
+                          placeholder="# outlets"
                           value={stateOutlet?.outletCount || ''}
                           onChange={(e) => updateStateOutletCount(state, e.target.value)}
-                          placeholder="Enter outlet count"
-                          className="flex-1 h-8"
+                          className="h-8 text-xs"
                           min="0"
                         />
                       )}
@@ -1345,15 +1345,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   );
                 })}
               </div>
-              {selectedStates.length > 0 && (
-                <div className="mt-3 pt-3 border-t">
-                  <p className="text-sm font-medium text-gray-700 mb-1">
-                    Selected States ({selectedStates.length}/{US_STATES.length}):
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {selectedStates.join(', ')}
-                  </p>
-                </div>
+            </div>
               )}
             </div>
           </div>
