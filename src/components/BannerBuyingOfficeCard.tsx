@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Trash2, Calendar, Target, TrendingUp, Plus, CheckSquare, Square } from 'lucide-react';
+import { Save, Trash2, Calendar, Target, TrendingUp, Plus, CheckSquare, Square, RefreshCw, Bell, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { useMarketData } from '@/hooks/useMarketData';
 
 interface CustomerEvent {
   id: string;
   title: string;
   date: string;
+  alertEnabled?: boolean;
+  alertDays?: number;
 }
 
 interface CategoryResetWindow {
@@ -28,6 +32,8 @@ interface StateOutlet {
 interface BannerBuyingOffice {
   id: string;
   accountName: string;
+  parentCompany?: string;
+  tickerSymbol?: string;
   address: string;
   website: string;
   channel: string;
@@ -35,6 +41,9 @@ interface BannerBuyingOffice {
   operatingStates: string[];
   allSpiritsOutlets: string;
   spiritsOutletsByState?: StateOutlet[];
+  executionReliabilityScore?: string;
+  executionReliabilityRationale?: string;
+  // Strategy and Capabilities fields
   influenceAssortmentShelf: string;
   influencePricePromo: string;
   influenceDisplayMerchandising: string;
@@ -46,6 +55,8 @@ interface BannerBuyingOffice {
   isJBP: boolean;
   lastJBPDate: string;
   nextJBPDate: string;
+  nextJBPAlert?: boolean;
+  nextJBPAlertDays?: number;
   pricingStrategy: string;
   privateLabel: string;
   displayMandates: string;
@@ -65,6 +76,7 @@ interface BannerBuyingOffice {
   affectedCategories: string[];
   hasDifferentResetWindows: string;
   categoryResetWindows: CategoryResetWindow[];
+  // Additional Information fields
   strategicPriorities: string;
   keyCompetitors: string;
   designatedCharities: string;
@@ -131,6 +143,9 @@ export default function BannerBuyingOfficeCard({
   // JBP validation error state
   const [jbpValidationError, setJbpValidationError] = useState<string>('');
 
+  // Use the market data hook
+  const { marketData, loading, error, fetchMarketData } = useMarketData();
+
   // State outlets by state for multiple states
   const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
     if (banner.spiritsOutletsByState && Array.isArray(banner.spiritsOutletsByState)) {
@@ -163,7 +178,7 @@ export default function BannerBuyingOfficeCard({
 
   // Update stateOutlets when operatingStates changes
   useEffect(() => {
-    if (banner.operatingStates.length > 1) {
+    if (banner.operatingStates.length > 0) {
       // Create state outlets for newly selected states
       const newStateOutlets = banner.operatingStates.map(state => {
         const existing = stateOutlets.find(so => so.state === state);
@@ -175,12 +190,47 @@ export default function BannerBuyingOfficeCard({
     }
   }, [banner.operatingStates]);
 
+  // Update form fields when market data is received
+  useEffect(() => {
+    if (marketData) {
+      console.log('📊 Updating banner form with market data:', marketData);
+      // Update the banner with market data fields if needed
+      // Note: This would require additional fields in the BannerBuyingOffice interface
+    }
+  }, [marketData]);
+
   const updateStateOutletCount = (state: string, count: string) => {
     const updatedStateOutlets = stateOutlets.map(so => 
       so.state === state ? { ...so, outletCount: count } : so
     );
     setStateOutlets(updatedStateOutlets);
     onUpdateField(banner.id, 'spiritsOutletsByState', updatedStateOutlets);
+  };
+
+  /**
+   * Request market data from CSV file
+   */
+  const handleRefreshMarketData = async () => {
+    if (!banner.tickerSymbol || banner.tickerSymbol.trim() === '') {
+      alert('Please enter a ticker symbol first');
+      return;
+    }
+
+    await fetchMarketData(banner.tickerSymbol);
+  };
+
+  const toggleEventAlert = (eventId: string) => {
+    const updatedEvents = banner.customerEvents.map(event =>
+      event.id === eventId ? { ...event, alertEnabled: !event.alertEnabled } : event
+    );
+    onUpdateField(banner.id, 'customerEvents', updatedEvents);
+  };
+
+  const updateEventAlertDays = (eventId: string, days: number) => {
+    const updatedEvents = banner.customerEvents.map(event =>
+      event.id === eventId ? { ...event, alertDays: days } : event
+    );
+    onUpdateField(banner.id, 'customerEvents', updatedEvents);
   };
 
   return (
@@ -202,172 +252,190 @@ export default function BannerBuyingOfficeCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Parent Company - Pre-populated and read-only */}
+        {/* Customer Overview Section */}
         <div>
-          <Label className="text-sm font-medium text-gray-700">Parent Company</Label>
-          <Input
-            value={parentAccountName || 'Current Account'}
-            disabled
-            className="mt-1 bg-gray-100 text-gray-600"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Automatically set to the current account being created/edited
-          </p>
-        </div>
+          <Label className="text-base font-semibold mb-4 block flex items-center gap-2">
+            <Building2 className="w-4 h-4" />
+            Customer Overview
+          </Label>
+          
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Banner/Buying Office Name *</Label>
+              <Input
+                value={banner.accountName}
+                onChange={(e) => onUpdateField(banner.id, 'accountName', e.target.value)}
+                placeholder="Enter banner/buying office name"
+                className="mt-1"
+                required
+              />
+            </div>
 
-        {/* Basic Information */}
-        <div className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium">Banner/Buying Office Name *</Label>
-            <Input
-              value={banner.accountName}
-              onChange={(e) => onUpdateField(banner.id, 'accountName', e.target.value)}
-              placeholder="Enter banner/buying office name"
-              className="mt-1"
-              required
-            />
-          </div>
+            <div>
+              <Label className="text-sm font-medium">Parent Company</Label>
+              <Input
+                value={banner.parentCompany || parentAccountName || 'Current Account'}
+                onChange={(e) => onUpdateField(banner.id, 'parentCompany', e.target.value)}
+                placeholder="Enter parent company"
+                className="mt-1"
+              />
+            </div>
 
-          <div>
-            <Label className="text-sm font-medium">Address</Label>
-            <Input
-              value={banner.address}
-              onChange={(e) => onUpdateField(banner.id, 'address', e.target.value)}
-              placeholder="Enter address"
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Website</Label>
-            <Input
-              value={banner.website}
-              onChange={(e) => onUpdateField(banner.id, 'website', e.target.value)}
-              placeholder="Enter website URL"
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Channel</Label>
-            <Select 
-              value={banner.channel || ''} 
-              onValueChange={(value) => onUpdateField(banner.id, 'channel', value === 'clear' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select channel" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                <SelectItem value="Club">Club</SelectItem>
-                <SelectItem value="C-Store">C-Store</SelectItem>
-                <SelectItem value="DoorDash">DoorDash</SelectItem>
-                <SelectItem value="Drug">Drug</SelectItem>
-                <SelectItem value="Ecommerce">Ecommerce</SelectItem>
-                <SelectItem value="Grocery">Grocery</SelectItem>
-                <SelectItem value="Instacart">Instacart</SelectItem>
-                <SelectItem value="Liquor">Liquor</SelectItem>
-                <SelectItem value="Mass">Mass</SelectItem>
-                <SelectItem value="Military">Military</SelectItem>
-                <SelectItem value="Regional Grocery">Regional Grocery</SelectItem>
-                <SelectItem value="UberEats">UberEats</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Channel Mapping</Label>
-            <Select 
-              value={banner.footprint || ''} 
-              onValueChange={(value) => onUpdateField(banner.id, 'footprint', value === 'clear' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select channel mapping" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                <SelectItem value="National Retailer">National Retailer</SelectItem>
-                <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
-                <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium mb-2 block">Operating States</Label>
-            <div className="p-3 border rounded-lg bg-gray-50 max-h-40 overflow-y-auto">
-              <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-2">
-                {usStates.map(state => (
-                  <div key={state} className="flex items-center space-x-1">
-                    <Checkbox
-                      id={`banner-${banner.id}-state-${state}`}
-                      checked={banner.operatingStates.includes(state)}
-                      onCheckedChange={() => onToggleState(banner.id, state)}
-                    />
-                    <Label htmlFor={`banner-${banner.id}-state-${state}`} className="text-xs cursor-pointer">
-                      {state}
-                    </Label>
-                  </div>
-                ))}
+            <div>
+              <Label htmlFor={`banner-${banner.id}-tickerSymbol`} className="text-sm font-medium">
+                Ticker Symbol
+                <span className="ml-2 text-xs text-green-600">(Auto-loads from CSV)</span>
+              </Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  id={`banner-${banner.id}-tickerSymbol`}
+                  value={banner.tickerSymbol || ''}
+                  onChange={(e) => onUpdateField(banner.id, 'tickerSymbol', e.target.value)}
+                  placeholder="e.g., COST"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleRefreshMarketData}
+                  disabled={loading || !banner.tickerSymbol}
+                  title="Manually refresh market data from CSV file"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
-              {banner.operatingStates.length > 0 && (
-                <div className="mt-3 pt-3 border-t">
-                  <p className="text-sm font-medium text-gray-700">
-                    Selected States ({banner.operatingStates.length}/{usStates.length}):
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {banner.operatingStates.join(', ')}
-                  </p>
-                </div>
+              {loading && (
+                <p className="text-xs text-blue-600 mt-1">
+                  🔄 Fetching market data from CSV file...
+                </p>
+              )}
+              {error && (
+                <p className="text-xs text-red-600 mt-1">
+                  ⚠️ {error}
+                </p>
+              )}
+              {marketData && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ Market data auto-loaded: {marketData.name} ({marketData.currency})
+                </p>
               )}
             </div>
-          </div>
 
-          {/* Single State - Show single input */}
-          {banner.operatingStates.length === 1 && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <Label className="text-sm font-medium"># of Spirits Outlets</Label>
-              <Input
-                type="number"
-                value={banner.allSpiritsOutlets}
-                onChange={(e) => onUpdateField(banner.id, 'allSpiritsOutlets', e.target.value)}
-                placeholder="Enter total number of spirits outlets"
-                className="mt-2"
-                min="0"
-              />
-              <p className="text-xs text-gray-600 mt-1">
-                Enter the total number of spirits outlets for {banner.operatingStates[0]}
-              </p>
+            <div>
+              <Label className="text-sm font-medium">Channel</Label>
+              <Select 
+                value={banner.channel || ''} 
+                onValueChange={(value) => onUpdateField(banner.id, 'channel', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  <SelectItem value="Club">Club</SelectItem>
+                  <SelectItem value="C-Store">C-Store</SelectItem>
+                  <SelectItem value="DoorDash">DoorDash</SelectItem>
+                  <SelectItem value="Drug">Drug</SelectItem>
+                  <SelectItem value="Ecommerce">Ecommerce</SelectItem>
+                  <SelectItem value="Grocery">Grocery</SelectItem>
+                  <SelectItem value="Instacart">Instacart</SelectItem>
+                  <SelectItem value="Liquor">Liquor</SelectItem>
+                  <SelectItem value="Mass">Mass</SelectItem>
+                  <SelectItem value="Military">Military</SelectItem>
+                  <SelectItem value="Regional Grocery">Regional Grocery</SelectItem>
+                  <SelectItem value="UberEats">UberEats</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
 
-          {/* Multiple States - Show breakdown by state */}
-          {banner.operatingStates.length > 1 && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <Label className="text-sm font-medium mb-3 block">
-                # of Spirits Stores by State
-              </Label>
-              <div className="space-y-3">
-                {stateOutlets.map((stateOutlet) => (
-                  <div key={stateOutlet.state} className="flex items-center gap-3">
-                    <Label className="text-sm font-medium w-12">{stateOutlet.state}:</Label>
-                    <Input
-                      type="number"
-                      value={stateOutlet.outletCount}
-                      onChange={(e) => updateStateOutletCount(stateOutlet.state, e.target.value)}
-                      placeholder="Enter number"
-                      className="flex-1"
-                      min="0"
-                    />
-                  </div>
-                ))}
+            <div>
+              <Label className="text-sm font-medium">Channel Mapping</Label>
+              <Select 
+                value={banner.footprint || ''} 
+                onValueChange={(value) => onUpdateField(banner.id, 'footprint', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select channel mapping" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  <SelectItem value="National Retailer">National Retailer</SelectItem>
+                  <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
+                  <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Spirits Operating States (enter number of spirits outlets in state upon selecting state)</Label>
+              <div className="p-3 border rounded-lg bg-gray-50 max-h-96 overflow-y-auto">
+                <div className="grid grid-cols-5 gap-3">
+                  {usStates.map(state => {
+                    const isSelected = banner.operatingStates.includes(state);
+                    const stateOutlet = stateOutlets.find(so => so.state === state);
+                    
+                    return (
+                      <div key={state} className="flex items-center gap-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`banner-${banner.id}-state-${state}`}
+                            checked={isSelected}
+                            onCheckedChange={() => onToggleState(banner.id, state)}
+                          />
+                          <Label htmlFor={`banner-${banner.id}-state-${state}`} className="text-sm cursor-pointer font-medium whitespace-nowrap">
+                            {state}
+                          </Label>
+                        </div>
+                        {isSelected && (
+                          <Input
+                            type="number"
+                            placeholder="#"
+                            value={stateOutlet?.outletCount || ''}
+                            onChange={(e) => updateStateOutletCount(state, e.target.value)}
+                            className="h-7 w-16 text-xs"
+                            min="0"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <p className="text-xs text-gray-600 mt-3">
-                Enter the number of spirits stores for each selected state
-              </p>
             </div>
-          )}
+
+            <div>
+              <Label htmlFor={`banner-${banner.id}-executionReliabilityScore`} className="text-sm font-medium">Execution Reliability Score</Label>
+              <Select 
+                value={banner.executionReliabilityScore || ''} 
+                onValueChange={(value) => onUpdateField(banner.id, 'executionReliabilityScore', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select reliability score" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  <SelectItem value="5">5 – Highly Reliable: Nearly all agreed programs, displays, and resets are executed on time and in full</SelectItem>
+                  <SelectItem value="4">4 – Generally Reliable: Most programs land well with occasional gaps that are usually fixed quickly</SelectItem>
+                  <SelectItem value="3">3 – Mixed Reliability: Some things execute and some do not; performance often varies by store</SelectItem>
+                  <SelectItem value="2">2 – Low Reliability: Many commitments do not materialize or are partial with limited follow through</SelectItem>
+                  <SelectItem value="1">1 – Very Low Reliability: Execution rarely matches agreements; plans often stall or disappear</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor={`banner-${banner.id}-executionReliabilityRationale`} className="text-sm font-medium">Rationale/Notes (Optional)</Label>
+              <Textarea
+                id={`banner-${banner.id}-executionReliabilityRationale`}
+                value={banner.executionReliabilityRationale || ''}
+                onChange={(e) => onUpdateField(banner.id, 'executionReliabilityRationale', e.target.value)}
+                placeholder="Add any additional context or notes about execution reliability..."
+                className="mt-1 min-h-[80px]"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Strategy and Capabilities Section */}
@@ -597,26 +665,68 @@ export default function BannerBuyingOfficeCard({
             </div>
 
             {banner.isJBP && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div>
-                  <Label className="text-xs font-medium">Last JBP</Label>
-                  <Input
-                    type="date"
-                    value={formatDateForInput(banner.lastJBPDate || '')}
-                    onChange={(e) => onUpdateField(banner.id, 'lastJBPDate', e.target.value)}
-                    className="mt-1"
-                  />
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs font-medium">Last JBP</Label>
+                    <Input
+                      type="date"
+                      value={formatDateForInput(banner.lastJBPDate || '')}
+                      onChange={(e) => onUpdateField(banner.id, 'lastJBPDate', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Next JBP *</Label>
+                    <Input
+                      type="date"
+                      value={formatDateForInput(banner.nextJBPDate || '')}
+                      onChange={(e) => onUpdateField(banner.id, 'nextJBPDate', e.target.value)}
+                      className="mt-1"
+                    />
+                    {jbpValidationError && (
+                      <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-xs font-medium">Next JBP *</Label>
-                  <Input
-                    type="date"
-                    value={formatDateForInput(banner.nextJBPDate || '')}
-                    onChange={(e) => onUpdateField(banner.id, 'nextJBPDate', e.target.value)}
-                    className="mt-1"
-                  />
-                  {jbpValidationError && (
-                    <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
+                
+                {/* Alert Section */}
+                <div className="space-y-3 pt-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-orange-600" />
+                      <Label htmlFor={`banner-${banner.id}-nextjbp-alert`} className="text-sm font-medium cursor-pointer">
+                        Enable Alert
+                      </Label>
+                    </div>
+                    <Switch
+                      id={`banner-${banner.id}-nextjbp-alert`}
+                      checked={banner.nextJBPAlert || false}
+                      onCheckedChange={(checked) => onUpdateField(banner.id, 'nextJBPAlert', checked)}
+                    />
+                  </div>
+                  
+                  {banner.nextJBPAlert && (
+                    <div className="space-y-2 pl-6">
+                      <Label htmlFor={`banner-${banner.id}-nextjbp-alert-days`} className="text-sm text-gray-600">
+                        Alert me (days before event):
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id={`banner-${banner.id}-nextjbp-alert-days`}
+                          type="number"
+                          min="1"
+                          max="90"
+                          value={banner.nextJBPAlertDays || 7}
+                          onChange={(e) => onUpdateField(banner.id, 'nextJBPAlertDays', parseInt(e.target.value) || 7)}
+                          className="w-24 h-9"
+                        />
+                        <span className="text-sm text-gray-500">days before</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        You'll receive an alert {banner.nextJBPAlertDays || 7} {(banner.nextJBPAlertDays || 7) === 1 ? 'day' : 'days'} before this date
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -678,7 +788,7 @@ export default function BannerBuyingOfficeCard({
 
             {/* E-Commerce Partners */}
             <div>
-              <Label className="text-xs font-medium mb-2 block">Who Are Your Primary E-Commerce Partners?</Label>
+              <Label className="text-xs font-medium mb-2 block">Primary E-Commerce Partners</Label>
               <div className="p-3 border rounded-lg bg-gray-50">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {ecommercePartners.map(partner => (
@@ -715,18 +825,6 @@ export default function BannerBuyingOfficeCard({
                   <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label className="text-xs font-medium"># of Full Proof Outlets</Label>
-              <Input
-                type="number"
-                value={banner.fullProofOutlets}
-                onChange={(e) => onUpdateField(banner.id, 'fullProofOutlets', e.target.value)}
-                placeholder="Enter number of full proof outlets"
-                className="mt-1"
-                min="0"
-              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -864,30 +962,9 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
-                {/* Reset Window Months */}
-                <div>
-                  <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
-                  <div className="p-3 border rounded-lg bg-white">
-                    <div className="grid grid-cols-6 gap-2">
-                      {months.map(month => (
-                        <div key={month} className="flex items-center space-x-1">
-                          <Checkbox
-                            id={`banner-${banner.id}-month-${month}`}
-                            checked={banner.resetWindowMonths.includes(month)}
-                            onCheckedChange={() => onToggleResetMonth(banner.id, month)}
-                          />
-                          <Label htmlFor={`banner-${banner.id}-month-${month}`} className="text-xs cursor-pointer">
-                            {month}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 <div>
                   <Label className="text-xs font-medium">
-                    If we have different reset windows for different categories
+                    Are there different reset windows for different categories?
                   </Label>
                   <Select 
                     value={banner.hasDifferentResetWindows || ''} 
@@ -903,6 +980,29 @@ export default function BannerBuyingOfficeCard({
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Reset Window Months - Only show when NOT using different reset windows per category */}
+                {banner.hasDifferentResetWindows !== 'Yes' && (
+                  <div>
+                    <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
+                    <div className="p-3 border rounded-lg bg-white">
+                      <div className="grid grid-cols-6 gap-2">
+                        {months.map(month => (
+                          <div key={month} className="flex items-center space-x-1">
+                            <Checkbox
+                              id={`banner-${banner.id}-month-${month}`}
+                              checked={banner.resetWindowMonths.includes(month)}
+                              onCheckedChange={() => onToggleResetMonth(banner.id, month)}
+                            />
+                            <Label htmlFor={`banner-${banner.id}-month-${month}`} className="text-xs cursor-pointer">
+                              {month}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {banner.hasDifferentResetWindows === 'Yes' && (
                   <div className="space-y-3 p-3 bg-white border border-gray-300 rounded-lg">
@@ -947,9 +1047,13 @@ export default function BannerBuyingOfficeCard({
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                                {affectedCategories.map(category => (
-                                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                                ))}
+                                {banner.affectedCategories.length > 0 ? (
+                                  banner.affectedCategories.map(category => (
+                                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                                  ))
+                                ) : (
+                                  <SelectItem value="" disabled>No categories selected</SelectItem>
+                                )}
                               </SelectContent>
                             </Select>
                           </div>
@@ -985,7 +1089,10 @@ export default function BannerBuyingOfficeCard({
 
         {/* Additional Information Section */}
         <div className="border-t pt-6">
-          <Label className="text-base font-semibold mb-4 block">Additional Information</Label>
+          <Label className="text-base font-semibold mb-4 block flex items-center gap-2">
+            <Building2 className="w-4 h-4" />
+            Additional Information
+          </Label>
           
           <div className="space-y-4">
             <div>
@@ -1076,6 +1183,48 @@ export default function BannerBuyingOfficeCard({
                             onChange={(e) => onUpdateCustomerEvent(banner.id, event.id, 'date', e.target.value)}
                             className="mt-1"
                           />
+                        </div>
+                      </div>
+                      
+                      {/* Alert Section for Customer Events */}
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Bell className="w-4 h-4 text-orange-600" />
+                              <Label htmlFor={`banner-${banner.id}-event-alert-${event.id}`} className="text-sm font-medium cursor-pointer">
+                                Enable Alert
+                              </Label>
+                            </div>
+                            <Switch
+                              id={`banner-${banner.id}-event-alert-${event.id}`}
+                              checked={event.alertEnabled || false}
+                              onCheckedChange={() => toggleEventAlert(event.id)}
+                            />
+                          </div>
+                          
+                          {event.alertEnabled && (
+                            <div className="space-y-2 pl-6">
+                              <Label htmlFor={`banner-${banner.id}-event-alert-days-${event.id}`} className="text-sm text-gray-600">
+                                Alert me (days before event):
+                              </Label>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  id={`banner-${banner.id}-event-alert-days-${event.id}`}
+                                  type="number"
+                                  min="1"
+                                  max="90"
+                                  value={event.alertDays || 7}
+                                  onChange={(e) => updateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
+                                  className="w-24 h-9"
+                                />
+                                <span className="text-sm text-gray-500">days before</span>
+                              </div>
+                              <p className="text-xs text-gray-500">
+                                You'll receive an alert {event.alertDays || 7} {(event.alertDays || 7) === 1 ? 'day' : 'days'} before this event
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
