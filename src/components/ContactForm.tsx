@@ -15,10 +15,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useLoadScript } from '@react-google-maps/api';
-import { format } from 'date-fns';
 import type { Contact, Account, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
 
@@ -1662,7 +1660,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
 
-        {/* Primary Diageo Relationship Owner(s) - UPDATED WITH LAST CHECK IN */}
+        {/* Primary Diageo Relationship Owner(s) - UPDATED WITH SIMPLE DATE INPUT */}
         <Card className="bg-indigo-50 border-indigo-200">
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
@@ -1695,7 +1693,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Sales Section - UPDATED WITH CALENDAR DROPDOWN AND COLUMN HEADERS */}
+              {/* Sales Section - UPDATED WITH SIMPLE DATE INPUT AND COLUMN HEADERS */}
               <div className="space-y-4 p-4 bg-white border border-indigo-200 rounded-lg">
                 <h3 className="font-semibold text-indigo-900 flex items-center gap-2">
                   <Briefcase className="w-4 h-4" />
@@ -1751,39 +1749,20 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              disabled={!(role in salesRoles)}
-                              className={cn(
-                                "w-full h-9 text-xs justify-start text-left font-normal",
-                                !(role in salesRoles) && "opacity-50",
-                                !salesLastCheckIn[role] && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-3 w-3" />
-                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), 'MMM dd, yyyy') : 'Select date...'}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={salesLastCheckIn[role] ? new Date(salesLastCheckIn[role]) : undefined}
-                              onSelect={(date) => {
-                                handleSalesLastCheckInChange(role, date ? format(date, 'yyyy-MM-dd') : '');
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <Input
+                          type="date"
+                          value={salesLastCheckIn[role] || ''}
+                          onChange={(e) => handleSalesLastCheckInChange(role, e.target.value)}
+                          disabled={!(role in salesRoles)}
+                          className={cn("h-9 text-xs", !(role in salesRoles) && "opacity-50")}
+                        />
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Support Section - UPDATED WITH CALENDAR DROPDOWN AND COLUMN HEADERS */}
+              {/* Support Section - UPDATED WITH SIMPLE DATE INPUT AND COLUMN HEADERS */}
               <div className="space-y-4 p-4 bg-white border border-indigo-200 rounded-lg">
                 <h3 className="font-semibold text-indigo-900 flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -1839,32 +1818,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              disabled={!(role in supportRoles)}
-                              className={cn(
-                                "w-full h-9 text-xs justify-start text-left font-normal",
-                                !(role in supportRoles) && "opacity-50",
-                                !supportLastCheckIn[role] && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-3 w-3" />
-                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), 'MMM dd, yyyy') : 'Select date...'}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={supportLastCheckIn[role] ? new Date(supportLastCheckIn[role]) : undefined}
-                              onSelect={(date) => {
-                                handleSupportLastCheckInChange(role, date ? format(date, 'yyyy-MM-dd') : '');
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <Input
+                          type="date"
+                          value={supportLastCheckIn[role] || ''}
+                          onChange={(e) => handleSupportLastCheckInChange(role, e.target.value)}
+                          disabled={!(role in supportRoles)}
+                          className={cn("h-9 text-xs", !(role in supportRoles) && "opacity-50")}
+                        />
                       </div>
                     </div>
                   ))}
