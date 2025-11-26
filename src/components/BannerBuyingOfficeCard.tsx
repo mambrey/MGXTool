@@ -274,11 +274,13 @@ export default function BannerBuyingOfficeCard({
             <div>
               <Label className="text-sm font-medium">Parent Company</Label>
               <Input
-                value={banner.parentCompany || parentAccountName || 'Current Account'}
-                onChange={(e) => onUpdateField(banner.id, 'parentCompany', e.target.value)}
-                placeholder="Enter parent company"
-                className="mt-1"
+                value={parentAccountName || 'Current Account'}
+                disabled
+                className="mt-1 bg-gray-100 text-gray-600 cursor-not-allowed"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Automatically set to the current account being created/edited
+              </p>
             </div>
 
             <div>
