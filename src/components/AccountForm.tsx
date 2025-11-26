@@ -1320,24 +1320,24 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   const stateOutlet = stateOutlets.find(so => so.state === state);
                   
                   return (
-                    <div key={state} className="space-y-2">
+                    <div key={state} className="flex items-center gap-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id={`state-${state}`}
                           checked={isSelected}
                           onCheckedChange={() => toggleState(state)}
                         />
-                        <Label htmlFor={`state-${state}`} className="text-sm cursor-pointer font-medium">
+                        <Label htmlFor={`state-${state}`} className="text-sm cursor-pointer font-medium whitespace-nowrap">
                           {state}
                         </Label>
                       </div>
                       {isSelected && (
                         <Input
                           type="number"
-                          placeholder="# outlets"
+                          placeholder="#"
                           value={stateOutlet?.outletCount || ''}
                           onChange={(e) => updateStateOutletCount(state, e.target.value)}
-                          className="h-8 text-xs"
+                          className="h-7 w-16 text-xs"
                           min="0"
                         />
                       )}
