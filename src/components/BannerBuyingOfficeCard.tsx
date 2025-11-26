@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Save, Trash2, Calendar, Target, TrendingUp, Plus, CheckSquare, Square, RefreshCw, Bell, Building2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Save, Trash2, Calendar, Target, TrendingUp, Plus, Bell, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { useMarketData } from '@/hooks/useMarketData';
+import { useLoadScript } from '@react-google-maps/api';
 
 interface CustomerEvent {
   id: string;
@@ -33,7 +33,6 @@ interface BannerBuyingOffice {
   id: string;
   accountName: string;
   parentCompany?: string;
-  tickerSymbol?: string;
   address: string;
   website: string;
   channel: string;
@@ -112,6 +111,12 @@ interface BannerBuyingOfficeCardProps {
   formatDateForInput: (dateString: string) => string;
 }
 
+// Google Maps libraries to load
+const libraries: ("places")[] = ["places"];
+
+// Google Maps API Key
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCccRowS1a5tLB9j-fMzsA9425zmYGsGoc';
+
 export default function BannerBuyingOfficeCard({
   banner,
   index,
@@ -143,8 +148,15 @@ export default function BannerBuyingOfficeCard({
   // JBP validation error state
   const [jbpValidationError, setJbpValidationError] = useState<string>('');
 
-  // Use the market data hook
-  const { marketData, loading, error, fetchMarketData } = useMarketData();
+  // Google Maps Autocomplete
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  // Load Google Maps script
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: libraries,
+  });
 
   // State outlets by state for multiple states
   const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
@@ -190,14 +202,32 @@ export default function BannerBuyingOfficeCard({
     }
   }, [banner.operatingStates]);
 
-  // Update form fields when market data is received
+  // Initialize Google Places Autocomplete
   useEffect(() => {
-    if (marketData) {
-      console.log('📊 Updating banner form with market data:', marketData);
-      // Update the banner with market data fields if needed
-      // Note: This would require additional fields in the BannerBuyingOffice interface
+    if (isLoaded && addressInputRef.current && GOOGLE_MAPS_API_KEY) {
+      try {
+        autocompleteRef.current = new google.maps.places.Autocomplete(addressInputRef.current, {
+          types: ['address'],
+          fields: ['formatted_address', 'address_components', 'geometry'],
+        });
+
+        autocompleteRef.current.addListener('place_changed', () => {
+          const place = autocompleteRef.current?.getPlace();
+          if (place?.formatted_address) {
+            onUpdateField(banner.id, 'address', place.formatted_address || '');
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing Google Places Autocomplete:', error);
+      }
     }
-  }, [marketData]);
+
+    return () => {
+      if (autocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
+    };
+  }, [isLoaded, banner.id, onUpdateField]);
 
   const updateStateOutletCount = (state: string, count: string) => {
     const updatedStateOutlets = stateOutlets.map(so => 
@@ -205,18 +235,6 @@ export default function BannerBuyingOfficeCard({
     );
     setStateOutlets(updatedStateOutlets);
     onUpdateField(banner.id, 'spiritsOutletsByState', updatedStateOutlets);
-  };
-
-  /**
-   * Request market data from CSV file
-   */
-  const handleRefreshMarketData = async () => {
-    if (!banner.tickerSymbol || banner.tickerSymbol.trim() === '') {
-      alert('Please enter a ticker symbol first');
-      return;
-    }
-
-    await fetchMarketData(banner.tickerSymbol);
   };
 
   const toggleEventAlert = (eventId: string) => {
@@ -284,42 +302,23 @@ export default function BannerBuyingOfficeCard({
             </div>
 
             <div>
-              <Label htmlFor={`banner-${banner.id}-tickerSymbol`} className="text-sm font-medium">
-                Ticker Symbol
-                <span className="ml-2 text-xs text-green-600">(Auto-loads from CSV)</span>
+              <Label htmlFor={`banner-${banner.id}-address`} className="text-sm font-medium">
+                Address
+                {isLoaded && GOOGLE_MAPS_API_KEY && (
+                  <span className="ml-2 text-xs text-green-600">(Google Autocomplete enabled)</span>
+                )}
               </Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  id={`banner-${banner.id}-tickerSymbol`}
-                  value={banner.tickerSymbol || ''}
-                  onChange={(e) => onUpdateField(banner.id, 'tickerSymbol', e.target.value)}
-                  placeholder="e.g., COST"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={handleRefreshMarketData}
-                  disabled={loading || !banner.tickerSymbol}
-                  title="Manually refresh market data from CSV file"
-                >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                </Button>
-              </div>
-              {loading && (
-                <p className="text-xs text-blue-600 mt-1">
-                  🔄 Fetching market data from CSV file...
-                </p>
-              )}
-              {error && (
+              <Input
+                ref={addressInputRef}
+                id={`banner-${banner.id}-address`}
+                value={banner.address}
+                onChange={(e) => onUpdateField(banner.id, 'address', e.target.value)}
+                placeholder="Start typing address for suggestions..."
+                className="mt-1"
+              />
+              {loadError && (
                 <p className="text-xs text-red-600 mt-1">
-                  ⚠️ {error}
-                </p>
-              )}
-              {marketData && (
-                <p className="text-xs text-green-600 mt-1">
-                  ✓ Market data auto-loaded: {marketData.name} ({marketData.currency})
+                  ⚠️ Error loading Google Maps. Address can still be entered manually.
                 </p>
               )}
             </div>
