@@ -290,7 +290,7 @@ export default function BannerBuyingOfficeCard({
             </div>
 
             <div>
-              <Label className="text-sm font-medium">Parent Company</Label>
+              <Label className="text-sm font-medium">Parent Account</Label>
               <Input
                 value={parentAccountName || 'Current Account'}
                 disabled
@@ -321,6 +321,19 @@ export default function BannerBuyingOfficeCard({
                   ⚠️ Error loading Google Maps. Address can still be entered manually.
                 </p>
               )}
+            </div>
+
+            <div>
+              <Label htmlFor={`banner-${banner.id}-website`} className="text-sm font-medium">
+                Website
+              </Label>
+              <Input
+                id={`banner-${banner.id}-website`}
+                value={banner.website}
+                onChange={(e) => onUpdateField(banner.id, 'website', e.target.value)}
+                placeholder="Enter website URL"
+                className="mt-1"
+              />
             </div>
 
             <div>
