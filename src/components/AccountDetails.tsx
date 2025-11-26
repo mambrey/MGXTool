@@ -1154,15 +1154,10 @@ export default function AccountDetails({
         <div>
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  All Contacts ({contacts.length})
-                </CardTitle>
-                <Button size="sm" onClick={() => onAddContact(account.id)}>
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                All Contacts ({contacts.length})
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[800px] pr-4">
@@ -1170,11 +1165,7 @@ export default function AccountDetails({
                   {contacts.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-sm mb-4">No contacts yet for {account.accountName}</p>
-                      <Button size="sm" onClick={() => onAddContact(account.id)}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Contact
-                      </Button>
+                      <p className="text-sm">No contacts yet for {account.accountName}</p>
                     </div>
                   ) : (
                     contacts.map((contact, index) => {
