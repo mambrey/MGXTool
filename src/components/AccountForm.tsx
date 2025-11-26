@@ -1346,8 +1346,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 })}
               </div>
             </div>
-              )}
-            </div>
           </div>
         </CardContent>
 
