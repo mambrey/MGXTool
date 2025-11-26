@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar as CalendarIcon, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,10 +15,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 import type { Contact, Account, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
+import { format } from 'date-fns';
 
 interface ContactFormProps {
   contact?: Contact | null;
@@ -123,16 +125,6 @@ const formatPhoneNumber = (value: string): string => {
   return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
 };
 
-// Month/Day formatting for birthday (MM-DD format)
-const formatBirthdayMonthDay = (value: string): string => {
-  // Remove all non-digit characters
-  const digits = value.replace(/\D/g, '');
-  
-  if (digits.length === 0) return '';
-  if (digits.length <= 2) return digits;
-  return `${digits.slice(0, 2)}-${digits.slice(2, 4)}`;
-};
-
 // Format date for display
 const formatDate = (dateString: string): string => {
   if (!dateString) return 'N/A';
@@ -144,6 +136,30 @@ const formatDate = (dateString: string): string => {
     hour: '2-digit',
     minute: '2-digit'
   });
+};
+
+// Helper function to convert MM-DD string to Date object (using current year)
+const birthdayStringToDate = (birthday: string): Date | undefined => {
+  if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return undefined;
+  const [month, day] = birthday.split('-').map(Number);
+  const currentYear = new Date().getFullYear();
+  return new Date(currentYear, month - 1, day);
+};
+
+// Helper function to format Date to MM-DD string
+const dateToBirthdayString = (date: Date | undefined): string => {
+  if (!date) return '';
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${month}-${day}`;
+};
+
+// Helper function to format birthday for display
+const formatBirthdayDisplay = (birthday: string): string => {
+  if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return '';
+  const date = birthdayStringToDate(birthday);
+  if (!date) return '';
+  return format(date, 'MMMM d');
 };
 
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
@@ -183,6 +199,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     painPoints: contact?.painPoints || '',
     uploadedNotes: contact?.uploadedNotes || []
   });
+
+  // Birthday calendar state
+  const [birthdayCalendarOpen, setBirthdayCalendarOpen] = useState(false);
 
   // Contact Events state with alert functionality
   const [contactEvents, setContactEvents] = useState<ContactEventWithAlert[]>(
@@ -309,10 +328,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setFormData(prev => ({ ...prev, [field]: formatted }));
   };
 
-  // Handle birthday change with MM-DD formatting
-  const handleBirthdayChange = (value: string) => {
-    const formatted = formatBirthdayMonthDay(value);
-    setFormData(prev => ({ ...prev, birthday: formatted }));
+  // Handle birthday selection from calendar
+  const handleBirthdaySelect = (date: Date | undefined) => {
+    if (date) {
+      const birthdayString = dateToBirthdayString(date);
+      setFormData(prev => ({ ...prev, birthday: birthdayString }));
+      setBirthdayCalendarOpen(false);
+    }
   };
 
   // Category/Segment Ownership handlers
@@ -1162,7 +1184,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
+                <CalendarIcon className="w-5 h-5" />
                 Important Dates
               </CardTitle>
               <Button type="button" size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
@@ -1176,15 +1198,29 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="birthday">Birthday (Month & Day)</Label>
-                <Input
-                  id="birthday"
-                  type="text"
-                  value={formData.birthday}
-                  onChange={(e) => handleBirthdayChange(e.target.value)}
-                  placeholder="MM-DD"
-                  maxLength={5}
-                />
-                <p className="text-xs text-gray-500">Format: MM-DD (e.g., 03-15)</p>
+                <Popover open={birthdayCalendarOpen} onOpenChange={setBirthdayCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.birthday && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.birthday ? formatBirthdayDisplay(formData.birthday) : "Select birthday"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={birthdayStringToDate(formData.birthday)}
+                      onSelect={handleBirthdaySelect}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-gray-500">Select month and day (year not stored)</p>
                 
                 {/* Birthday Alert Section - NEW STRUCTURE */}
                 <div className="space-y-3 pt-2 border-t border-gray-200">
@@ -1307,7 +1343,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                 <div className="flex-1">
                                   <h4 className="font-medium text-sm mb-1">{event.title}</h4>
                                   <div className="flex items-center gap-2 text-xs text-gray-600">
-                                    <Calendar className="w-3 h-3" />
+                                    <CalendarIcon className="w-3 h-3" />
                                     <span>{new Date(event.date).toLocaleDateString()}</span>
                                     {daysUntil >= 0 && (
                                       <Badge variant={daysUntil <= 7 ? 'default' : 'secondary'} className="text-xs">
@@ -1391,7 +1427,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             {/* Empty State */}
             {contactEvents.length === 0 && (
               <div className="text-center py-6 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
-                <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <CalendarIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm mb-3">No custom events added yet</p>
                 <Button type="button" size="sm" variant="outline" onClick={() => setIsAddEventDialogOpen(true)}>
                   <Plus className="w-4 h-4 mr-2" />
