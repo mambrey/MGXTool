@@ -99,3 +99,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Force black text in Google Maps autocomplete */
+gmp-place-autocomplete::part(input) {
+  color: #000000 !important;
+}
