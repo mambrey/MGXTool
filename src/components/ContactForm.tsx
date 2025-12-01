@@ -1671,8 +1671,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                 !(role in salesRoles) && "opacity-50"
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-3 w-3 flex-shrink-0" />
-                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
+                              <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), "PPP") : "Pick date"}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
@@ -1757,8 +1757,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                 !(role in supportRoles) && "opacity-50"
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-3 w-3 flex-shrink-0" />
-                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
+                              <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), "PPP") : "Pick date"}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
