@@ -19,6 +19,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Contact, Account, CustomerEvent } from '@/types/crm';
+import { AddressAutocomplete } from './AddressAutocomplete';
 import { loadFromStorage } from '@/lib/storage';
 
 interface ContactFormProps {
@@ -1055,23 +1056,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
             <div>
               <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
-              <gmp-place-autocomplete 
-                ref={autocompleteElRef}
-                id="preferredShippingAddress"
+              <AddressAutocomplete
+                value={formData.preferredShippingAddress}
+                onChange={(address) => setFormData(prev => ({ ...prev, preferredShippingAddress: address }))}
                 placeholder="Start typing address..."
-                style={{
-                  color: '#000000',
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                  minHeight: '80px',
-                  backgroundColor: '#ffffff',
-                  '--gmp-input-text-color': '#000000',
-                  '--gmp-input-placeholder-color': '#6b7280'
-                } as React.CSSProperties}
-              ></gmp-place-autocomplete>
+              />
               <div className="flex items-center gap-2 mt-2">
                 <Button
                   type="button"
