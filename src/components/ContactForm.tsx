@@ -538,9 +538,16 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Capture the current value from the autocomplete element before submission
+    let currentShippingAddress = formData.preferredShippingAddress;
+    if (autocompleteElRef.current && autocompleteElRef.current.value) {
+      currentShippingAddress = autocompleteElRef.current.value;
+    }
+    
     const contactData: Contact = {
       id: contact?.id || Date.now().toString(),
       ...formData,
+      preferredShippingAddress: currentShippingAddress,
       primaryDiageoRelationshipOwners: {
         ownerName,
         ownerEmail,
