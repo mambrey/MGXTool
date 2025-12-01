@@ -258,6 +258,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           // Also listen for input changes to capture manual typing
           autocompleteElRef.current.addEventListener('input', (e: any) => {
             const address = e.target.value || '';
+            console.log('Address input changed:', address);
+            setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
+          });
+          
+          // Listen for blur event to ensure final value is captured
+          autocompleteElRef.current.addEventListener('blur', (e: any) => {
+            const address = e.target.value || '';
+            console.log('Address blur event:', address);
             setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
           });
         } catch (error) {
@@ -996,6 +1004,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 ref={autocompleteElRef}
                 id="preferredShippingAddress"
                 placeholder="Start typing address..."
+                style="color: black; --gmp-input-text-color: black;"
               ></gmp-place-autocomplete>
               <p className="text-xs text-gray-500 mt-1">
                 Start typing to see address suggestions
