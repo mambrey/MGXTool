@@ -1657,33 +1657,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Popover 
-                          open={salesCalendarOpen[role] || false} 
-                          onOpenChange={(open) => setSalesCalendarOpen(prev => ({ ...prev, [role]: open }))}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              disabled={!(role in salesRoles)}
-                              className={cn(
-                                "h-9 text-xs w-full justify-start text-left font-normal flex items-center",
-                                !salesLastCheckIn[role] && "text-muted-foreground",
-                                !(role in salesRoles) && "opacity-50"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), "PPP") : "Pick date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={salesLastCheckIn[role] ? new Date(salesLastCheckIn[role]) : undefined}
-                              onSelect={(date) => handleSalesCalendarSelect(role, date)}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <Input
+                          type="date"
+                          disabled={!(role in salesRoles)}
+                          value={salesLastCheckIn[role] || ''}
+                          onChange={(e) => handleSalesLastCheckInChange(role, e.target.value)}
+                        />
                       </div>
                     </div>
                   ))}
@@ -1743,33 +1722,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Popover 
-                          open={supportCalendarOpen[role] || false} 
-                          onOpenChange={(open) => setSupportCalendarOpen(prev => ({ ...prev, [role]: open }))}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              disabled={!(role in supportRoles)}
-                              className={cn(
-                                "h-9 text-xs w-full justify-start text-left font-normal flex items-center",
-                                !supportLastCheckIn[role] && "text-muted-foreground",
-                                !(role in supportRoles) && "opacity-50"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), "PPP") : "Pick date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={supportLastCheckIn[role] ? new Date(supportLastCheckIn[role]) : undefined}
-                              onSelect={(date) => handleSupportCalendarSelect(role, date)}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <Input
+                          type="date"
+                          disabled={!(role in supportRoles)}
+                          value={supportLastCheckIn[role] || ''}
+                          onChange={(e) => handleSupportLastCheckInChange(role, e.target.value)}
+                        />
                       </div>
                     </div>
                   ))}
