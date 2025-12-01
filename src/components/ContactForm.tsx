@@ -246,19 +246,35 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             }
           });
           
-          // Also listen for input changes to capture manual typing
-          autocompleteElRef.current.addEventListener('input', (event: Event) => {
-            const target = event.target as HTMLInputElement;
-            const address = target.value || '';
-            setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
-          });
+          // Capture all input changes
+          const captureValue = () => {
+            if (autocompleteElRef.current) {
+              const address = autocompleteElRef.current.value || '';
+              setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
+            }
+          };
           
-          // Listen for blur event to ensure final value is captured
-          autocompleteElRef.current.addEventListener('blur', (event: Event) => {
-            const target = event.target as HTMLInputElement;
-            const address = target.value || '';
-            setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
-          });
+          autocompleteElRef.current.addEventListener('input', captureValue);
+          autocompleteElRef.current.addEventListener('change', captureValue);
+          autocompleteElRef.current.addEventListener('blur', captureValue);
+          
+          // Fix white text in shadow DOM - inject styles after component loads
+          setTimeout(() => {
+            if (autocompleteElRef.current?.shadowRoot) {
+              const style = document.createElement('style');
+              style.textContent = `
+                input {
+                  color: #000000 !important;
+                  -webkit-text-fill-color: #000000 !important;
+                }
+                input::placeholder {
+                  color: #6b7280 !important;
+                  -webkit-text-fill-color: #6b7280 !important;
+                }
+              `;
+              autocompleteElRef.current.shadowRoot.appendChild(style);
+            }
+          }, 200);
         } catch (error) {
           console.error('Error initializing Google Places Autocomplete:', error);
         }
