@@ -306,22 +306,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
     initAutocomplete();
   }, []);
-                input::placeholder {
-                  color: #6b7280 !important;
-                  -webkit-text-fill-color: #6b7280 !important;
-                }
-              `;
-              autocompleteElRef.current.shadowRoot.appendChild(style);
-            }
-          }, 200);
-        } catch (error) {
-          console.error('Error initializing Google Places Autocomplete:', error);
-        }
-      }
-    };
-
-    initAutocomplete();
-  }, []);
 
   // Update autocomplete value when formData changes
   useEffect(() => {
