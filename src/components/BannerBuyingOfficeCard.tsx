@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Trash2, Calendar, Target, TrendingUp, Plus, Bell, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { useLoadScript } from '@react-google-maps/api';
+import { AddressAutocomplete } from './AddressAutocomplete';
 
 interface CustomerEvent {
   id: string;
@@ -111,12 +111,6 @@ interface BannerBuyingOfficeCardProps {
   formatDateForInput: (dateString: string) => string;
 }
 
-// Google Maps libraries to load
-const libraries: ("places")[] = ["places"];
-
-// Google Maps API Key
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCccRowS1a5tLB9j-fMzsA9425zmYGsGoc';
-
 export default function BannerBuyingOfficeCard({
   banner,
   index,
@@ -147,16 +141,6 @@ export default function BannerBuyingOfficeCard({
 }: BannerBuyingOfficeCardProps) {
   // JBP validation error state
   const [jbpValidationError, setJbpValidationError] = useState<string>('');
-
-  // Google Maps Autocomplete
-  const addressInputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-
-  // Load Google Maps script
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: libraries,
-  });
 
   // State outlets by state for multiple states
   const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
@@ -201,33 +185,6 @@ export default function BannerBuyingOfficeCard({
       onUpdateField(banner.id, 'spiritsOutletsByState', newStateOutlets);
     }
   }, [banner.operatingStates]);
-
-  // Initialize Google Places Autocomplete
-  useEffect(() => {
-    if (isLoaded && addressInputRef.current && GOOGLE_MAPS_API_KEY) {
-      try {
-        autocompleteRef.current = new google.maps.places.Autocomplete(addressInputRef.current, {
-          types: ['address'],
-          fields: ['formatted_address', 'address_components', 'geometry'],
-        });
-
-        autocompleteRef.current.addListener('place_changed', () => {
-          const place = autocompleteRef.current?.getPlace();
-          if (place?.formatted_address) {
-            onUpdateField(banner.id, 'address', place.formatted_address || '');
-          }
-        });
-      } catch (error) {
-        console.error('Error initializing Google Places Autocomplete:', error);
-      }
-    }
-
-    return () => {
-      if (autocompleteRef.current) {
-        google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      }
-    };
-  }, [isLoaded, banner.id, onUpdateField]);
 
   const updateStateOutletCount = (state: string, count: string) => {
     const updatedStateOutlets = stateOutlets.map(so => 
@@ -303,24 +260,16 @@ export default function BannerBuyingOfficeCard({
 
             <div>
               <Label htmlFor={`banner-${banner.id}-address`} className="text-sm font-medium">
-                Address
-                {isLoaded && GOOGLE_MAPS_API_KEY && (
-                  <span className="ml-2 text-xs text-green-600">(Google Autocomplete enabled)</span>
-                )}
+                Banner/Buying Office Address
               </Label>
-              <Input
-                ref={addressInputRef}
-                id={`banner-${banner.id}-address`}
+              <AddressAutocomplete
                 value={banner.address}
-                onChange={(e) => onUpdateField(banner.id, 'address', e.target.value)}
-                placeholder="Start typing address for suggestions..."
-                className="mt-1"
+                onChange={(address) => onUpdateField(banner.id, 'address', address)}
+                placeholder="Start typing address..."
               />
-              {loadError && (
-                <p className="text-xs text-red-600 mt-1">
-                  ⚠️ Error loading Google Maps. Address can still be entered manually.
-                </p>
-              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Start typing to see address suggestions. Your selection will be saved automatically.
+              </p>
             </div>
 
             <div>
