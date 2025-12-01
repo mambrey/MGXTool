@@ -2,6 +2,8 @@ export interface CustomerEvent {
   id: string;
   title: string;
   date: string;
+  alertEnabled?: boolean;
+  alertDays?: number;
 }
 
 export interface CategoryResetWindow {
@@ -21,6 +23,8 @@ export interface BannerBuyingOffice {
   operatingStates: string[];
   spiritsOutletsByState?: { state: string; outletCount: string }[];
   allSpiritsOutlets: string;
+  executionReliabilityScore?: string;
+  executionReliabilityRationale?: string;
   // Strategy and Capabilities fields
   influenceAssortmentShelf: string;
   influencePricePromo: string;
@@ -33,6 +37,8 @@ export interface BannerBuyingOffice {
   isJBP: boolean;
   lastJBPDate: string;
   nextJBPDate: string;
+  nextJBPAlert?: boolean;
+  nextJBPAlertDays?: number;
   pricingStrategy: string;
   privateLabel: string;
   displayMandates: string;
