@@ -316,7 +316,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   }, [formData.preferredShippingAddress]);
 
   const handleSaveShippingAddress = () => {
-    // Capture the current value from the autocomplete element
+    // Use the address from formData (already updated by AddressAutocomplete component)
     if (autocompleteElRef.current && autocompleteElRef.current.value) {
       setFormData(prev => ({ ...prev, preferredShippingAddress: autocompleteElRef.current!.value }));
     }
@@ -603,16 +603,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       return;
     }
     
-    // Capture the current value from the autocomplete element before submission
-    let currentShippingAddress = formData.preferredShippingAddress;
-    if (autocompleteElRef.current && autocompleteElRef.current.value) {
-      currentShippingAddress = autocompleteElRef.current.value;
-    }
-    
     const contactData: Contact = {
       id: contact?.id || Date.now().toString(),
       ...formData,
-      preferredShippingAddress: currentShippingAddress,
+      preferredShippingAddress: formData.preferredShippingAddress,
       primaryDiageoRelationshipOwners: {
         ownerName,
         ownerEmail,
