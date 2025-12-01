@@ -902,6 +902,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       ...formData,
       operatingStates: selectedStates,
       bannerBuyingOffices: bannerBuyingOffices, // Include Banner/Buying Offices
+      totalBuyingOffices: bannerBuyingOffices.length.toString(), // Auto-calculate based on number of buying offices
       spiritsOutletsByState: stateOutlets,
       fulfillmentTypes: selectedFulfillmentTypes,
       ecommercePartners: selectedEcommercePartners,
@@ -1419,7 +1420,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </div>
       </Card>
 
-      {/* Parent Information - keeping existing code */}
+      {/* Parent Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -1452,29 +1453,15 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </p>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="website" className="text-sm font-medium">Company Website</Label>
-              <Input
-                id="website"
-                value={formData.website}
-                onChange={(e) => updateField('website', e.target.value)}
-                placeholder="Enter company website (e.g., www.company.com)"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="totalBuyingOffices" className="text-sm font-medium">Total Number of Buying Offices</Label>
-              <Input
-                id="totalBuyingOffices"
-                type="number"
-                value={formData.totalBuyingOffices}
-                onChange={(e) => updateField('totalBuyingOffices', e.target.value)}
-                placeholder="Enter number of buying offices"
-                className="mt-1"
-                min="0"
-              />
-            </div>
+          <div>
+            <Label htmlFor="website" className="text-sm font-medium">Company Website</Label>
+            <Input
+              id="website"
+              value={formData.website}
+              onChange={(e) => updateField('website', e.target.value)}
+              placeholder="Enter company website (e.g., www.company.com)"
+              className="mt-1"
+            />
           </div>
           <div className="flex gap-2">
             <Button
@@ -1509,7 +1496,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Strategy and Capabilities Section */}
+      {/* Strategy and Capabilities Section - keeping rest of form unchanged */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
