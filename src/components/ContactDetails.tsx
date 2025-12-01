@@ -282,6 +282,11 @@ export default function ContactDetails({
     printWindow.document.close();
   };
 
+  // Display name with preferred first name
+  const displayName = contact.preferredFirstName 
+    ? `${contact.preferredFirstName} ${contact.lastName}` 
+    : `${contact.firstName} ${contact.lastName}`;
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header with Headshot */}
@@ -304,7 +309,7 @@ export default function ContactDetails({
               {contact.headshot ? (
                 <img 
                   src={contact.headshot} 
-                  alt={`${contact.firstName} ${contact.lastName}`}
+                  alt={displayName}
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-gray-200 shadow-md"
                 />
               ) : (
@@ -316,7 +321,10 @@ export default function ContactDetails({
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-bold">{contact.firstName} {contact.lastName}</h1>
+              <h1 className="text-3xl font-bold">{displayName}</h1>
+              {contact.preferredFirstName && (
+                <p className="text-sm text-gray-500">Legal name: {contact.firstName} {contact.lastName}</p>
+              )}
               <p className="text-gray-600">{contact.title || 'No title specified'}</p>
               {account && (
                 <div className="flex items-center gap-2 mt-1">
@@ -364,7 +372,7 @@ export default function ContactDetails({
             <Button 
               variant="destructive" 
               onClick={() => {
-                if (window.confirm(`Are you sure you want to delete ${contact.firstName} ${contact.lastName}? This action cannot be undone.`)) {
+                if (window.confirm(`Are you sure you want to delete ${displayName}? This action cannot be undone.`)) {
                   onDelete(contact.id);
                 }
               }}
@@ -432,7 +440,7 @@ export default function ContactDetails({
                   <div className="flex items-start gap-3">
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Shipping Address</p>
+                      <p className="text-xs text-gray-500 mb-1">Preferred Shipping Address</p>
                       <p className="text-sm text-gray-700">
                         {contact.preferredShippingAddress}
                       </p>
@@ -919,7 +927,7 @@ export default function ContactDetails({
           <DialogHeader>
             <DialogTitle>Add Important Date</DialogTitle>
             <DialogDescription>
-              Add a new important date for {contact.firstName} {contact.lastName}. You can optionally enable alerts to be notified before the event.
+              Add a new important date for {displayName}. You can optionally enable alerts to be notified before the event.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
