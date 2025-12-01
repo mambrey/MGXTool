@@ -1063,7 +1063,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </SelectItem>
                   <SelectItem value="Detractor — Resists our efforts">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ea580c'}}></div>
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ef4444'}}></div>
                       <span>Detractor — Resists our efforts</span>
                     </div>
                   </SelectItem>
