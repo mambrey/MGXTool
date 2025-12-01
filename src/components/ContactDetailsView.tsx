@@ -19,6 +19,15 @@ interface ContactDetailsViewProps {
   onClose?: () => void;
 }
 
+
+// Format birthday from MM-DD to readable format
+const formatBirthday = (birthday: string): string => {
+  if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return birthday;
+  const [month, day] = birthday.split('-');
+  const date = new Date(2000, parseInt(month) - 1, parseInt(day));
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+};
+
 export default function ContactDetailsView({ 
   contact, 
   account,
@@ -230,7 +239,7 @@ export default function ContactDetailsView({
               {contact.birthday && (
                 <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                   <span className="text-sm font-medium">Birthday</span>
-                  <span className="text-sm">{contact.birthday}</span>
+                  <span className="text-sm">{formatBirthday(contact.birthday)}</span>
                 </div>
               )}
               {contact.lastContactDate && (
