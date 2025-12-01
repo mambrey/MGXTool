@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import type { Account, Contact, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
+import { formatBirthday } from '@/lib/dateUtils';
 
 interface AccountDetailsProps {
   account: Account;
@@ -1227,6 +1228,14 @@ export default function AccountDetails({
                                   <div className="flex items-center gap-2 text-xs text-gray-500">
                                     <Mail className="w-3 h-3" />
                                     <span>Contact method not specified</span>
+                                  </div>
+                                )}
+                                
+                                {/* Birthday Display - ADDED */}
+                                {contact.birthday && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>Birthday: {formatBirthday(contact.birthday)}</span>
                                   </div>
                                 )}
                                 

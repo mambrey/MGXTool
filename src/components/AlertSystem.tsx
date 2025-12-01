@@ -13,6 +13,7 @@ import type { Alert as AlertType, Task } from '@/types/crm-advanced';
 import type { Account, Contact, RelationshipOwner } from '@/types/crm';
 import { loadFromStorage, saveToStorage, saveSentAlert, wasAlertSent, clearOldSentAlerts } from '@/lib/storage';
 import { powerAutomateService, type PowerAutomateAlert } from '@/services/power-automate';
+import { parseBirthdayForComparison } from '@/lib/dateUtils';
 
 interface AlertSystemProps {
   accounts: Account[];
@@ -319,21 +320,22 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
           
           // Birthday alerts - only if birthdayAlert is enabled
           if (contact.birthday && contact.birthdayAlert) {
-            const birthdayDate = new Date(contact.birthday);
-            const today = new Date();
+            // Parse birthday without timezone issues
+            const parsed = parseBirthdayForComparison(contact.birthday);
+            if (!parsed) return;
             
-            // Normalize dates to midnight for accurate day comparison
+            const today = new Date();
             today.setHours(0, 0, 0, 0);
             
             const thisYear = today.getFullYear();
             
-            // Create this year's birthday at midnight
-            let nextBirthday = new Date(thisYear, birthdayDate.getMonth(), birthdayDate.getDate());
+            // Create this year's birthday at midnight using parsed month and day
+            let nextBirthday = new Date(thisYear, parsed.month - 1, parsed.day);
             nextBirthday.setHours(0, 0, 0, 0);
             
             // If this year's birthday has already passed, use next year's
             if (nextBirthday < today) {
-              nextBirthday = new Date(thisYear + 1, birthdayDate.getMonth(), birthdayDate.getDate());
+              nextBirthday = new Date(thisYear + 1, parsed.month - 1, parsed.day);
               nextBirthday.setHours(0, 0, 0, 0);
             }
             

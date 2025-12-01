@@ -22,6 +22,7 @@ import RelationshipOwnerDirectory from './RelationshipOwnerDirectory';
 import FAQPage from '../pages/FAQPage';
 import type { Account, Contact, RelationshipOwner } from '@/types/crm';
 import { saveToStorage, loadFromStorage } from '@/lib/storage';
+import { formatBirthday } from '@/lib/dateUtils';
 
 type View = 'welcome' | 'accounts' | 'contacts' | 'data-view' | 'document-storage' | 'contact-hierarchy' | 'task-management' | 'alert-system' | 'sharepoint-sync' | 'relationship-owners' | 'faq';
 
@@ -868,7 +869,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                     {contact.birthday && (
                                       <div className="flex items-center gap-1">
                                         <Calendar className="w-3 h-3" />
-                                        Birthday: {new Date(contact.birthday).toLocaleDateString()}
+                                        Birthday: {formatBirthday(contact.birthday)}
                                       </div>
                                     )}
                                   </div>
