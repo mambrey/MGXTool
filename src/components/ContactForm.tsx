@@ -263,12 +263,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     initAutocomplete();
   }, []);
 
-  // Sync value when formData changes
-  useEffect(() => {
-    if (autocompleteElRef.current) {
-      autocompleteElRef.current.value = formData.preferredShippingAddress;
-    }
-  }, [formData.preferredShippingAddress]);
+
 
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
