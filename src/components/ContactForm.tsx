@@ -644,7 +644,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardContent>
         </Card>
       </div>
-      </div>
 
       <div className="flex justify-end">
         <Button variant="outline" onClick={onCancel}>
