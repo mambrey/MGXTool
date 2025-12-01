@@ -198,6 +198,7 @@ export interface Contact {
   nextContactAlert?: boolean;
   nextContactAlertDays?: number;
   socialHandles?: string[];
+  linkedinProfile?: string; // LinkedIn profile URL
   knownPreferences?: string;
   entertainment?: string; // NEW: Entertainment dropdown (Yes/No)
   decisionBiasProfile?: string; // NEW: Decision Bias Profile dropdown
