@@ -76,6 +76,7 @@ export interface Account {
   employees?: number;
   website?: string;
   address?: string;
+  parentCompanyAddress?: string; // NEW: Parent Company Address field
   phone?: string;
   email?: string;
   description?: string;
