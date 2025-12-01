@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp } from 'lucide-react';
+import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -774,7 +774,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                       {nextContactOverdue && (
                                         <Badge variant="destructive" className="text-xs">
                                           <AlertTriangle className="w-3 h-3 mr-1" />
-                                          Overdue
+                                          Last Check In Overdue
                                         </Badge>
                                       )}
                                       {nextContactUpcoming && !nextContactOverdue && (
@@ -842,6 +842,24 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                     </Badge>
                                   )}
                                 </div>
+
+                                {/* Diageo Relationship Owner Information */}
+                                {contact.primaryDiageoRelationshipOwners && (
+                                  <div className="flex flex-wrap gap-2 mb-3">
+                                    {contact.primaryDiageoRelationshipOwners.ownerName && (
+                                      <Badge variant="outline" className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-800 border-indigo-300">
+                                        <Briefcase className="w-3 h-3" />
+                                        Diageo Owner: {contact.primaryDiageoRelationshipOwners.ownerName}
+                                      </Badge>
+                                    )}
+                                    {contact.primaryDiageoRelationshipOwners.ownerEmail && (
+                                      <Badge variant="outline" className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-800 border-indigo-300">
+                                        <Mail className="w-3 h-3" />
+                                        {contact.primaryDiageoRelationshipOwners.ownerEmail}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                )}
 
                                 {/* Contact Dates - Side by side layout */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 text-xs text-gray-500">

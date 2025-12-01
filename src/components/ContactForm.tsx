@@ -234,6 +234,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     contact?.primaryDiageoRelationshipOwners?.supportLastCheckIn || {}
   );
 
+  // Popover states for calendar date pickers
+  const [salesCalendarOpen, setSalesCalendarOpen] = useState<{[role: string]: boolean}>({});
+  const [supportCalendarOpen, setSupportCalendarOpen] = useState<{[role: string]: boolean}>({});
+
   // Google Places Autocomplete state
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -426,6 +430,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     }));
   };
 
+  const handleSalesCalendarSelect = (role: string, date: Date | undefined) => {
+    if (date) {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      handleSalesLastCheckInChange(role, formattedDate);
+      setSalesCalendarOpen(prev => ({ ...prev, [role]: false }));
+    }
+  };
+
   const handleSupportRoleToggle = (role: string) => {
     setSupportRoles(prev => {
       const newRoles = { ...prev };
@@ -458,6 +470,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       ...prev,
       [role]: date
     }));
+  };
+
+  const handleSupportCalendarSelect = (role: string, date: Date | undefined) => {
+    if (date) {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      handleSupportLastCheckInChange(role, formattedDate);
+      setSupportCalendarOpen(prev => ({ ...prev, [role]: false }));
+    }
   };
 
   const handleAddEvent = () => {
@@ -1687,13 +1707,33 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Input
-                          type="date"
-                          value={salesLastCheckIn[role] || ''}
-                          onChange={(e) => handleSalesLastCheckInChange(role, e.target.value)}
-                          disabled={!(role in salesRoles)}
-                          className={cn("h-9 text-xs", !(role in salesRoles) && "opacity-50")}
-                        />
+                        <Popover 
+                          open={salesCalendarOpen[role] || false} 
+                          onOpenChange={(open) => setSalesCalendarOpen(prev => ({ ...prev, [role]: open }))}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              disabled={!(role in salesRoles)}
+                              className={cn(
+                                "h-9 text-xs w-full justify-start text-left font-normal",
+                                !salesLastCheckIn[role] && "text-muted-foreground",
+                                !(role in salesRoles) && "opacity-50"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-3 w-3" />
+                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={salesLastCheckIn[role] ? new Date(salesLastCheckIn[role]) : undefined}
+                              onSelect={(date) => handleSalesCalendarSelect(role, date)}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                   ))}
@@ -1753,13 +1793,33 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Input
-                          type="date"
-                          value={supportLastCheckIn[role] || ''}
-                          onChange={(e) => handleSupportLastCheckInChange(role, e.target.value)}
-                          disabled={!(role in supportRoles)}
-                          className={cn("h-9 text-xs", !(role in supportRoles) && "opacity-50")}
-                        />
+                        <Popover 
+                          open={supportCalendarOpen[role] || false} 
+                          onOpenChange={(open) => setSupportCalendarOpen(prev => ({ ...prev, [role]: open }))}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              disabled={!(role in supportRoles)}
+                              className={cn(
+                                "h-9 text-xs w-full justify-start text-left font-normal",
+                                !supportLastCheckIn[role] && "text-muted-foreground",
+                                !(role in supportRoles) && "opacity-50"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-3 w-3" />
+                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={supportLastCheckIn[role] ? new Date(supportLastCheckIn[role]) : undefined}
+                              onSelect={(date) => handleSupportCalendarSelect(role, date)}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                   ))}
