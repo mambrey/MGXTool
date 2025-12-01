@@ -194,6 +194,16 @@ export default function ContactDetails({
     return `https://${url}`;
   };
 
+  // Helper function to get support style color
+  const getSupportStyleColor = (status: string) => {
+    if (status.includes('Promoter')) return '#166534'; // Dark green
+    if (status.includes('Supporter')) return '#16a34a'; // Green
+    if (status.includes('Neutral')) return '#6b7280'; // Gray
+    if (status.includes('Detractor')) return '#f87171'; // Light red (changed from #ea580c)
+    if (status.includes('Adversarial')) return '#991b1b'; // Dark red
+    return '#6b7280'; // Default gray
+  };
+
   const printContact = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -297,16 +307,16 @@ export default function ContactDetails({
           </div>
         </div>
         <div className="flex flex-col items-end gap-3">
-          {/* Created and Modified Dates */}
-          <div className="text-right text-sm space-y-1">
-            <div>
-              <span className="text-xs text-gray-500">Created: </span>
+          {/* Created and Modified Dates - ONE LINE */}
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Created:</span>
               <span className="text-xs text-gray-700 font-medium">
                 {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Not available'}
               </span>
             </div>
-            <div>
-              <span className="text-xs text-gray-500">Modified: </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Modified:</span>
               <span className="text-xs text-gray-700 font-medium">
                 {contact.lastModified ? new Date(contact.lastModified).toLocaleDateString() : 'Not available'}
               </span>
@@ -386,6 +396,17 @@ export default function ContactDetails({
                     </div>
                   </div>
                 )}
+                {contact.preferredContactMethod && (
+                  <div className="flex items-start gap-3">
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500 mb-1">Preferred Contact Method</p>
+                      <p className="text-sm text-gray-700 capitalize">
+                        {contact.preferredContactMethod}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {contact.preferredShippingAddress && (
                   <div className="flex items-start gap-3">
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
@@ -397,14 +418,43 @@ export default function ContactDetails({
                     </div>
                   </div>
                 )}
+                {contact.currentRoleTenure && (
+                  <div className="flex items-start gap-3">
+                    <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500 mb-1">Current Role Tenure</p>
+                      <p className="text-sm text-gray-700">
+                        {contact.currentRoleTenure}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {contact.linkedinProfile && (
+                  <div className="flex items-start gap-3">
+                    <Linkedin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500 mb-1">LinkedIn Profile</p>
+                      <a 
+                        href={formatLinkedInUrl(contact.linkedinProfile)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline text-sm flex items-center gap-1 break-all"
+                      >
+                        View LinkedIn Profile
+                        <ExternalLink className="w-3 h-3 shrink-0" />
+                      </a>
+                    </div>
+                  </div>
+                )}
                 {contact.socialHandles && contact.socialHandles.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-2">LinkedIn Profile</p>
-                    <div className="space-y-2">
-                      {contact.socialHandles.map((handle, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <Linkedin className="w-4 h-4 text-blue-600 shrink-0" />
+                  <div className="flex items-start gap-3">
+                    <Linkedin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500 mb-1">LinkedIn Profile (Legacy)</p>
+                      <div className="space-y-2">
+                        {contact.socialHandles.map((handle, index) => (
                           <a 
+                            key={index}
                             href={formatLinkedInUrl(handle)}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -413,8 +463,8 @@ export default function ContactDetails({
                             {handle}
                             <ExternalLink className="w-3 h-3 shrink-0" />
                           </a>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -425,38 +475,81 @@ export default function ContactDetails({
             <div>
               <h3 className="text-base sm:text-lg font-semibold mb-4">Relationship Details</h3>
               <div className="space-y-3">
-                {contact.contactType && (
+                {contact.isPrimaryContact && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Contact Type</p>
-                    <Badge variant={contact.contactType === 'Primary' ? 'default' : 'secondary'}>
-                      {contact.contactType}
+                    <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
+                      Primary Contact
                     </Badge>
                   </div>
                 )}
-                {contact.influence && (
+                {contact.contactActiveStatus && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Influence Level</p>
-                    <Badge variant="outline">
-                      {contact.influence}
+                    <p className="text-xs text-gray-500 mb-1">Status</p>
+                    <Badge variant={contact.contactActiveStatus === 'Active' ? 'default' : 'secondary'}>
+                      {contact.contactActiveStatus}
                     </Badge>
-                  </div>
-                )}
-                {contact.influencerLevel && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Influencer Rating</p>
-                    {getInfluencerLevelBadge(contact.influencerLevel)}
                   </div>
                 )}
                 {contact.relationshipStatus && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Relationship Status</p>
-                    <p className="text-sm">{contact.relationshipStatus}</p>
+                    <p className="text-xs text-gray-500 mb-1">Support Style</p>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{backgroundColor: getSupportStyleColor(contact.relationshipStatus)}}
+                      ></div>
+                      <p className="text-sm">{contact.relationshipStatus}</p>
+                    </div>
                   </div>
                 )}
-                {contact.preferredContactMethod && (
+                {contact.categorySegmentOwnership && contact.categorySegmentOwnership.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Preferred Contact Method</p>
-                    <p className="text-sm">{contact.preferredContactMethod}</p>
+                    <p className="text-xs text-gray-500 mb-2">Category/Segment Ownership</p>
+                    <div className="flex flex-wrap gap-1">
+                      {contact.categorySegmentOwnership.map((category, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {contact.responsibilityLevels && Object.keys(contact.responsibilityLevels).length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">Responsibility Levels</p>
+                    <div className="space-y-1">
+                      {Object.entries(contact.responsibilityLevels).map(([key, value]) => {
+                        if (value && value !== 'None') {
+                          const label = key.replace(/([A-Z])/g, ' $1').trim();
+                          return (
+                            <div key={key} className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600 capitalize">{label}:</span>
+                              <Badge variant="outline" className="text-xs">{value}</Badge>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+                )}
+                {contact.entertainment && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Allowed to Entertain</p>
+                    <p className="text-sm">{contact.entertainment}</p>
+                  </div>
+                )}
+                {contact.decisionBiasProfile && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Decision Bias Profile</p>
+                    <p className="text-sm">{contact.decisionBiasProfile}</p>
+                  </div>
+                )}
+                {contact.followThrough && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Follow Through</p>
+                    <Badge variant="outline">{contact.followThrough}</Badge>
                   </div>
                 )}
                 {contact.birthday && (
@@ -587,21 +680,6 @@ export default function ContactDetails({
               </div>
             </div>
           )}
-
-          {/* Contact Timestamps */}
-          <div className="mt-6 pt-6 border-t">
-            <h3 className="text-base sm:text-lg font-semibold mb-4">Contact Record Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Created</p>
-                <p className="text-sm">{contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Not available'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Last Modified</p>
-                <p className="text-sm">{contact.lastModified ? new Date(contact.lastModified).toLocaleDateString() : 'Not available'}</p>
-              </div>
-            </div>
-          </div>
 
           {/* Important Dates with Event Management */}
           <div className="mt-6 pt-6 border-t">
@@ -771,10 +849,26 @@ export default function ContactDetails({
             </div>
           )}
 
+          {/* Values */}
+          {contact.values && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-base sm:text-lg font-semibold mb-3">What They Value (Business Perspective)</h3>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.values}</p>
+            </div>
+          )}
+
+          {/* Pain Points */}
+          {contact.painPoints && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-base sm:text-lg font-semibold mb-3">Pain Points</h3>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.painPoints}</p>
+            </div>
+          )}
+
           {/* Notes */}
           {contact.notes && (
             <div className="mt-6 pt-6 border-t">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">Notes</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3">General Notes</h3>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.notes}</p>
             </div>
           )}
