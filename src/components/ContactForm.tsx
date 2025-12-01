@@ -620,26 +620,28 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </h2>
         </div>
         
-        <Card className="w-80 bg-slate-50 border-slate-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Record Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <p className="text-xs font-medium text-slate-500 mb-1">Date Created</p>
-              <p className="text-sm text-slate-900">
-                {contact?.createdAt ? formatDate(contact.createdAt) : 'New Record'}
-              </p>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-xs font-medium text-slate-500 mb-1">Date Modified</p>
-              <p className="text-sm text-slate-900">
-                {contact?.lastModified ? formatDate(contact.lastModified) : 'Not yet saved'}
-              </p>
+        <Card className="w-full bg-blue-50 border-blue-200">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between gap-6">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-700" />
+                <span className="text-sm font-semibold text-blue-900">Record Information</span>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-blue-700">Date Created:</span>
+                  <span className="text-sm text-blue-900">
+                    {contact?.createdAt ? formatDate(contact.createdAt) : 'New Record'}
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-blue-300"></div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-blue-700">Date Modified:</span>
+                  <span className="text-sm text-blue-900">
+                    {contact?.lastModified ? formatDate(contact.lastModified) : 'Not yet saved'}
+                  </span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
