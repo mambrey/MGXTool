@@ -613,12 +613,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-2xl font-bold">
-            {contact ? 'Edit Contact' : 'Add New Contact'}
-          </h2>
-        </div>
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">
+          {contact ? 'Edit Contact' : 'Add New Contact'}
+        </h2>
         
         <Card className="w-full bg-blue-50 border-blue-200">
           <CardContent className="py-3">
@@ -645,6 +643,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
 
       <div className="flex justify-end">
