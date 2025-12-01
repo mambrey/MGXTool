@@ -25,6 +25,10 @@ export function AddressAutocomplete({ value, onChange, placeholder }: AddressAut
         autocompleteRef.current.addListener('place_changed', () => {
           const place = autocompleteRef.current?.getPlace();
           if (place?.formatted_address) {
+            // Update both the input value and call onChange
+            if (inputRef.current) {
+              inputRef.current.value = place.formatted_address;
+            }
             onChange(place.formatted_address);
           }
         });
@@ -36,11 +40,18 @@ export function AddressAutocomplete({ value, onChange, placeholder }: AddressAut
     initAutocomplete();
   }, [onChange]);
 
+  // Update input value when prop changes
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== value) {
+      inputRef.current.value = value;
+    }
+  }, [value]);
+
   return (
     <input
       ref={inputRef}
       type="text"
-      value={value}
+      defaultValue={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className="flex h-20 w-full rounded-md border border-input bg-white px-3 py-2 text-sm text-black ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
