@@ -215,32 +215,35 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [headshotError, setHeadshotError] = useState('');
 
   // Primary Diageo Relationship Owner(s) state
+  const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
+  const [ownerEmail, setOwnerEmail] = useState(contact?.primaryDiageoRelationshipOwners?.ownerEmail || '');
+  const [svp, setSvp] = useState(contact?.primaryDiageoRelationshipOwners?.svp || '');
+  const [salesRoles, setSalesRoles] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.sales || {}
+  );
+  const [supportRoles, setSupportRoles] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.support || {}
+  );
+  
+  // Last Check In state for Sales and Support roles
+  const [salesLastCheckIn, setSalesLastCheckIn] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.salesLastCheckIn || {}
+  );
+  const [supportLastCheckIn, setSupportLastCheckIn] = useState<{[role: string]: string}>(
+    contact?.primaryDiageoRelationshipOwners?.supportLastCheckIn || {}
+  );
+
+  // Popover states for calendar date pickers
+  const [salesCalendarOpen, setSalesCalendarOpen] = useState<{[role: string]: boolean}>({});
+  const [supportCalendarOpen, setSupportCalendarOpen] = useState<{[role: string]: boolean}>({});
+
   // Google Places Autocomplete state
-  const autocompleteElRef = useRef<HTMLDivElement | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Load Google Maps script
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: libraries,
-  });
-
-  // Initialize autocomplete web component when Google Maps is loaded
-  useEffect(() => {
-    const element = autocompleteElRef.current?.querySelector("gmp-place-autocomplete") as HTMLElement | null;
-    if (element && isLoaded) {
-      const handlePlaceChange = (event: Event) => {
-        const place = (event as CustomEvent).detail;
-        if (place?.formatted_address) {
-          setFormData(prev => ({ ...prev, preferredShippingAddress: place.formatted_address }));
-        }
-      };
-      element.addEventListener("gmp-place-change", handlePlaceChange);
-      return () => {
-        element.removeEventListener("gmp-place-change", handlePlaceChange);
-      };
-    }
-  }, [isLoaded, autocompleteElRef]);
-
     libraries: libraries,
   });
 
@@ -1000,17 +1003,20 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </Select>
             </div>
             <div>
-            <div>
               <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
               {isLoaded ? (
-                <div ref={autocompleteElRef}>
-                  <gmp-place-autocomplete id="shipping-address-autocomplete"></gmp-place-autocomplete>
-                </div>
+                <Input
+                  ref={inputRef}
+                  id="preferredShippingAddress"
+                  onChange={handleShippingAddressChange}
+                  placeholder="Start typing address..."
+                  className="w-full"
+                />
               ) : (
                 <Input
                   id="preferredShippingAddress"
                   value={formData.preferredShippingAddress}
-                  onChange={(e) => setFormData(prev => ({ ...prev, preferredShippingAddress: e.target.value }))}
+                  onChange={handleShippingAddressChange}
                   placeholder="Street address, City, State, ZIP"
                 />
               )}
