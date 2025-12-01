@@ -29,6 +29,27 @@ interface ContactEvent {
   alertDays?: number;
 }
 
+// Helper function to format birthday for display (MM/DD/YYYY)
+const formatBirthday = (birthday: string): string => {
+  if (!birthday) return 'N/A';
+  
+  // If already in ISO format (YYYY-MM-DD), convert to MM/DD/YYYY
+  if (birthday.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = birthday.split('-');
+    return `${month}/${day}/${year}`;
+  }
+  
+  // If in MM-DD format (legacy), add current year and convert to MM/DD/YYYY
+  if (birthday.match(/^\d{2}-\d{2}$/)) {
+    const [month, day] = birthday.split('-');
+    const currentYear = new Date().getFullYear();
+    return `${month}/${day}/${currentYear}`;
+  }
+  
+  // Return as-is if format is unknown
+  return birthday;
+};
+
 export default function ContactDetails({ 
   contact, 
   account, 
@@ -556,7 +577,7 @@ export default function ContactDetails({
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Birthday</p>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                      <p className="text-sm">{contact.birthday}</p>
+                      <p className="text-sm font-medium">{formatBirthday(contact.birthday)}</p>
                       {contact.birthdayAlert && (
                         <Badge variant="secondary" className="text-xs">
                           Alert On

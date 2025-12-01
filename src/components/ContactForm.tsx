@@ -133,22 +133,6 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-// Convert MM-DD to date input format (YYYY-MM-DD) using current year
-const birthdayToDateInput = (birthday: string): string => {
-  if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return '';
-  const currentYear = new Date().getFullYear();
-  const [month, day] = birthday.split('-');
-  return `${currentYear}-${month}-${day}`;
-};
-
-// Convert date input format (YYYY-MM-DD) to MM-DD
-const dateInputToBirthday = (dateInput: string): string => {
-  if (!dateInput) return '';
-  const parts = dateInput.split('-');
-  if (parts.length !== 3) return '';
-  return `${parts[1]}-${parts[2]}`;
-};
-
 export default function ContactForm({ contact, accounts, onSave, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState({
     firstName: contact?.firstName || '',
@@ -337,8 +321,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   };
 
   const handleBirthdayChange = (dateInput: string) => {
-    const birthday = dateInputToBirthday(dateInput);
-    setFormData(prev => ({ ...prev, birthday }));
+    // Store the full date as YYYY-MM-DD
+    setFormData(prev => ({ ...prev, birthday: dateInput }));
   };
 
   const handleCategoryToggle = (category: string) => {
@@ -1213,11 +1197,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="birthday">Birthday (Month & Day)</Label>
+                <Label htmlFor="birthday">Birthday</Label>
                 <Input
                   id="birthday"
                   type="date"
-                  value={birthdayToDateInput(formData.birthday)}
+                  value={formData.birthday}
                   onChange={(e) => handleBirthdayChange(e.target.value)}
                 />
                 
