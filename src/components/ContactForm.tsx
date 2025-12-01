@@ -1014,7 +1014,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </SelectContent>
               </Select>
             </div>
-// Fix for lines 1017-1053 in ContactForm.tsx
             <div>
               <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
               <gmp-place-autocomplete 
