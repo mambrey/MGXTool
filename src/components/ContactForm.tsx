@@ -215,6 +215,16 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [headshotError, setHeadshotError] = useState('');
 
   // Primary Diageo Relationship Owner(s) state
+  const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
+  const [ownerEmail, setOwnerEmail] = useState(contact?.primaryDiageoRelationshipOwners?.ownerEmail || '');
+  const [svp, setSvp] = useState(contact?.primaryDiageoRelationshipOwners?.svp || '');
+  const [salesRoles, setSalesRoles] = useState<{[key: string]: string}>(contact?.primaryDiageoRelationshipOwners?.sales || {});
+  const [supportRoles, setSupportRoles] = useState<{[key: string]: string}>(contact?.primaryDiageoRelationshipOwners?.support || {});
+  const [salesLastCheckIn, setSalesLastCheckIn] = useState<{[key: string]: string}>(contact?.primaryDiageoRelationshipOwners?.salesLastCheckIn || {});
+  const [supportLastCheckIn, setSupportLastCheckIn] = useState<{[key: string]: string}>(contact?.primaryDiageoRelationshipOwners?.supportLastCheckIn || {});
+  const [salesCalendarOpen, setSalesCalendarOpen] = useState<{[key: string]: boolean}>({});
+  const [supportCalendarOpen, setSupportCalendarOpen] = useState<{[key: string]: boolean}>({});
+
   // Google Places Autocomplete state
   const autocompleteElRef = useRef<HTMLDivElement | null>(null);
 
@@ -240,47 +250,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       };
     }
   }, [isLoaded, autocompleteElRef]);
-
-    libraries: libraries,
-  });
-
-  // Handle place selection from autocomplete
-  const onPlaceChanged = () => {
-    if (autocompleteRef.current) {
-      const place = autocompleteRef.current.getPlace();
-      if (place.formatted_address) {
-        setFormData(prev => ({ ...prev, preferredShippingAddress: place.formatted_address || '' }));
-      }
-    }
-  };
-
-  // Initialize autocomplete when Google Maps is loaded
-  useEffect(() => {
-    if (isLoaded && inputRef.current && window.google) {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
-        types: ['address'],
-        fields: ['formatted_address', 'address_components']
-      });
-      
-      autocompleteRef.current.addListener('place_changed', onPlaceChanged);
-      
-      if (inputRef.current) {
-        inputRef.current.value = formData.preferredShippingAddress;
-      }
-    }
-
-    return () => {
-      if (autocompleteRef.current && window.google) {
-        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      }
-    };
-  }, [isLoaded]);
-
-  useEffect(() => {
-    if (inputRef.current && isLoaded) {
-      inputRef.current.value = formData.preferredShippingAddress;
-    }
-  }, [formData.preferredShippingAddress, isLoaded]);
 
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -330,11 +299,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleBirthdayChange = (dateInput: string) => {
     const birthday = dateInputToBirthday(dateInput);
     setFormData(prev => ({ ...prev, birthday }));
-  };
-
-  const handleShippingAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFormData(prev => ({ ...prev, preferredShippingAddress: value }));
   };
 
   const handleCategoryToggle = (category: string) => {
@@ -999,7 +963,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </SelectContent>
               </Select>
             </div>
-            <div>
             <div>
               <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
               {isLoaded ? (
