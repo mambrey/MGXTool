@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar as CalendarIcon, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar as CalendarIcon, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText, Save } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -192,6 +192,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [headshotFileName, setHeadshotFileName] = useState('');
   const [headshotError, setHeadshotError] = useState('');
+  
+  // State for shipping address save feedback
+  const [addressSaved, setAddressSaved] = useState(false);
+  const [tempShippingAddress, setTempShippingAddress] = useState(contact?.preferredShippingAddress || '');
 
   // Primary Diageo Relationship Owner(s) state
   const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
@@ -216,64 +220,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [salesCalendarOpen, setSalesCalendarOpen] = useState<{[role: string]: boolean}>({});
   const [supportCalendarOpen, setSupportCalendarOpen] = useState<{[role: string]: boolean}>({});
 
-  // Google Places Autocomplete web component ref
-  const autocompleteElRef = useRef<HTMLElement & { value: string }>(null);
-
-  // Initialize autocomplete web component
-  useEffect(() => {
-    const initAutocomplete = async () => {
-      if (autocompleteElRef.current) {
-        try {
-          // @ts-expect-error - Google Maps web component
-          const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
-          
-          // Set initial value if exists
-          if (formData.preferredShippingAddress) {
-            autocompleteElRef.current.value = formData.preferredShippingAddress;
-          }
-          
-          // Listen for place selection
-          autocompleteElRef.current.addEventListener('gmp-placeselect', async (event: Event) => {
-            const customEvent = event as CustomEvent;
-            const place = customEvent.detail?.place;
-            if (place) {
-              await place.fetchFields({ fields: ['formattedAddress'] });
-              const address = place.formattedAddress || '';
-              setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
-            }
-          });
-          
-          // Also listen for input changes to capture manual typing
-          autocompleteElRef.current.addEventListener('input', (event: Event) => {
-            const target = event.target as HTMLInputElement;
-            const address = target.value || '';
-            console.log('Address input changed:', address);
-            setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
-          });
-          
-          // Listen for blur event to ensure final value is captured
-          autocompleteElRef.current.addEventListener('blur', (event: Event) => {
-            const target = event.target as HTMLInputElement;
-            const address = target.value || '';
-            console.log('Address blur event:', address);
-            setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
-          });
-        } catch (error) {
-          console.error('Error initializing Google Places Autocomplete:', error);
-        }
-      }
-    };
-
-    initAutocomplete();
-  }, []);
-
-  // Update autocomplete value when formData changes
-  useEffect(() => {
-    if (autocompleteElRef.current && formData.preferredShippingAddress) {
-      autocompleteElRef.current.value = formData.preferredShippingAddress;
-    }
-  }, [formData.preferredShippingAddress]);
-
+  const handleSaveShippingAddress = () => {
+    setFormData(prev => ({ ...prev, preferredShippingAddress: tempShippingAddress }));
+    setAddressSaved(true);
+    setTimeout(() => setAddressSaved(false), 2000);
+  };
 
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -554,16 +505,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       return;
     }
     
-    // Capture the current value from the autocomplete element before submission
-    let currentShippingAddress = formData.preferredShippingAddress;
-    if (autocompleteElRef.current && autocompleteElRef.current.value) {
-      currentShippingAddress = autocompleteElRef.current.value;
-    }
-    
     const contactData: Contact = {
       id: contact?.id || Date.now().toString(),
       ...formData,
-      preferredShippingAddress: currentShippingAddress,
       primaryDiageoRelationshipOwners: {
         ownerName,
         ownerEmail,
@@ -1007,21 +951,33 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
             <div>
               <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
-              <gmp-place-autocomplete 
-                ref={autocompleteElRef}
+              <Textarea
                 id="preferredShippingAddress"
-                placeholder="Start typing address..."
-                style={{
-                  color: 'black',
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem'
-                }}
-              ></gmp-place-autocomplete>
+                value={tempShippingAddress}
+                onChange={(e) => setTempShippingAddress(e.target.value)}
+                placeholder="Enter full shipping address..."
+                rows={3}
+                className="text-black resize-none"
+              />
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleSaveShippingAddress}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  Save Address
+                </Button>
+                {addressSaved && (
+                  <span className="text-sm text-green-600 flex items-center gap-1">
+                    <Check className="w-4 h-4" />
+                    Address saved!
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-500 mt-1">
-                Start typing to see address suggestions
+                Enter the complete shipping address and click Save Address
               </p>
             </div>
           </CardContent>
