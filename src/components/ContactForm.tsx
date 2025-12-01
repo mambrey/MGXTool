@@ -233,14 +233,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [supportCalendarOpen, setSupportCalendarOpen] = useState<{[role: string]: boolean}>({});
 
   // Google Places Autocomplete web component ref
-  const autocompleteElRef = useRef<any>(null);
+  const autocompleteElRef = useRef<HTMLElement & { value: string }>(null);
 
   // Initialize autocomplete web component
   useEffect(() => {
     const initAutocomplete = async () => {
       if (autocompleteElRef.current) {
         try {
-          // @ts-ignore - Google Maps web component
+          // @ts-expect-error - Google Maps web component
           const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
           
           // Set initial value if exists
@@ -249,22 +249,28 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           }
           
           // Listen for place selection
-          autocompleteElRef.current.addEventListener('gmp-placeselect', async ({ place }: any) => {
-            await place.fetchFields({ fields: ['formattedAddress'] });
-            const address = place.formattedAddress || '';
-            setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
+          autocompleteElRef.current.addEventListener('gmp-placeselect', async (event: Event) => {
+            const customEvent = event as CustomEvent;
+            const place = customEvent.detail?.place;
+            if (place) {
+              await place.fetchFields({ fields: ['formattedAddress'] });
+              const address = place.formattedAddress || '';
+              setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
+            }
           });
           
           // Also listen for input changes to capture manual typing
-          autocompleteElRef.current.addEventListener('input', (e: any) => {
-            const address = e.target.value || '';
+          autocompleteElRef.current.addEventListener('input', (event: Event) => {
+            const target = event.target as HTMLInputElement;
+            const address = target.value || '';
             console.log('Address input changed:', address);
             setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
           });
           
           // Listen for blur event to ensure final value is captured
-          autocompleteElRef.current.addEventListener('blur', (e: any) => {
-            const address = e.target.value || '';
+          autocompleteElRef.current.addEventListener('blur', (event: Event) => {
+            const target = event.target as HTMLInputElement;
+            const address = target.value || '';
             console.log('Address blur event:', address);
             setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
           });
@@ -277,6 +283,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     initAutocomplete();
   }, []);
 
+  // Update autocomplete value when formData changes
+  useEffect(() => {
+    if (autocompleteElRef.current && formData.preferredShippingAddress) {
+      autocompleteElRef.current.value = formData.preferredShippingAddress;
+    }
+  }, [formData.preferredShippingAddress]);
 
 
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -546,6 +558,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation: Check required fields
+    if (!ownerName.trim()) {
+      alert('Primary Owner is required');
+      return;
+    }
+    
+    if (!ownerEmail.trim()) {
+      alert('Primary Owner Email is required');
+      return;
+    }
     
     // Capture the current value from the autocomplete element before submission
     let currentShippingAddress = formData.preferredShippingAddress;
@@ -1004,7 +1027,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 ref={autocompleteElRef}
                 id="preferredShippingAddress"
                 placeholder="Start typing address..."
-                style="color: black; --gmp-input-text-color: black;"
+                style={{
+                  color: 'black',
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem'
+                }}
               ></gmp-place-autocomplete>
               <p className="text-xs text-gray-500 mt-1">
                 Start typing to see address suggestions
