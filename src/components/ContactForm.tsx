@@ -254,6 +254,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             const address = place.formattedAddress || '';
             setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
           });
+          
+          // Also listen for input changes to capture manual typing
+          autocompleteElRef.current.addEventListener('input', (e: any) => {
+            const address = e.target.value || '';
+            setFormData(prev => ({ ...prev, preferredShippingAddress: address }));
+          });
         } catch (error) {
           console.error('Error initializing Google Places Autocomplete:', error);
         }
@@ -1660,13 +1666,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                               variant="outline"
                               disabled={!(role in salesRoles)}
                               className={cn(
-                                "h-9 text-xs w-full justify-start text-left font-normal",
+                                "h-9 text-xs w-full justify-start text-left font-normal flex items-center",
                                 !salesLastCheckIn[role] && "text-muted-foreground",
                                 !(role in salesRoles) && "opacity-50"
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-3 w-3" />
-                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), "MM/dd/yy") : "Pick date"}
+                              <CalendarIcon className="mr-2 h-3 w-3 flex-shrink-0" />
+                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
@@ -1746,13 +1752,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                               variant="outline"
                               disabled={!(role in supportRoles)}
                               className={cn(
-                                "h-9 text-xs w-full justify-start text-left font-normal",
+                                "h-9 text-xs w-full justify-start text-left font-normal flex items-center",
                                 !supportLastCheckIn[role] && "text-muted-foreground",
                                 !(role in supportRoles) && "opacity-50"
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-3 w-3" />
-                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), "MM/dd/yy") : "Pick date"}
+                              <CalendarIcon className="mr-2 h-3 w-3 flex-shrink-0" />
+                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
