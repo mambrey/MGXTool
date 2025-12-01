@@ -745,7 +745,7 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Banners/Buying Offices */}
+            {/* Banners/Buying Offices - NOW WITH COLLAPSIBLE CARDS */}
             <AccordionItem value="banners">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -763,197 +763,199 @@ export default function AccountDetails({
                       </div>
                     ) : (
                       <ScrollArea className="h-[500px] pr-4">
-                        <div className="space-y-4">
+                        <Accordion type="multiple" className="space-y-3">
                           {account.bannerBuyingOffices.map((banner, index) => (
-                            <Card key={index} className="p-4 border-l-4 border-l-blue-500">
-                              <div className="space-y-4">
-                                {/* Banner Header - FIXED: Changed banner.name to banner.accountName */}
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <h4 className="font-semibold text-lg flex items-center gap-2">
-                                      <Building className="w-5 h-5 text-blue-600" />
-                                      {banner.accountName || `Banner/Buying Office #${index + 1}`}
-                                    </h4>
-                                    {banner.channel && (
-                                      <Badge variant="outline" className="mt-1">
-                                        {banner.channel}
-                                      </Badge>
-                                    )}
+                            <AccordionItem key={index} value={`banner-${index}`} className="border rounded-lg">
+                              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                                <div className="flex items-center justify-between w-full pr-4">
+                                  <div className="flex items-center gap-3">
+                                    <Building className="w-5 h-5 text-blue-600" />
+                                    <div className="text-left">
+                                      <h4 className="font-semibold text-base">
+                                        {banner.accountName || `Banner/Buying Office #${index + 1}`}
+                                      </h4>
+                                      {banner.channel && (
+                                        <Badge variant="outline" className="mt-1">
+                                          {banner.channel}
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-
-                                <Separator />
-
-                                {/* Basic Information */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {banner.address && (
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                        <MapPin className="w-4 h-4" />
-                                        Address
-                                      </label>
-                                      <p className="text-sm mt-1">{banner.address}</p>
-                                    </div>
-                                  )}
-                                  {banner.operatingStates && banner.operatingStates.length > 0 && (
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-600">Operating States</label>
-                                      <p className="text-sm mt-1">
-                                        {banner.operatingStates.join(', ')} ({banner.operatingStates.length} states)
-                                      </p>
-                                    </div>
-                                  )}
-                                  {banner.spiritsOutlets !== undefined && (
-                                    <InfoItem label="Spirits Outlets" value={banner.spiritsOutlets} />
-                                  )}
-                                  {banner.fullProofOutlets !== undefined && (
-                                    <InfoItem label="Full Proof Outlets" value={banner.fullProofOutlets} />
-                                  )}
-                                </div>
-
-                                {/* Strategy Fields */}
-                                {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
-                                  banner.privateLabel || banner.innovationAppetite || banner.displayMandates || 
-                                  banner.ecommerceMaturityLevel) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Target className="w-4 h-4" />
-                                        Strategy
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <InfoItem label="Category Captain" value={banner.categoryCaptain} />
-                                        <InfoItem label="Category Advisor" value={banner.categoryAdvisor} />
-                                        <InfoItem label="Pricing Strategy" value={banner.pricingStrategy} />
-                                        <InfoItem label="Private Label" value={banner.privateLabel} />
-                                        <InfoItem label="Innovation Appetite" value={banner.innovationAppetite} />
-                                        <InfoItem label="Display Mandates" value={banner.displayMandates} />
-                                        <InfoItem label="E-commerce Maturity" value={banner.ecommerceMaturityLevel} />
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4">
+                                <div className="space-y-4 pt-2">
+                                  {/* Basic Information */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {banner.address && (
+                                      <div>
+                                        <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                          <MapPin className="w-4 h-4" />
+                                          Address
+                                        </label>
+                                        <p className="text-sm mt-1">{banner.address}</p>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
-
-                                {/* JBP Information */}
-                                {(banner.isJBP || banner.nextJBPDate) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4" />
-                                        JBP Information
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                          <label className="text-sm font-medium text-gray-600">JBP Customer</label>
-                                          <p className="text-sm mt-1">{banner.isJBP ? 'Yes' : 'No'}</p>
-                                        </div>
-                                        {banner.nextJBPDate && (
-                                          <InfoItem label="Next JBP Date" value={banner.nextJBPDate} />
-                                        )}
+                                    )}
+                                    {banner.operatingStates && banner.operatingStates.length > 0 && (
+                                      <div>
+                                        <label className="text-sm font-medium text-gray-600">Operating States</label>
+                                        <p className="text-sm mt-1">
+                                          {banner.operatingStates.join(', ')} ({banner.operatingStates.length} states)
+                                        </p>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                                    )}
+                                    {banner.spiritsOutlets !== undefined && (
+                                      <InfoItem label="Spirits Outlets" value={banner.spiritsOutlets} />
+                                    )}
+                                    {banner.fullProofOutlets !== undefined && (
+                                      <InfoItem label="Full Proof Outlets" value={banner.fullProofOutlets} />
+                                    )}
+                                  </div>
 
-                                {/* Fulfillment & E-commerce */}
-                                {(banner.fulfillmentTypes && banner.fulfillmentTypes.length > 0) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Truck className="w-4 h-4" />
-                                        Fulfillment & E-commerce
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                          <label className="text-sm font-medium text-gray-600">Fulfillment Types</label>
-                                          <div className="flex flex-wrap gap-1 mt-1">
-                                            {banner.fulfillmentTypes.map((type, idx) => (
-                                              <Badge key={idx} variant="secondary" className="text-xs">
-                                                {type}
-                                              </Badge>
-                                            ))}
-                                          </div>
+                                  {/* Strategy Fields */}
+                                  {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
+                                    banner.privateLabel || banner.innovationAppetite || banner.displayMandates || 
+                                    banner.ecommerceMaturityLevel) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Target className="w-4 h-4" />
+                                          Strategy
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <InfoItem label="Category Captain" value={banner.categoryCaptain} />
+                                          <InfoItem label="Category Advisor" value={banner.categoryAdvisor} />
+                                          <InfoItem label="Pricing Strategy" value={banner.pricingStrategy} />
+                                          <InfoItem label="Private Label" value={banner.privateLabel} />
+                                          <InfoItem label="Innovation Appetite" value={banner.innovationAppetite} />
+                                          <InfoItem label="Display Mandates" value={banner.displayMandates} />
+                                          <InfoItem label="E-commerce Maturity" value={banner.ecommerceMaturityLevel} />
                                         </div>
-                                        {banner.ecommercePartners && banner.ecommercePartners.length > 0 && (
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* JBP Information */}
+                                  {(banner.isJBP || banner.nextJBPDate) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Calendar className="w-4 h-4" />
+                                          JBP Information
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                           <div>
-                                            <label className="text-sm font-medium text-gray-600">E-commerce Partners</label>
+                                            <label className="text-sm font-medium text-gray-600">JBP Customer</label>
+                                            <p className="text-sm mt-1">{banner.isJBP ? 'Yes' : 'No'}</p>
+                                          </div>
+                                          {banner.nextJBPDate && (
+                                            <InfoItem label="Next JBP Date" value={banner.nextJBPDate} />
+                                          )}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* Fulfillment & E-commerce */}
+                                  {(banner.fulfillmentTypes && banner.fulfillmentTypes.length > 0) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Truck className="w-4 h-4" />
+                                          Fulfillment & E-commerce
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div>
+                                            <label className="text-sm font-medium text-gray-600">Fulfillment Types</label>
                                             <div className="flex flex-wrap gap-1 mt-1">
-                                              {banner.ecommercePartners.map((partner, idx) => (
+                                              {banner.fulfillmentTypes.map((type, idx) => (
                                                 <Badge key={idx} variant="secondary" className="text-xs">
-                                                  {partner}
+                                                  {type}
                                                 </Badge>
                                               ))}
                                             </div>
                                           </div>
-                                        )}
+                                          {banner.ecommercePartners && banner.ecommercePartners.length > 0 && (
+                                            <div>
+                                              <label className="text-sm font-medium text-gray-600">E-commerce Partners</label>
+                                              <div className="flex flex-wrap gap-1 mt-1">
+                                                {banner.ecommercePartners.map((partner, idx) => (
+                                                  <Badge key={idx} variant="secondary" className="text-xs">
+                                                    {partner}
+                                                  </Badge>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                                    </>
+                                  )}
 
-                                {/* Planogram Information */}
-                                {(banner.planograms || banner.planogramWrittenBy) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Package className="w-4 h-4" />
-                                        Planogram
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <InfoItem label="Planograms" value={banner.planograms} />
-                                        <InfoItem label="Written By" value={banner.planogramWrittenBy} />
+                                  {/* Planogram Information */}
+                                  {(banner.planograms || banner.planogramWrittenBy) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Package className="w-4 h-4" />
+                                          Planogram
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <InfoItem label="Planograms" value={banner.planograms} />
+                                          <InfoItem label="Written By" value={banner.planogramWrittenBy} />
+                                        </div>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                                    </>
+                                  )}
 
-                                {/* Level of Influence */}
-                                {(banner.influenceAssortmentShelf || banner.influencePricePromo || 
-                                  banner.influenceDisplayMerchandising || banner.influenceDigital || 
-                                  banner.influenceEcommerce || banner.influenceInStoreEvents || 
-                                  banner.influenceShrinkManagement || banner.influenceBuyingPOOwnership) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3">Level of Influence</h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <InfoItem label="Assortment/Shelf" value={banner.influenceAssortmentShelf} />
-                                        <InfoItem label="Price/Promo" value={banner.influencePricePromo} />
-                                        <InfoItem label="Display/Merchandising" value={banner.influenceDisplayMerchandising} />
-                                        <InfoItem label="Digital" value={banner.influenceDigital} />
-                                        <InfoItem label="E-commerce" value={banner.influenceEcommerce} />
-                                        <InfoItem label="In-Store Events" value={banner.influenceInStoreEvents} />
-                                        <InfoItem label="Shrink Management" value={banner.influenceShrinkManagement} />
-                                        <InfoItem label="Buying/PO Ownership" value={banner.influenceBuyingPOOwnership} />
+                                  {/* Level of Influence */}
+                                  {(banner.influenceAssortmentShelf || banner.influencePricePromo || 
+                                    banner.influenceDisplayMerchandising || banner.influenceDigital || 
+                                    banner.influenceEcommerce || banner.influenceInStoreEvents || 
+                                    banner.influenceShrinkManagement || banner.influenceBuyingPOOwnership) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3">Level of Influence</h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <InfoItem label="Assortment/Shelf" value={banner.influenceAssortmentShelf} />
+                                          <InfoItem label="Price/Promo" value={banner.influencePricePromo} />
+                                          <InfoItem label="Display/Merchandising" value={banner.influenceDisplayMerchandising} />
+                                          <InfoItem label="Digital" value={banner.influenceDigital} />
+                                          <InfoItem label="E-commerce" value={banner.influenceEcommerce} />
+                                          <InfoItem label="In-Store Events" value={banner.influenceInStoreEvents} />
+                                          <InfoItem label="Shrink Management" value={banner.influenceShrinkManagement} />
+                                          <InfoItem label="Buying/PO Ownership" value={banner.influenceBuyingPOOwnership} />
+                                        </div>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                                    </>
+                                  )}
 
-                                {/* Spirits Stores by State */}
-                                {banner.spiritsStoresByState && banner.spiritsStoresByState.length > 0 && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3">Spirits Stores by State</h5>
-                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                        {banner.spiritsStoresByState.map((stateData, idx) => (
-                                          <div key={idx} className="text-sm">
-                                            <span className="font-medium">{stateData.state}:</span> {stateData.count}
-                                          </div>
-                                        ))}
+                                  {/* Spirits Stores by State */}
+                                  {banner.spiritsStoresByState && banner.spiritsStoresByState.length > 0 && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3">Spirits Stores by State</h5>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                          {banner.spiritsStoresByState.map((stateData, idx) => (
+                                            <div key={idx} className="text-sm">
+                                              <span className="font-medium">{stateData.state}:</span> {stateData.count}
+                                            </div>
+                                          ))}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            </Card>
+                                    </>
+                                  )}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
                           ))}
-                        </div>
+                        </Accordion>
                       </ScrollArea>
                     )}
                   </CardContent>
