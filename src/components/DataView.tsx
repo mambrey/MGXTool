@@ -72,6 +72,32 @@ interface CombinedAccountContact {
   displayMandates?: boolean;
   fulfillmentTypes?: string;
   spiritsOutlets?: string;
+  // NEW Account fields
+  ecommerceSalesPercentage?: string;
+  ecommercePartners?: string;
+  planogramWrittenBy?: string;
+  resetFrequency?: string;
+  resetWindowLeadTime?: string;
+  resetWindowMonths?: string;
+  affectedCategories?: string;
+  hasDifferentResetWindows?: string;
+  fullProofOutlets?: string;
+  designatedCharities?: string;
+  nextJBPAlert?: boolean;
+  nextJBPAlertDays?: number;
+  executionReliabilityScore?: string;
+  executionReliabilityRationale?: string;
+  allSpiritsOutlets?: string;
+  spiritsOutletsByState?: string;
+  influenceAssortmentShelf?: string;
+  influencePricePromo?: string;
+  influenceDisplayMerchandising?: string;
+  influenceDigital?: string;
+  influenceEcommerce?: string;
+  influenceInStoreEvents?: string;
+  influenceShrinkManagement?: string;
+  influenceBuyingPOOwnership?: string;
+  ecommerceMaturityLevel?: string;
   // Reset window fields
   resetWindowQ1?: string;
   resetWindowQ2?: string;
@@ -100,6 +126,22 @@ interface CombinedAccountContact {
   contactSocial?: string;
   contactPreferences?: string;
   contactNotes?: string;
+  // NEW Contact fields
+  linkedinProfile?: string;
+  preferredFirstName?: string;
+  currentRoleTenure?: string;
+  contactActiveStatus?: string;
+  categorySegmentOwnership?: string;
+  entertainment?: string;
+  decisionBiasProfile?: string;
+  followThrough?: string;
+  values?: string;
+  painPoints?: string;
+  headshot?: string;
+  managerId?: string;
+  isPrimaryContact?: boolean;
+  birthdayAlertDays?: number;
+  nextContactAlertDays?: number;
   // Secondary contacts summary
   secondaryContactCount: number;
   secondaryContactNames?: string;
@@ -183,16 +225,43 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'privateLabel', label: 'Private Label', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'innovationAppetite', label: 'Innovation Appetite', visible: false, type: 'slider', filterType: 'number' },
   { key: 'hasEcommerce', label: 'E-Commerce Available', visible: false, type: 'boolean', filterType: 'select' },
+  { key: 'ecommerceMaturityLevel', label: 'E-Commerce Maturity Level', visible: false, type: 'text', filterType: 'text' },
+  { key: 'ecommerceSalesPercentage', label: '% of Sales From E-Commerce', visible: false, type: 'text', filterType: 'text' },
+  { key: 'ecommercePartners', label: 'E-Commerce Partners', visible: false, type: 'array', filterType: 'text' },
   { key: 'isJBP', label: 'Is JBP', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'lastJBPDate', label: 'Last JBP Date', visible: false, type: 'datetime', filterType: 'text' },
   { key: 'nextJBPDate', label: 'Next JBP Date', visible: false, type: 'datetime', filterType: 'text' },
+  { key: 'nextJBPAlert', label: 'Next JBP Alert', visible: false, type: 'boolean', filterType: 'select' },
+  { key: 'nextJBPAlertDays', label: 'Next JBP Alert Days', visible: false, type: 'number', filterType: 'number' },
   { key: 'hasPlanograms', label: 'Has Planograms', visible: false, type: 'boolean', filterType: 'select' },
+  { key: 'planogramWrittenBy', label: 'Planogram Written By', visible: false, type: 'text', filterType: 'text' },
+  { key: 'resetFrequency', label: 'Reset Frequency', visible: false, type: 'text', filterType: 'text' },
+  { key: 'resetWindowLeadTime', label: 'Reset Window Lead Time', visible: false, type: 'text', filterType: 'text' },
+  { key: 'resetWindowMonths', label: 'Reset Window Months', visible: false, type: 'array', filterType: 'text' },
+  { key: 'affectedCategories', label: 'Affected Categories', visible: false, type: 'array', filterType: 'text' },
+  { key: 'hasDifferentResetWindows', label: 'Different Reset Windows Per Category', visible: false, type: 'text', filterType: 'text' },
   { key: 'hqInfluence', label: 'HQ Influence', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'displayMandates', label: 'Display Mandates', visible: false, type: 'boolean', filterType: 'select' },
   { key: 'fulfillmentTypes', label: 'Fulfillment Types', visible: false, type: 'text', filterType: 'text' },
   { key: 'spiritsOutlets', label: 'Spirits Outlets', visible: false, type: 'text', filterType: 'text' },
+  { key: 'allSpiritsOutlets', label: 'All Spirits Outlets', visible: false, type: 'text', filterType: 'text' },
+  { key: 'spiritsOutletsByState', label: 'Spirits Outlets By State', visible: false, type: 'array', filterType: 'text' },
+  { key: 'fullProofOutlets', label: 'Full Proof Outlets', visible: false, type: 'text', filterType: 'text' },
+  { key: 'designatedCharities', label: 'Designated Charities', visible: false, type: 'text', filterType: 'text' },
+  { key: 'executionReliabilityScore', label: 'Execution Reliability Score', visible: false, type: 'text', filterType: 'text' },
+  { key: 'executionReliabilityRationale', label: 'Execution Reliability Rationale', visible: false, type: 'text', filterType: 'text' },
   { key: 'strategicPriorities', label: 'Strategic Priorities', visible: false, type: 'text', filterType: 'text' },
   { key: 'keyCompetitors', label: 'Key Competitors', visible: false, type: 'text', filterType: 'text' },
+  
+  // Level of Influence fields
+  { key: 'influenceAssortmentShelf', label: 'Influence: Assortment/Shelf', visible: false, type: 'text', filterType: 'text' },
+  { key: 'influencePricePromo', label: 'Influence: Price/Promo', visible: false, type: 'text', filterType: 'text' },
+  { key: 'influenceDisplayMerchandising', label: 'Influence: Display/Merchandising', visible: false, type: 'text', filterType: 'text' },
+  { key: 'influenceDigital', label: 'Influence: Digital', visible: false, type: 'text', filterType: 'text' },
+  { key: 'influenceEcommerce', label: 'Influence: E-commerce', visible: false, type: 'text', filterType: 'text' },
+  { key: 'influenceInStoreEvents', label: 'Influence: In-Store Events', visible: false, type: 'text', filterType: 'text' },
+  { key: 'influenceShrinkManagement', label: 'Influence: Shrink Management', visible: false, type: 'text', filterType: 'text' },
+  { key: 'influenceBuyingPOOwnership', label: 'Influence: Buying/PO Ownership', visible: false, type: 'text', filterType: 'text' },
   
   // Reset Window fields
   { key: 'resetWindowQ1', label: 'Reset Window Q1', visible: false, type: 'text', filterType: 'text' },
@@ -205,6 +274,21 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'resetWindowWinter', label: 'Reset Window Winter', visible: false, type: 'text', filterType: 'text' },
   
   // Contact detailed information (hidden by default)
+  { key: 'linkedinProfile', label: 'LinkedIn Profile', visible: false, type: 'text', filterType: 'text' },
+  { key: 'preferredFirstName', label: 'Preferred First Name', visible: false, type: 'text', filterType: 'text' },
+  { key: 'currentRoleTenure', label: 'Current Role Tenure', visible: false, type: 'text', filterType: 'text' },
+  { key: 'contactActiveStatus', label: 'Contact Active Status', visible: false, type: 'badge', filterType: 'select' },
+  { key: 'categorySegmentOwnership', label: 'Category/Segment Ownership', visible: false, type: 'array', filterType: 'text' },
+  { key: 'entertainment', label: 'Allowed to Entertain', visible: false, type: 'text', filterType: 'text' },
+  { key: 'decisionBiasProfile', label: 'Decision Bias Profile', visible: false, type: 'text', filterType: 'text' },
+  { key: 'followThrough', label: 'Follow Through', visible: false, type: 'text', filterType: 'text' },
+  { key: 'values', label: 'What They Value', visible: false, type: 'text', filterType: 'text' },
+  { key: 'painPoints', label: 'Pain Points', visible: false, type: 'text', filterType: 'text' },
+  { key: 'headshot', label: 'Headshot URL', visible: false, type: 'text', filterType: 'text' },
+  { key: 'managerId', label: 'Manager ID', visible: false, type: 'text', filterType: 'text' },
+  { key: 'isPrimaryContact', label: 'Is Primary Contact', visible: false, type: 'boolean', filterType: 'select' },
+  { key: 'birthdayAlertDays', label: 'Birthday Alert Days', visible: false, type: 'number', filterType: 'number' },
+  { key: 'nextContactAlertDays', label: 'Next Contact Alert Days', visible: false, type: 'number', filterType: 'number' },
   { key: 'contactMobile', label: 'Mobile Phone', visible: false, type: 'text', filterType: 'text' },
   { key: 'contactOffice', label: 'Office Phone', visible: false, type: 'text', filterType: 'text' },
   { key: 'contactPreferredMethod', label: 'Preferred Contact Method', visible: false, type: 'text', filterType: 'select' },
@@ -323,14 +407,41 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
           privateLabel: extendedAccount.privateLabel,
           innovationAppetite: extendedAccount.innovationAppetite,
           hasEcommerce: extendedAccount.hasEcommerce,
+          ecommerceMaturityLevel: account.ecommerceMaturityLevel,
+          ecommerceSalesPercentage: account.ecommerceSalesPercentage,
+          ecommercePartners: Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : undefined,
           isJBP: account.isJBP,
           lastJBPDate: account.lastJBPDate,
           nextJBPDate: account.nextJBPDate,
+          nextJBPAlert: account.nextJBPAlert,
+          nextJBPAlertDays: account.nextJBPAlertDays,
           hasPlanograms: account.hasPlanograms,
+          planogramWrittenBy: account.planogramWrittenBy,
+          resetFrequency: account.resetFrequency,
+          resetWindowLeadTime: account.resetWindowLeadTime,
+          resetWindowMonths: Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : undefined,
+          affectedCategories: Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : undefined,
+          hasDifferentResetWindows: account.hasDifferentResetWindows,
           hqInfluence: account.hqInfluence,
           displayMandates: account.displayMandates,
           fulfillmentTypes: account.fulfillmentTypes,
           spiritsOutlets: account.spiritsOutlets,
+          allSpiritsOutlets: account.allSpiritsOutlets,
+          spiritsOutletsByState: Array.isArray(account.spiritsOutletsByState) 
+            ? account.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') 
+            : undefined,
+          fullProofOutlets: account.fullProofOutlets,
+          designatedCharities: account.designatedCharities,
+          executionReliabilityScore: account.executionReliabilityScore,
+          executionReliabilityRationale: account.executionReliabilityRationale,
+          influenceAssortmentShelf: account.influenceAssortmentShelf,
+          influencePricePromo: account.influencePricePromo,
+          influenceDisplayMerchandising: account.influenceDisplayMerchandising,
+          influenceDigital: account.influenceDigital,
+          influenceEcommerce: account.influenceEcommerce,
+          influenceInStoreEvents: account.influenceInStoreEvents,
+          influenceShrinkManagement: account.influenceShrinkManagement,
+          influenceBuyingPOOwnership: account.influenceBuyingPOOwnership,
           // Reset Window fields
           resetWindowQ1: account.resetWindowQ1,
           resetWindowQ2: account.resetWindowQ2,
@@ -358,6 +469,21 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
           contactSocial: undefined,
           contactPreferences: undefined,
           contactNotes: undefined,
+          linkedinProfile: undefined,
+          preferredFirstName: undefined,
+          currentRoleTenure: undefined,
+          contactActiveStatus: undefined,
+          categorySegmentOwnership: undefined,
+          entertainment: undefined,
+          decisionBiasProfile: undefined,
+          followThrough: undefined,
+          values: undefined,
+          painPoints: undefined,
+          headshot: undefined,
+          managerId: undefined,
+          isPrimaryContact: undefined,
+          birthdayAlertDays: undefined,
+          nextContactAlertDays: undefined,
           secondaryContactCount: 0,
           secondaryContactNames: undefined,
           totalContacts: 0,
@@ -408,7 +534,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             industry: account.industry,
             accountStatus: account.accountStatus,
             accountOwner: account.accountOwner,
-            contactType: contact.contactType || 'Secondary',
+            contactType: contact.isPrimaryContact ? 'Primary' : 'Secondary',
             vp: vp,
             director: directorFromContact,
             seniorVicePresident: svpFromContact,
@@ -450,14 +576,41 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             privateLabel: extendedAccount.privateLabel,
             innovationAppetite: extendedAccount.innovationAppetite,
             hasEcommerce: extendedAccount.hasEcommerce,
+            ecommerceMaturityLevel: account.ecommerceMaturityLevel,
+            ecommerceSalesPercentage: account.ecommerceSalesPercentage,
+            ecommercePartners: Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : undefined,
             isJBP: account.isJBP,
             lastJBPDate: account.lastJBPDate,
             nextJBPDate: account.nextJBPDate,
+            nextJBPAlert: account.nextJBPAlert,
+            nextJBPAlertDays: account.nextJBPAlertDays,
             hasPlanograms: account.hasPlanograms,
+            planogramWrittenBy: account.planogramWrittenBy,
+            resetFrequency: account.resetFrequency,
+            resetWindowLeadTime: account.resetWindowLeadTime,
+            resetWindowMonths: Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : undefined,
+            affectedCategories: Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : undefined,
+            hasDifferentResetWindows: account.hasDifferentResetWindows,
             hqInfluence: account.hqInfluence,
             displayMandates: account.displayMandates,
             fulfillmentTypes: account.fulfillmentTypes,
             spiritsOutlets: account.spiritsOutlets,
+            allSpiritsOutlets: account.allSpiritsOutlets,
+            spiritsOutletsByState: Array.isArray(account.spiritsOutletsByState) 
+              ? account.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') 
+              : undefined,
+            fullProofOutlets: account.fullProofOutlets,
+            designatedCharities: account.designatedCharities,
+            executionReliabilityScore: account.executionReliabilityScore,
+            executionReliabilityRationale: account.executionReliabilityRationale,
+            influenceAssortmentShelf: account.influenceAssortmentShelf,
+            influencePricePromo: account.influencePricePromo,
+            influenceDisplayMerchandising: account.influenceDisplayMerchandising,
+            influenceDigital: account.influenceDigital,
+            influenceEcommerce: account.influenceEcommerce,
+            influenceInStoreEvents: account.influenceInStoreEvents,
+            influenceShrinkManagement: account.influenceShrinkManagement,
+            influenceBuyingPOOwnership: account.influenceBuyingPOOwnership,
             // Reset Window fields
             resetWindowQ1: account.resetWindowQ1,
             resetWindowQ2: account.resetWindowQ2,
@@ -486,6 +639,24 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             contactSocial: socialHandlesString,
             contactPreferences: contact.knownPreferences,
             contactNotes: contact.notes,
+            // NEW Contact fields
+            linkedinProfile: contact.linkedinProfile,
+            preferredFirstName: contact.preferredFirstName,
+            currentRoleTenure: contact.currentRoleTenure,
+            contactActiveStatus: contact.contactActiveStatus,
+            categorySegmentOwnership: Array.isArray(contact.categorySegmentOwnership) 
+              ? contact.categorySegmentOwnership.join(', ') 
+              : undefined,
+            entertainment: contact.entertainment,
+            decisionBiasProfile: contact.decisionBiasProfile,
+            followThrough: contact.followThrough,
+            values: contact.values,
+            painPoints: contact.painPoints,
+            headshot: contact.headshot,
+            managerId: contact.managerId,
+            isPrimaryContact: contact.isPrimaryContact,
+            birthdayAlertDays: contact.birthdayAlertDays,
+            nextContactAlertDays: contact.nextContactAlertDays,
             // Secondary contacts summary (same for all contacts of this account)
             secondaryContactCount: secondaryContacts.length,
             secondaryContactNames: secondaryContactNames || undefined,
@@ -593,7 +764,8 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
           item.tickerSymbol, item.contactPreferences, item.contactNotes,
           item.contactInfluence, item.contactType,
           item.strategicPriorities, item.keyCompetitors, item.industry,
-          item.accountStatus, item.accountOwner, item.footprint
+          item.accountStatus, item.accountOwner, item.footprint,
+          item.linkedinProfile, item.preferredFirstName
         ];
         if (!searchableFields.some(field => field?.toLowerCase().includes(searchLower))) {
           return false;
@@ -698,6 +870,13 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
               value === 'User' ? 'outline' :
               'destructive'
             }>
+              {value}
+            </Badge>
+          );
+        }
+        if (column.key === 'contactActiveStatus') {
+          return (
+            <Badge variant={value === 'Active' ? 'default' : 'outline'}>
               {value}
             </Badge>
           );
@@ -819,7 +998,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
                     
                     <div className="space-y-2 pt-4 border-t">
                       <h4 className="font-medium text-sm text-gray-900">Account Information</h4>
-                      {columns.slice(11, 29).map(column => (
+                      {columns.slice(11, 27).map(column => (
                         <div key={column.key} className="flex items-center space-x-2">
                           <Checkbox
                             id={column.key}
@@ -840,7 +1019,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
 
                     <div className="space-y-2 pt-4 border-t">
                       <h4 className="font-medium text-sm text-gray-900">Market Snapshot</h4>
-                      {columns.slice(29, 45).map(column => (
+                      {columns.slice(27, 43).map(column => (
                         <div key={column.key} className="flex items-center space-x-2">
                           <Checkbox
                             id={column.key}
@@ -861,7 +1040,28 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
 
                     <div className="space-y-2 pt-4 border-t">
                       <h4 className="font-medium text-sm text-gray-900">Strategy and Capabilities</h4>
-                      {columns.slice(45, 61).map(column => (
+                      {columns.slice(43, 78).map(column => (
+                        <div key={column.key} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={column.key}
+                            checked={column.visible}
+                            onCheckedChange={() => toggleColumn(column.key)}
+                          />
+                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
+                            {column.label}
+                          </Label>
+                          {column.visible ? (
+                            <Eye className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <EyeOff className="w-4 h-4 text-gray-400" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-2 pt-4 border-t">
+                      <h4 className="font-medium text-sm text-gray-900">Level of Influence</h4>
+                      {columns.slice(78, 86).map(column => (
                         <div key={column.key} className="flex items-center space-x-2">
                           <Checkbox
                             id={column.key}
@@ -882,7 +1082,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
 
                     <div className="space-y-2 pt-4 border-t">
                       <h4 className="font-medium text-sm text-gray-900">Reset Windows</h4>
-                      {columns.slice(61, 69).map(column => (
+                      {columns.slice(86, 94).map(column => (
                         <div key={column.key} className="flex items-center space-x-2">
                           <Checkbox
                             id={column.key}
@@ -903,7 +1103,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
 
                     <div className="space-y-2 pt-4 border-t">
                       <h4 className="font-medium text-sm text-gray-900">Contact Information</h4>
-                      {columns.slice(69).map(column => (
+                      {columns.slice(94).map(column => (
                         <div key={column.key} className="flex items-center space-x-2">
                           <Checkbox
                             id={column.key}
