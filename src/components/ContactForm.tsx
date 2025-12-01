@@ -1577,28 +1577,30 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
               <Briefcase className="w-5 h-5" />
-              Diageo Relationship Owner(s)
+              Diageo Relationship Owner(s) *
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
               <div>
-                <Label htmlFor="ownerName">Primary Owner</Label>
+                <Label htmlFor="ownerName">Primary Owner *</Label>
                 <Input
                   id="ownerName"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
                   placeholder="Enter owner name"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="ownerEmail">Primary Owner Email</Label>
+                <Label htmlFor="ownerEmail">Primary Owner Email *</Label>
                 <Input
                   id="ownerEmail"
                   type="email"
                   value={ownerEmail}
                   onChange={(e) => setOwnerEmail(e.target.value)}
                   placeholder="owner@company.com"
+                  required
                 />
               </div>
             </div>
