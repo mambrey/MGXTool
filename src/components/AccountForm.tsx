@@ -1814,7 +1814,10 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             <Label className="text-xs font-medium">% of Sales Coming From E-Commerce:</Label>
             <div className="flex items-center gap-2 mt-1">
               <Input
-                type="text"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
                 value={formData.ecommerceSalesPercentage}
                 onChange={(e) => updateField('ecommerceSalesPercentage', e.target.value)}
                 placeholder="Enter percentage"

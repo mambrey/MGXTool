@@ -769,7 +769,10 @@ export default function BannerBuyingOfficeCard({
               <Label className="text-xs font-medium">% of Sales Coming From E-Commerce:</Label>
               <div className="flex items-center gap-2 mt-1">
                 <Input
-                  type="text"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
                   value={banner.ecommerceSalesPercentage}
                   onChange={(e) => onUpdateField(banner.id, 'ecommerceSalesPercentage', e.target.value)}
                   placeholder="Enter percentage"
