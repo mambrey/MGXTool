@@ -181,7 +181,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     nextContactAlert: contact?.nextContactAlert || false,
     nextContactAlertDays: contact?.nextContactAlertDays || 7,
     lastContactDate: contact?.lastContactDate || '',
-    socialHandles: contact?.socialHandles || [],
+    linkedinProfile: contact?.linkedinProfile || '',
     knownPreferences: contact?.knownPreferences || '',
     entertainment: contact?.entertainment || '',
     decisionBiasProfile: contact?.decisionBiasProfile || '',
@@ -206,7 +206,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
   const [newEventAlertDays, setNewEventAlertDays] = useState(7);
 
-  const [newSocialHandle, setNewSocialHandle] = useState('');
   const [newNote, setNewNote] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [accountSearchOpen, setAccountSearchOpen] = useState(false);
@@ -587,23 +586,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleManagerChange = (managerId: string) => {
     setFormData(prev => ({ ...prev, managerId: managerId === 'none' ? '' : managerId }));
     setManagerSearchOpen(false);
-  };
-
-  const addSocialHandle = () => {
-    if (newSocialHandle.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        socialHandles: [...prev.socialHandles, newSocialHandle.trim()]
-      }));
-      setNewSocialHandle('');
-    }
-  };
-
-  const removeSocialHandle = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      socialHandles: prev.socialHandles.filter((_, i) => i !== index)
-    }));
   };
 
   const addUploadedNote = () => {
@@ -1439,27 +1421,18 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <CardTitle>LinkedIn Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-2">
+            <div>
+              <Label htmlFor="linkedinProfile">LinkedIn Profile URL</Label>
               <Input
-                placeholder="Add LinkedIn profile URL (e.g., https://linkedin.com/in/username)"
-                value={newSocialHandle}
-                onChange={(e) => setNewSocialHandle(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSocialHandle())}
+                id="linkedinProfile"
+                placeholder="https://linkedin.com/in/username"
+                value={formData.linkedinProfile}
+                onChange={(e) => setFormData(prev => ({ ...prev, linkedinProfile: e.target.value }))}
+                className="mt-1"
               />
-              <Button type="button" onClick={addSocialHandle}>
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.socialHandles.map((handle, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {handle}
-                  <X 
-                    className="w-3 h-3 cursor-pointer hover:text-red-500" 
-                    onClick={() => removeSocialHandle(index)}
-                  />
-                </Badge>
-              ))}
+              <p className="text-xs text-gray-500 mt-1">
+                Enter the full LinkedIn profile URL
+              </p>
             </div>
           </CardContent>
         </Card>
