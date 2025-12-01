@@ -1014,6 +1014,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </SelectContent>
               </Select>
             </div>
+// Fix for lines 1017-1053 in ContactForm.tsx
             <div>
               <Label htmlFor="preferredShippingAddress">Preferred Shipping Address</Label>
               <gmp-place-autocomplete 
@@ -1021,14 +1022,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 id="preferredShippingAddress"
                 placeholder="Start typing address..."
                 style={{
-                  color: 'black',
+                  color: '#000000',
                   width: '100%',
                   padding: '0.5rem',
                   border: '1px solid #d1d5db',
                   borderRadius: '0.375rem',
                   fontSize: '0.875rem',
-                  minHeight: '80px'
-                }}
+                  minHeight: '80px',
+                  backgroundColor: '#ffffff',
+                  '--gmp-input-text-color': '#000000',
+                  '--gmp-input-placeholder-color': '#6b7280'
+                } as React.CSSProperties}
               ></gmp-place-autocomplete>
               <div className="flex items-center gap-2 mt-2">
                 <Button
