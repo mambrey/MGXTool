@@ -224,7 +224,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [salesCalendarOpen, setSalesCalendarOpen] = useState<{[role: string]: boolean}>({});
   const [supportCalendarOpen, setSupportCalendarOpen] = useState<{[role: string]: boolean}>({});
 
-<<<<<<< HEAD
   // Google Places Autocomplete web component ref
   const autocompleteElRef = useRef<HTMLElement & { value: string }>(null);
 
@@ -307,67 +306,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         } catch (error) {
           console.error('Error initializing Google Places Autocomplete:', error);
         }
-=======
-  // Google Places PlaceAutocompleteElement
-  const shippingAddressRef = useRef<HTMLDivElement | null>(null);
-  const placeAutocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
-
-  // Load Google Maps script
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: libraries,
-  });
-
-  // Initialize Google Places PlaceAutocompleteElement
-  useEffect(() => {
-    if (isLoaded && shippingAddressRef.current && GOOGLE_MAPS_API_KEY && window.google?.maps?.places?.PlaceAutocompleteElement) {
-      try {
-        // Create the PlaceAutocompleteElement
-        const placeAutocomplete = new window.google.maps.places.PlaceAutocompleteElement({
-          componentRestrictions: { country: ['us'] },
-        });
-        
-        placeAutocompleteRef.current = placeAutocomplete;
-        
-        // Clear the container and append the element
-        shippingAddressRef.current.innerHTML = '';
-        shippingAddressRef.current.appendChild(placeAutocomplete);
-        
-        // Set initial value if exists
-        if (formData.preferredShippingAddress) {
-          const input = placeAutocomplete.querySelector('input');
-          if (input) {
-            input.value = formData.preferredShippingAddress;
-          }
-        }
-        
-        // Listen for place selection
-        placeAutocomplete.addEventListener('gmp-placeselect', async (event: Event) => {
-          const customEvent = event as CustomEvent;
-          const place = customEvent.detail?.place;
-          if (place) {
-            await place.fetchFields({
-              fields: ['formattedAddress', 'addressComponents']
-            });
-            
-            if (place.formattedAddress) {
-              setFormData(prev => ({ ...prev, preferredShippingAddress: place.formattedAddress || '' }));
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error initializing Google Places PlaceAutocompleteElement:', error);
-      }
-    }
-
-    return () => {
-      if (placeAutocompleteRef.current && shippingAddressRef.current) {
-        shippingAddressRef.current.innerHTML = '';
->>>>>>> c0a0d5dc38b82c27f997f57d4adc84b99dc298df
       }
     };
 
-<<<<<<< HEAD
     initAutocomplete();
   }, []);
 
@@ -386,17 +327,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setAddressSaved(true);
     setTimeout(() => setAddressSaved(false), 2000);
   };
-=======
-  // Update PlaceAutocompleteElement input when formData.preferredShippingAddress changes externally
-  useEffect(() => {
-    if (placeAutocompleteRef.current && formData.preferredShippingAddress) {
-      const input = placeAutocompleteRef.current.querySelector('input');
-      if (input && input.value !== formData.preferredShippingAddress) {
-        input.value = formData.preferredShippingAddress;
-      }
-    }
-  }, [formData.preferredShippingAddress]);
->>>>>>> c0a0d5dc38b82c27f997f57d4adc84b99dc298df
 
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -444,13 +374,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   };
 
   const handleBirthdayChange = (dateInput: string) => {
-<<<<<<< HEAD
     // Store the full date as YYYY-MM-DD
     setFormData(prev => ({ ...prev, birthday: dateInput }));
-=======
-    const birthday = dateInputToBirthday(dateInput);
-    setFormData(prev => ({ ...prev, birthday }));
->>>>>>> c0a0d5dc38b82c27f997f57d4adc84b99dc298df
   };
 
   const handleCategoryToggle = (category: string) => {
@@ -777,17 +702,310 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Rest of the form remains unchanged - keeping all existing JSX */}
-        {/* Basic Information, Contact Information, Ways of Working, Important Dates, LinkedIn Profile, Preferences & Notes, Diageo Relationship Owner(s), Additional Notes & Files sections */}
-        
+        <Card>
+          <CardHeader>
+            <CardTitle>Basic Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="firstName">First Name *</Label>
+                <Input
+                  id="firstName"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="preferredFirstName">Preferred First Name</Label>
+                <Input
+                  id="preferredFirstName"
+                  value={formData.preferredFirstName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, preferredFirstName: e.target.value }))}
+                  placeholder="Preferred name or nickname"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name *</Label>
+                <Input
+                  id="lastName"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <Checkbox
+                id="isPrimaryContact"
+                checked={formData.isPrimaryContact}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrimaryContact: checked as boolean }))}
+              />
+              <div className="flex-1">
+                <Label 
+                  htmlFor="isPrimaryContact" 
+                  className="flex items-center gap-2 font-semibold text-yellow-900 cursor-pointer"
+                >
+                  <Crown className="w-4 h-4 text-yellow-600" />
+                  Primary Contact
+                </Label>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Primary contacts are automatically linked to the account owner for relationship management.
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="headshot" className="flex items-center gap-2">
+                <Image className="w-4 h-4" />
+                Headshot (Linkedin Only)
+              </Label>
+              <div className="space-y-2">
+                <Input
+                  id="headshot"
+                  type="file"
+                  accept=".jpg,.jpeg"
+                  onChange={handleHeadshotUpload}
+                  className="cursor-pointer"
+                />
+                <p className="text-xs text-gray-500">
+                  Upload a JPG or JPEG image (max 5MB)
+                </p>
+                {headshotError && (
+                  <p className="text-xs text-red-600">{headshotError}</p>
+                )}
+                {formData.headshot && (
+                  <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <img 
+                      src={formData.headshot} 
+                      alt="Headshot preview" 
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-green-900">
+                        {headshotFileName || 'Headshot uploaded'}
+                      </p>
+                      <p className="text-xs text-green-700">Image ready</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeHeadshot}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="title">Job Title</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="e.g., VP of Sales, Director of Marketing"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="currentRoleTenure">Current Role Tenure</Label>
+              <Select
+                value={formData.currentRoleTenure}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, currentRoleTenure: value === 'clear' ? '' : value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tenure..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  <SelectItem value="0-1 Years">0-1 Years</SelectItem>
+                  <SelectItem value="1-3 Years">1-3 Years</SelectItem>
+                  <SelectItem value="3-5 Years">3-5 Years</SelectItem>
+                  <SelectItem value="5-10 Years">5-10 Years</SelectItem>
+                  <SelectItem value="10+ Years">10+ Years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="accountId">Account/Banner/Buying Office *</Label>
+              <Popover open={accountSearchOpen} onOpenChange={setAccountSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={accountSearchOpen}
+                    className="w-full justify-between"
+                  >
+                    {formData.accountId
+                      ? accounts.find(account => account.id === formData.accountId)?.accountName
+                      : "Select"}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start">
+                  <Command shouldFilter={true}>
+                    <CommandInput 
+                      placeholder="Search accounts by name, industry, or owner..." 
+                    />
+                    <CommandList>
+                      <CommandEmpty>No account found.</CommandEmpty>
+                      <CommandGroup>
+                        {accounts.map((account) => {
+                          const searchableText = `${account.accountName} ${account.industry || ''} ${account.accountOwner || ''}`;
+                          return (
+                            <CommandItem
+                              key={account.id}
+                              value={searchableText}
+                              onSelect={() => handleAccountChange(account.id)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.accountId === account.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">{account.accountName}</span>
+                                <span className="text-xs text-gray-500">
+                                  {account.industry && `${account.industry} • `}
+                                  {account.accountOwner && `Owner: ${account.accountOwner}`}
+                                </span>
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label htmlFor="manager" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Reports To (Manager)
+              </Label>
+              <Popover open={managerSearchOpen} onOpenChange={setManagerSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={managerSearchOpen}
+                    className="w-full justify-between"
+                  >
+                    {formData.managerId && selectedManager
+                      ? `${selectedManager.firstName} ${selectedManager.lastName}`
+                      : "Select a manager..."}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start">
+                  <Command shouldFilter={true}>
+                    <CommandInput 
+                      placeholder="Search all contacts by name, title, or company..." 
+                    />
+                    <CommandList>
+                      <CommandEmpty>No contact found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="none"
+                          onSelect={() => handleManagerChange('none')}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              !formData.managerId ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="text-gray-500">No manager (Top-level executive)</span>
+                        </CommandItem>
+                        {availableManagers.map((manager) => {
+                          const managerAccount = accounts.find(a => a.id === manager.accountId);
+                          const searchableText = `${manager.firstName} ${manager.lastName} ${manager.title || ''} ${managerAccount?.accountName || ''}`;
+                          return (
+                            <CommandItem
+                              key={manager.id}
+                              value={searchableText}
+                              onSelect={() => handleManagerChange(manager.id)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.managerId === manager.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">
+                                  {manager.firstName} {manager.lastName}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {manager.title && `${manager.title}`}
+                                  {manager.title && managerAccount && ' • '}
+                                  {managerAccount && `${managerAccount.accountName}`}
+                                </span>
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {selectedManager && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="text-sm text-blue-800">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-3 h-3" />
+                      <strong>Reports to:</strong> {selectedManager.firstName} {selectedManager.lastName}
+                      {selectedManager.title && ` - ${selectedManager.title}`}
+                    </div>
+                    {selectedManager.accountId && getManagerAccountName(selectedManager.accountId) && (
+                      <div className="text-xs text-blue-600 mt-1 ml-5">
+                        Company: {getManagerAccountName(selectedManager.accountId)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Select who this contact reports to in the organizational hierarchy (from anyone in the contact list)
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="contactActiveStatus">Contact Active Status</Label>
+              <Select
+                value={formData.contactActiveStatus}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, contactActiveStatus: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* ... other fields ... */}
             <div>
-<<<<<<< HEAD
               <Label htmlFor="email">Email Address *</Label>
               <Input
                 id="email"
@@ -1373,25 +1591,67 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                     </p>
                   </AlertDescription>
                 </Alert>
-=======
-              <Label htmlFor="preferredShippingAddress">
-                Preferred Shipping Address
-                {isLoaded && GOOGLE_MAPS_API_KEY && (
-                  <span className="ml-2 text-xs text-green-600">(Google Autocomplete enabled)</span>
-                )}
-              </Label>
-              <div ref={shippingAddressRef} className="mt-1" />
-              {loadError && (
-                <p className="text-xs text-red-600 mt-1">
-                  ⚠️ Error loading Google Maps. Address can still be entered manually.
-                </p>
->>>>>>> c0a0d5dc38b82c27f997f57d4adc84b99dc298df
               )}
+            </div>
+            
+            <div>
+              <Label htmlFor="followThrough">Follow Through</Label>
+              <Select 
+                value={formData.followThrough} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, followThrough: value === 'clear' ? '' : value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="pt-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">As it pertains to the business:</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="values">What do they value from a business perspective (ie Communication style, Data, Details, etc)</Label>
+                  <Textarea
+                    id="values"
+                    value={formData.values}
+                    onChange={(e) => setFormData(prev => ({ ...prev, values: e.target.value }))}
+                    placeholder="Communication style, Data, Details, etc."
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="painPoints">What are their pain points?</Label>
+                  <Textarea
+                    id="painPoints"
+                    value={formData.painPoints}
+                    onChange={(e) => setFormData(prev => ({ ...prev, painPoints: e.target.value }))}
+                    placeholder="Enter pain points..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="notes">General Notes</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="General notes about this contact..."
+                rows={3}
+              />
             </div>
           </CardContent>
         </Card>
 
-<<<<<<< HEAD
         <Card className="bg-indigo-50 border-indigo-200">
           <CardHeader>
             <CardTitle className="text-indigo-900 flex items-center gap-2">
@@ -1608,9 +1868,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             </div>
           </CardContent>
         </Card>
-=======
-        {/* ... rest of the form sections remain unchanged ... */}
->>>>>>> c0a0d5dc38b82c27f997f57d4adc84b99dc298df
 
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={onCancel}>
@@ -1622,7 +1879,96 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         </div>
       </form>
 
-      {/* Dialog for adding events remains unchanged */}
+      <Dialog open={isAddEventDialogOpen} onOpenChange={setIsAddEventDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Important Date</DialogTitle>
+            <DialogDescription>
+              Add a new important date for this contact. You can optionally enable alerts to be notified before the event.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="event-title">Event Title *</Label>
+              <Input
+                id="event-title"
+                placeholder="e.g., Birthday, Anniversary, Meeting"
+                value={newEventTitle}
+                onChange={(e) => setNewEventTitle(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="event-date">Event Date *</Label>
+              <Input
+                id="event-date"
+                type="date"
+                value={newEventDate}
+                onChange={(e) => setNewEventDate(e.target.value)}
+              />
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-orange-600" />
+                    <Label htmlFor="enable-alert" className="text-base font-medium cursor-pointer">
+                      Enable Alert
+                    </Label>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Get notified before this event occurs
+                  </p>
+                </div>
+                <Switch
+                  id="enable-alert"
+                  checked={newEventAlertEnabled}
+                  onCheckedChange={setNewEventAlertEnabled}
+                />
+              </div>
+
+              {newEventAlertEnabled && (
+                <div className="space-y-2 pl-6 pt-2">
+                  <Label htmlFor="alert-days" className="text-sm">
+                    Alert me (days before event):
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="alert-days"
+                      type="number"
+                      min="1"
+                      max="90"
+                      value={newEventAlertDays}
+                      onChange={(e) => setNewEventAlertDays(parseInt(e.target.value) || 7)}
+                      className="w-24"
+                    />
+                    <span className="text-sm text-gray-500">days before</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    You'll receive an alert {newEventAlertDays} {newEventAlertDays === 1 ? 'day' : 'days'} before this event
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsAddEventDialogOpen(false);
+              setNewEventTitle('');
+              setNewEventDate('');
+              setNewEventAlertEnabled(false);
+              setNewEventAlertDays(7);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddEvent}>
+              Add Event
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
