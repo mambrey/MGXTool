@@ -8,6 +8,9 @@ const config = {
   birthdayWorkflowUrl: import.meta.env.VITE_PA_BIRTHDAY_WORKFLOW_URL || '',
   nextContactWorkflowUrl: import.meta.env.VITE_PA_NEXT_CONTACT_WORKFLOW_URL || '',
   taskWorkflowUrl: import.meta.env.VITE_PA_TASK_WORKFLOW_URL || '',
+  jbpWorkflowUrl: import.meta.env.VITE_PA_JBP_WORKFLOW_URL || '',
+  accountEventWorkflowUrl: import.meta.env.VITE_PA_ACCOUNT_EVENT_WORKFLOW_URL || '',
+  contactEventWorkflowUrl: import.meta.env.VITE_PA_CONTACT_EVENT_WORKFLOW_URL || '',
   tickerSymbolWorkflowUrl: import.meta.env.VITE_PA_TICKER_SYMBOL_WORKFLOW_URL || '',
   marketDataWorkflowUrl: import.meta.env.VITE_PA_MARKET_DATA_WORKFLOW_URL || '', // New: For retrieving market data from Google Sheets
 };
@@ -16,16 +19,31 @@ const config = {
  * Alert data structure sent to Power Automate
  */
 export interface PowerAutomateAlert {
-  alertType: 'birthday' | 'next-contact' | 'task-due';
+  alertType: 'birthday' | 'next-contact' | 'task-due' | 'jbp' | 'accountEvent' | 'contactEvent';
   contactName: string;
-  accountName: string;
+  contactEmail?: string;
+  accountName?: string;
   dueDate: string;
+  daysUntil: number;
   priority: string;
+  relationshipOwner?: string;
+  relationshipOwnerEmail?: string;
+  relationshipOwnerTeamsChannel?: string;
+  vicePresident?: string;
+  description?: string;
+  additionalData?: {
+    alertId?: string;
+    contactId?: string;
+    accountId?: string;
+    contactPhone?: string;
+    contactTitle?: string;
+    autoSent?: boolean;
+  };
+  timestamp?: string;
+  // Legacy fields for backwards compatibility
   notes?: string;
   email?: string;
   phone?: string;
-  relationshipOwner?: string;
-  timestamp: string;
 }
 
 /**
@@ -100,7 +118,10 @@ class PowerAutomateService {
     return !!(
       config.birthdayWorkflowUrl ||
       config.nextContactWorkflowUrl ||
-      config.taskWorkflowUrl
+      config.taskWorkflowUrl ||
+      config.jbpWorkflowUrl ||
+      config.accountEventWorkflowUrl ||
+      config.contactEventWorkflowUrl
     );
   }
 
@@ -135,6 +156,15 @@ class PowerAutomateService {
       case 'task-due':
         workflowUrl = config.taskWorkflowUrl;
         break;
+      case 'jbp':
+        workflowUrl = config.jbpWorkflowUrl;
+        break;
+      case 'accountEvent':
+        workflowUrl = config.accountEventWorkflowUrl;
+        break;
+      case 'contactEvent':
+        workflowUrl = config.contactEventWorkflowUrl;
+        break;
       default:
         console.error('Unknown alert type:', alert.alertType);
         return false;
@@ -146,19 +176,28 @@ class PowerAutomateService {
     }
 
     try {
+      // Add timestamp if not present
+      const payload = {
+        ...alert,
+        timestamp: alert.timestamp || new Date().toISOString()
+      };
+
+      console.log(`Sending ${alert.alertType} alert to Power Automate:`, payload);
+
       const response = await fetch(workflowUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(alert),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         console.log(`Alert sent successfully to Power Automate: ${alert.alertType}`);
         return true;
       } else {
-        console.error('Failed to send alert to Power Automate:', response.statusText);
+        const errorText = await response.text();
+        console.error('Failed to send alert to Power Automate:', response.status, response.statusText, errorText);
         return false;
       }
     } catch (error) {

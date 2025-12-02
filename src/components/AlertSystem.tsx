@@ -105,7 +105,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       for (const alert of alerts) {
         // Auto-send birthday, next contact, task, JBP, and event alerts that haven't been sent yet
         if ((alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'task-due' || 
-             alert.type === 'jbp' || alert.type === 'account-event' || alert.type === 'contact-event') && 
+             alert.type === 'jbp' || alert.type === 'accountEvent' || alert.type === 'contactEvent') && 
             alert.status === 'pending' && 
             !sentAlerts.has(alert.id) &&
             !wasAlertSent(alert.id) &&
@@ -487,7 +487,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 console.log(`      - Should create alert: ${daysUntilEvent >= 0 && daysUntilEvent <= alertDays}`);
                 
                 if (daysUntilEvent >= 0 && daysUntilEvent <= alertDays) {
-                  const alertId = `contact-event-${contact.id}-${event.id || index}`;
+                  const alertId = `contactEvent-${contact.id}-${event.id || index}`;
                   
                   if (isAlertSnoozed(alertId)) {
                     console.log(`      ⏰ Alert is snoozed, skipping`);
@@ -498,7 +498,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                   
                   generatedAlerts.push({
                     id: alertId,
-                    type: 'contact-event',
+                    type: 'contactEvent',
                     title: 'Contact Event Reminder',
                     description: `${event.title || 'Event'} for ${contact.firstName} ${contact.lastName}${account ? ` at ${account.accountName}` : ''} is ${daysUntilEvent === 0 ? 'today' : daysUntilEvent === 1 ? 'tomorrow' : `in ${daysUntilEvent} days`}`,
                     priority: daysUntilEvent <= 1 ? 'high' : daysUntilEvent <= 3 ? 'medium' : 'low',
@@ -600,7 +600,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 console.log(`  - Alert days setting: ${alertDays}`);
                 
                 if (daysUntilEvent >= 0 && daysUntilEvent <= alertDays) {
-                  const alertId = `account-event-${account.id}-${event.id || index}`;
+                  const alertId = `accountEvent-${account.id}-${event.id || index}`;
                   
                   if (isAlertSnoozed(alertId)) {
                     console.log(`  ⏰ Alert is snoozed, skipping`);
@@ -611,7 +611,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                   
                   generatedAlerts.push({
                     id: alertId,
-                    type: 'account-event',
+                    type: 'accountEvent',
                     title: 'Account Event Reminder',
                     description: `${event.title || 'Event'} for ${account.accountName} is ${daysUntilEvent === 0 ? 'today' : daysUntilEvent === 1 ? 'tomorrow' : `in ${daysUntilEvent} days`}`,
                     priority: daysUntilEvent <= 1 ? 'high' : daysUntilEvent <= 3 ? 'medium' : 'low',
@@ -702,8 +702,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         followUp: generatedAlerts.filter(a => a.type === 'follow-up').length,
         taskDue: generatedAlerts.filter(a => a.type === 'task-due').length,
         jbp: generatedAlerts.filter(a => a.type === 'jbp').length,
-        accountEvent: generatedAlerts.filter(a => a.type === 'account-event').length,
-        contactEvent: generatedAlerts.filter(a => a.type === 'contact-event').length,
+        accountEvent: generatedAlerts.filter(a => a.type === 'accountEvent').length,
+        contactEvent: generatedAlerts.filter(a => a.type === 'contactEvent').length,
         completed: generatedAlerts.filter(a => a.isCompleted).length
       });
       
@@ -719,8 +719,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       case 'follow-up': return '📞';
       case 'task-due': return '✅';
       case 'jbp': return '📊';
-      case 'account-event': return '🏢';
-      case 'contact-event': return '👤';
+      case 'accountEvent': return '🏢';
+      case 'contactEvent': return '👤';
       case 'contract-renewal': return '📋';
       case 'meeting': return '🤝';
       case 'milestone': return '🎯';
@@ -845,7 +845,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
 
     // Now supports birthday, next contact, task, JBP, and event alerts
     if (alert.type !== 'birthday' && alert.type !== 'follow-up' && alert.type !== 'task-due' && 
-        alert.type !== 'jbp' && alert.type !== 'account-event' && alert.type !== 'contact-event') {
+        alert.type !== 'jbp' && alert.type !== 'accountEvent' && alert.type !== 'contactEvent') {
       const message = 'This alert type is not configured for Power Automate';
       console.warn(message);
       if (!isAutoSend) {
@@ -971,7 +971,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                    alert.type === 'follow-up' ? 'next-contact' : 
                    alert.type === 'task-due' ? 'task-due' :
                    alert.type === 'jbp' ? 'jbp' :
-                   alert.type === 'account-event' ? 'account-event' : 'contact-event',
+                   alert.type === 'accountEvent' ? 'accountEvent' : 'contactEvent',
         contactName: alert.relatedName,
         contactEmail: contact?.email?.trim(),
         accountName: account?.accountName,
@@ -1007,7 +1007,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                      alert.type === 'follow-up' ? 'next-contact' : 
                      alert.type === 'task-due' ? 'task-due' :
                      alert.type === 'jbp' ? 'jbp' :
-                     alert.type === 'account-event' ? 'account-event' : 'contact-event',
+                     alert.type === 'accountEvent' ? 'accountEvent' : 'contactEvent',
           contactId: alert.relatedId,
           sentAt: new Date().toISOString(),
           dueDate: alert.dueDate
@@ -1054,7 +1054,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
   const canSendToPowerAutomate = (alert: AlertType): boolean => {
     return powerAutomateEnabled && (alert.type === 'birthday' || alert.type === 'follow-up' || 
                                     alert.type === 'task-due' || alert.type === 'jbp' || 
-                                    alert.type === 'account-event' || alert.type === 'contact-event');
+                                    alert.type === 'accountEvent' || alert.type === 'contactEvent');
   };
 
   const pendingCount = (alerts || []).filter(a => a.status === 'pending' && !a.isCompleted).length;
@@ -1085,7 +1085,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
 
   const autoSendEligibleCount = alerts.filter(a => 
     (a.type === 'birthday' || a.type === 'follow-up' || a.type === 'task-due' || 
-     a.type === 'jbp' || a.type === 'account-event' || a.type === 'contact-event') && 
+     a.type === 'jbp' || a.type === 'accountEvent' || a.type === 'contactEvent') && 
     a.status === 'pending' && 
     !a.isCompleted &&
     !sentAlerts.has(a.id) &&
