@@ -926,10 +926,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       // For CONTACT-RELATED alerts (birthday, follow-up, contactEvent):
       // Priority: contact override > PRIMARY Diageo owner email > relationship owner default > contact's relationship owner email
       // For ACCOUNT-RELATED alerts (jbp, accountEvent, task-due):
-      // Priority: relationship owner directory email > account email
+      // Priority: relationship owner directory email > contacts associated with account > account email
       // IMPORTANT: Trim all whitespace and newlines from email addresses
       
       let notificationEmail = '';
+      let emailSource = '';
       
       if (alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'contactEvent') {
         // Contact-related alerts
@@ -940,13 +941,49 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
           contact?.relationshipOwner?.email || 
           ''
         ).trim().replace(/[\r\n\t]/g, '');
+        
+        if (contact?.notificationEmail) emailSource = 'contact notification email override';
+        else if (contact?.primaryDiageoRelationshipOwners?.ownerEmail) emailSource = 'Primary Diageo owner email';
+        else if (ownerDetails?.email) emailSource = 'relationship owner directory';
+        else if (contact?.relationshipOwner?.email) emailSource = 'contact relationship owner';
       } else {
         // Account-related alerts (jbp, accountEvent, task-due)
-        notificationEmail = (
-          ownerDetails?.email ||
-          account?.email ||
-          ''
-        ).trim().replace(/[\r\n\t]/g, '');
+        // First try relationship owner directory
+        if (ownerDetails?.email) {
+          notificationEmail = ownerDetails.email.trim().replace(/[\r\n\t]/g, '');
+          emailSource = 'relationship owner directory';
+        } else {
+          // Fall back to contacts associated with this account
+          console.log('=== FALLBACK TO ACCOUNT CONTACTS ===');
+          const allContacts = loadFromStorage('crm-contacts', []) as Contact[];
+          const accountContacts = allContacts.filter(c => c.accountId === account?.id);
+          console.log(`Found ${accountContacts.length} contacts for account ${account?.accountName}`);
+          
+          // Try to find a contact with a valid email
+          for (const accountContact of accountContacts) {
+            const contactEmail = (
+              accountContact.notificationEmail ||
+              accountContact.primaryDiageoRelationshipOwners?.ownerEmail ||
+              accountContact.relationshipOwner?.email ||
+              ''
+            ).trim().replace(/[\r\n\t]/g, '');
+            
+            if (contactEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+              notificationEmail = contactEmail;
+              if (accountContact.notificationEmail) emailSource = `contact ${accountContact.firstName} ${accountContact.lastName} notification email`;
+              else if (accountContact.primaryDiageoRelationshipOwners?.ownerEmail) emailSource = `contact ${accountContact.firstName} ${accountContact.lastName} Primary Diageo owner`;
+              else emailSource = `contact ${accountContact.firstName} ${accountContact.lastName} relationship owner`;
+              console.log(`✓ Found valid email from ${emailSource}: ${notificationEmail}`);
+              break;
+            }
+          }
+          
+          // Final fallback to account email
+          if (!notificationEmail && account?.email) {
+            notificationEmail = account.email.trim().replace(/[\r\n\t]/g, '');
+            emailSource = 'account email';
+          }
+        }
       }
       
       const teamsChannel = (
@@ -963,9 +1000,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         console.log('Contact relationship owner email:', contact?.relationshipOwner?.email || 'Not set');
       } else {
         console.log('Account email:', account?.email || 'Not set');
+        console.log('Account contacts checked for fallback email');
       }
       console.log('Owner directory email:', ownerDetails?.email || 'Not set');
       console.log('Final notification email (cleaned):', notificationEmail || 'NOT FOUND');
+      console.log('Email source:', emailSource || 'NOT FOUND');
       console.log('Teams Channel:', teamsChannel || 'Not set');
 
       // Validate email format
@@ -973,7 +1012,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         const errorMsg = `No notification email configured for relationship owner "${alert.contactOwner}"`;
         console.error('❌ ERROR:', errorMsg);
         if (!isAutoSend) {
-          window.alert(`❌ ${errorMsg}\n\nPlease ensure:\n1. The relationship owner is added to Relationship Owner Directory with email, OR\n2. For contact alerts: Primary Diageo Relationship Owner email is set, OR\n3. For account alerts: Account has an email address set`);
+          window.alert(`❌ ${errorMsg}\n\nPlease ensure:\n1. The relationship owner is added to Relationship Owner Directory with email, OR\n2. For contact alerts: Primary Diageo Relationship Owner email is set, OR\n3. For account alerts: At least one contact associated with the account has a valid email`);
         }
         return false;
       }
@@ -1037,11 +1076,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         setSentAlerts(prev => new Set(prev).add(alert.id));
         
         if (!isAutoSend) {
-          const successMessage = `✅ Alert sent to Power Automate successfully!\n\n📧 Email will be sent to: ${notificationEmail}`;
+          const successMessage = `✅ Alert sent to Power Automate successfully!\n\n📧 Email will be sent to: ${notificationEmail}\n📍 Email source: ${emailSource}`;
           window.alert(successMessage);
         }
         
-        console.log(`✅ Alert ${alert.id} sent successfully ${isAutoSend ? '(auto)' : '(manual)'} to ${notificationEmail}`);
+        console.log(`✅ Alert ${alert.id} sent successfully ${isAutoSend ? '(auto)' : '(manual)'} to ${notificationEmail} (source: ${emailSource})`);
         return true;
       } else {
         const errorMessage = '❌ Failed to send alert to Power Automate. Please check the browser console for details.';
