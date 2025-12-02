@@ -108,6 +108,20 @@ export interface MarketDataResponse {
  */
 export type MarketDataCallback = (data: MarketDataResponse) => void;
 
+/**
+ * Custom error class for Power Automate configuration issues
+ */
+export class PowerAutomateConfigError extends Error {
+  constructor(
+    message: string,
+    public alertType: string,
+    public envVarName: string
+  ) {
+    super(message);
+    this.name = 'PowerAutomateConfigError';
+  }
+}
+
 class PowerAutomateService {
   private marketDataCallbacks: MarketDataCallback[] = [];
 
@@ -137,6 +151,21 @@ class PowerAutomateService {
    */
   isMarketDataWorkflowEnabled(): boolean {
     return !!config.marketDataWorkflowUrl;
+  }
+
+  /**
+   * Get the environment variable name for a specific alert type
+   */
+  private getEnvVarName(alertType: string): string {
+    const envVarMap: Record<string, string> = {
+      'birthday': 'VITE_PA_BIRTHDAY_WORKFLOW_URL',
+      'next-contact': 'VITE_PA_NEXT_CONTACT_WORKFLOW_URL',
+      'task-due': 'VITE_PA_TASK_WORKFLOW_URL',
+      'jbp': 'VITE_PA_JBP_WORKFLOW_URL',
+      'accountEvent': 'VITE_PA_ACCOUNT_EVENT_WORKFLOW_URL',
+      'contactEvent': 'VITE_PA_CONTACT_EVENT_WORKFLOW_URL',
+    };
+    return envVarMap[alertType] || 'UNKNOWN';
   }
 
   /**
@@ -171,8 +200,17 @@ class PowerAutomateService {
     }
 
     if (!workflowUrl) {
-      console.warn(`No workflow URL configured for ${alert.alertType} alerts`);
-      return false;
+      const envVarName = this.getEnvVarName(alert.alertType);
+      const errorMessage = `${alert.alertType} workflow URL not configured. Add ${envVarName} to your .env file with your Power Automate webhook URL.`;
+      console.error('❌ CONFIGURATION ERROR:', errorMessage);
+      console.error('📋 Steps to fix:');
+      console.error(`   1. Create or edit your .env file in the project root`);
+      console.error(`   2. Add this line: ${envVarName}=https://your-power-automate-webhook-url`);
+      console.error(`   3. Restart the development server`);
+      console.error(`   4. See POWER_AUTOMATE_SETUP_GUIDE.md for detailed instructions`);
+      
+      // Throw a custom error with details
+      throw new PowerAutomateConfigError(errorMessage, alert.alertType, envVarName);
     }
 
     try {
@@ -202,7 +240,7 @@ class PowerAutomateService {
       }
     } catch (error) {
       console.error('Error sending alert to Power Automate:', error);
-      return false;
+      throw error; // Re-throw to be caught by AlertSystem
     }
   }
 
