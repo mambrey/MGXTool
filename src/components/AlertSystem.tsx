@@ -236,6 +236,10 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
           relationshipOwner: contact.relationshipOwner ? {
             ...contact.relationshipOwner,
             email: contact.relationshipOwner.email?.trim().replace(/[\r\n\t]/g, '') || undefined
+          } : undefined,
+          primaryDiageoRelationshipOwners: contact.primaryDiageoRelationshipOwners ? {
+            ...contact.primaryDiageoRelationshipOwners,
+            ownerEmail: contact.primaryDiageoRelationshipOwners.ownerEmail?.trim().replace(/[\r\n\t]/g, '') || undefined
           } : undefined
         };
       });
@@ -318,6 +322,23 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         contacts.forEach(contact => {
           const account = accounts?.find(a => a.id === contact.accountId);
           
+          // Determine the relationship owner - prioritize PRIMARY Diageo relationship owner
+          const relationshipOwnerName = contact.primaryDiageoRelationshipOwners?.ownerName || 
+                                       contact.relationshipOwner?.name || 
+                                       account?.accountOwner || 
+                                       'Unassigned';
+          
+          const vicePresidentName = contact.primaryDiageoRelationshipOwners?.svp ||
+                                   contact.relationshipOwner?.vicePresident || 
+                                   account?.vp || 
+                                   'Unassigned';
+          
+          console.log(`Contact: ${contact.firstName} ${contact.lastName}`);
+          console.log(`  - Primary Diageo Owner: ${contact.primaryDiageoRelationshipOwners?.ownerName || 'Not set'}`);
+          console.log(`  - Legacy Relationship Owner: ${contact.relationshipOwner?.name || 'Not set'}`);
+          console.log(`  - Account Owner: ${account?.accountOwner || 'Not set'}`);
+          console.log(`  - Final Owner for Alert: ${relationshipOwnerName}`);
+          
           // Birthday alerts - only if birthdayAlert is enabled
           if (contact.birthday && contact.birthdayAlert) {
             // Parse birthday without timezone issues
@@ -374,8 +395,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 status: savedAlert?.isCompleted ? 'completed' : 'pending',
                 createdAt: new Date().toISOString(),
                 actionRequired: true,
-                contactOwner: contact.relationshipOwner?.name || account?.accountOwner || 'Unassigned',
-                vicePresident: contact.relationshipOwner?.vicePresident || account?.vp || 'Unassigned',
+                contactOwner: relationshipOwnerName,
+                vicePresident: vicePresidentName,
                 isCompleted: savedAlert?.isCompleted || false,
                 completedAt: savedAlert?.completedAt
               });
@@ -421,8 +442,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 status: savedAlert?.isCompleted ? 'completed' : 'pending',
                 createdAt: new Date().toISOString(),
                 actionRequired: true,
-                contactOwner: contact.relationshipOwner?.name || account?.accountOwner || 'Unassigned',
-                vicePresident: contact.relationshipOwner?.vicePresident || account?.vp || 'Unassigned',
+                contactOwner: relationshipOwnerName,
+                vicePresident: vicePresidentName,
                 isCompleted: savedAlert?.isCompleted || false,
                 completedAt: savedAlert?.completedAt
               });
@@ -481,7 +502,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 createdAt: task.createdAt || new Date().toISOString(),
                 actionRequired: true,
                 contactOwner: task.assignedTo || 'Unassigned',
-                vicePresident: relatedContact?.relationshipOwner?.vicePresident || relatedAccount?.vp || 'Unassigned',
+                vicePresident: relatedContact?.primaryDiageoRelationshipOwners?.svp || relatedContact?.relationshipOwner?.vicePresident || relatedAccount?.vp || 'Unassigned',
                 isCompleted: savedAlert?.isCompleted || false,
                 completedAt: savedAlert?.completedAt
               });
@@ -557,8 +578,14 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     
     if (contacts && Array.isArray(contacts)) {
       contacts.forEach(contact => {
+        if (contact.primaryDiageoRelationshipOwners?.ownerName) {
+          owners.add(contact.primaryDiageoRelationshipOwners.ownerName);
+        }
         if (contact.relationshipOwner?.name) {
           owners.add(contact.relationshipOwner.name);
+        }
+        if (contact.primaryDiageoRelationshipOwners?.svp) {
+          vps.add(contact.primaryDiageoRelationshipOwners.svp);
         }
         if (contact.relationshipOwner?.vicePresident) {
           vps.add(contact.relationshipOwner.vicePresident);
@@ -705,10 +732,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       }
 
       // Determine notification email and Teams channel
-      // Priority: contact override > relationship owner default > contact's relationship owner email
+      // Priority: contact override > PRIMARY Diageo owner email > relationship owner default > contact's relationship owner email
       // IMPORTANT: Trim all whitespace and newlines from email addresses
       const notificationEmail = (
         contact?.notificationEmail || 
+        contact?.primaryDiageoRelationshipOwners?.ownerEmail ||
         ownerDetails?.email || 
         contact?.relationshipOwner?.email || 
         ''
@@ -722,6 +750,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
 
       console.log('=== EMAIL RESOLUTION ===');
       console.log('Contact notification email override:', contact?.notificationEmail || 'Not set');
+      console.log('Primary Diageo owner email:', contact?.primaryDiageoRelationshipOwners?.ownerEmail || 'Not set');
       console.log('Owner directory email:', ownerDetails?.email || 'Not set');
       console.log('Contact relationship owner email:', contact?.relationshipOwner?.email || 'Not set');
       console.log('Final notification email (cleaned):', notificationEmail || 'NOT FOUND');
@@ -732,7 +761,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         const errorMsg = `No notification email configured for relationship owner "${alert.contactOwner}"`;
         console.error('❌ ERROR:', errorMsg);
         if (!isAutoSend) {
-          window.alert(`❌ ${errorMsg}\n\nPlease add this relationship owner to the Relationship Owner Directory with their email address.`);
+          window.alert(`❌ ${errorMsg}\n\nPlease ensure this contact has:\n1. Primary Diageo Relationship Owner email set, OR\n2. The owner added to Relationship Owner Directory with email, OR\n3. A notification email override set for this contact`);
         }
         return false;
       }
