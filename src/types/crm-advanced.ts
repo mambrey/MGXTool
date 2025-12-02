@@ -123,7 +123,7 @@ export interface Report {
 
 export interface Alert {
   id: string;
-  type: 'birthday' | 'follow-up' | 'task-due' | 'contract-renewal' | 'meeting' | 'milestone';
+  type: 'birthday' | 'follow-up' | 'task-due' | 'contract-renewal' | 'meeting' | 'milestone' | 'jbp' | 'accountEvent' | 'contactEvent';
   title: string;
   description: string;
   priority: 'critical' | 'high' | 'medium' | 'low';
