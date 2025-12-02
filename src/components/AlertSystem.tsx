@@ -610,9 +610,10 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
   });
 
   const sendAlertToPowerAutomate = async (alert: AlertType, isAutoSend: boolean = false) => {
-    console.log('=== SEND TO POWER AUTOMATE ===');
+    console.log('=== SEND TO POWER AUTOMATE - DETAILED DEBUG ===');
     console.log('Alert ID:', alert.id);
     console.log('Alert Type:', alert.type);
+    console.log('Alert Contact Owner:', alert.contactOwner);
     console.log('Is Auto Send:', isAutoSend);
     console.log('Power Automate Enabled:', powerAutomateEnabled);
     
@@ -661,10 +662,47 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       // Load relationship owners from storage
       const relationshipOwners = loadFromStorage('crm-relationship-owners', []) as RelationshipOwner[];
       
-      // Find the relationship owner details
-      const ownerDetails = relationshipOwners.find(ro => ro.name === alert.contactOwner);
+      console.log('=== RELATIONSHIP OWNERS IN STORAGE ===');
+      console.log('Total relationship owners:', relationshipOwners.length);
+      relationshipOwners.forEach((ro, idx) => {
+        console.log(`Owner ${idx + 1}:`, {
+          name: ro.name,
+          email: ro.email,
+          teamsChannelId: ro.teamsChannelId
+        });
+      });
+      
+      console.log('=== LOOKING FOR MATCH ===');
+      console.log('Searching for owner name:', alert.contactOwner);
+      
+      // Try multiple matching strategies
+      let ownerDetails = relationshipOwners.find(ro => ro.name === alert.contactOwner);
+      
+      if (!ownerDetails) {
+        console.log('Exact match not found, trying case-insensitive match...');
+        ownerDetails = relationshipOwners.find(ro => 
+          ro.name?.toLowerCase() === alert.contactOwner?.toLowerCase()
+        );
+      }
+      
+      if (!ownerDetails) {
+        console.log('Case-insensitive match not found, trying partial match...');
+        ownerDetails = relationshipOwners.find(ro => 
+          ro.name?.toLowerCase().includes(alert.contactOwner?.toLowerCase() || '') ||
+          alert.contactOwner?.toLowerCase().includes(ro.name?.toLowerCase() || '')
+        );
+      }
 
-      console.log('Relationship Owner Details:', ownerDetails || 'Not found');
+      console.log('=== MATCH RESULT ===');
+      if (ownerDetails) {
+        console.log('✓ Relationship Owner Found:', {
+          name: ownerDetails.name,
+          email: ownerDetails.email,
+          teamsChannelId: ownerDetails.teamsChannelId
+        });
+      } else {
+        console.log('✗ No matching relationship owner found in directory');
+      }
 
       // Determine notification email and Teams channel
       // Priority: contact override > relationship owner default > contact's relationship owner email
@@ -682,11 +720,24 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         ''
       ).trim();
 
-      console.log('Notification Email (cleaned):', notificationEmail || 'Not set');
+      console.log('=== EMAIL RESOLUTION ===');
+      console.log('Contact notification email override:', contact?.notificationEmail || 'Not set');
+      console.log('Owner directory email:', ownerDetails?.email || 'Not set');
+      console.log('Contact relationship owner email:', contact?.relationshipOwner?.email || 'Not set');
+      console.log('Final notification email (cleaned):', notificationEmail || 'NOT FOUND');
       console.log('Teams Channel:', teamsChannel || 'Not set');
 
       // Validate email format
-      if (notificationEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail)) {
+      if (!notificationEmail) {
+        const errorMsg = `No notification email configured for relationship owner "${alert.contactOwner}"`;
+        console.error('❌ ERROR:', errorMsg);
+        if (!isAutoSend) {
+          window.alert(`❌ ${errorMsg}\n\nPlease add this relationship owner to the Relationship Owner Directory with their email address.`);
+        }
+        return false;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail)) {
         const errorMsg = `Invalid email format: "${notificationEmail}"`;
         console.error(errorMsg);
         if (!isAutoSend) {
@@ -737,7 +788,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         setSentAlerts(prev => new Set(prev).add(alert.id));
         
         if (!isAutoSend) {
-          const successMessage = `✅ Alert sent to Power Automate successfully!\n\n${notificationEmail ? `📧 Email will be sent to: ${notificationEmail}` : '⚠️ No notification email configured for this relationship owner'}`;
+          const successMessage = `✅ Alert sent to Power Automate successfully!\n\n📧 Email will be sent to: ${notificationEmail}`;
           window.alert(successMessage);
         }
         
