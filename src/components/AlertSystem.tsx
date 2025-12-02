@@ -25,6 +25,8 @@ interface AlertSettings {
   birthdayLeadDays: number;
   nextContactLeadDays: number;
   taskLeadDays: number;
+  jbpLeadDays: number;
+  eventLeadDays: number;
   reminderFrequency: 'daily' | 'every-3-days' | 'weekly' | 'once';
 }
 
@@ -58,6 +60,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     birthdayLeadDays: 30,
     nextContactLeadDays: 7,
     taskLeadDays: 7,
+    jbpLeadDays: 30,
+    eventLeadDays: 7,
     reminderFrequency: 'once'
   });
 
@@ -71,6 +75,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       birthdayLeadDays: 30,
       nextContactLeadDays: 7,
       taskLeadDays: 7,
+      jbpLeadDays: 30,
+      eventLeadDays: 7,
       reminderFrequency: 'once'
     });
     setAlertSettings(savedSettings);
@@ -97,8 +103,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
 
     const autoSendAlerts = async () => {
       for (const alert of alerts) {
-        // Auto-send birthday, next contact, and task alerts that haven't been sent yet
-        if ((alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'task-due') && 
+        // Auto-send birthday, next contact, task, JBP, and event alerts that haven't been sent yet
+        if ((alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'task-due' || 
+             alert.type === 'jbp' || alert.type === 'account-event' || alert.type === 'contact-event') && 
             alert.status === 'pending' && 
             !sentAlerts.has(alert.id) &&
             !wasAlertSent(alert.id) &&
@@ -449,6 +456,163 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
               });
             }
           }
+
+          // Contact Event alerts - process contactEvents array
+          if (contact.contactEvents && Array.isArray(contact.contactEvents)) {
+            contact.contactEvents.forEach((event, index) => {
+              if (event.date && event.alertEnabled) {
+                const eventDate = new Date(event.date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                eventDate.setHours(0, 0, 0, 0);
+                
+                const daysUntilEvent = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                const alertDays = event.alertDays || alertSettings.eventLeadDays;
+                
+                console.log(`Contact Event Check: ${event.title || 'Untitled Event'} for ${contact.firstName} ${contact.lastName}`);
+                console.log(`  - Days until: ${daysUntilEvent}`);
+                console.log(`  - Alert days setting: ${alertDays}`);
+                
+                if (daysUntilEvent >= 0 && daysUntilEvent <= alertDays) {
+                  const alertId = `contact-event-${contact.id}-${event.id || index}`;
+                  
+                  if (isAlertSnoozed(alertId)) {
+                    console.log(`  ⏰ Alert is snoozed, skipping`);
+                    return;
+                  }
+                  
+                  const savedAlert = savedAlerts.find(a => a.id === alertId);
+                  
+                  generatedAlerts.push({
+                    id: alertId,
+                    type: 'contact-event',
+                    title: 'Contact Event Reminder',
+                    description: `${event.title || 'Event'} for ${contact.firstName} ${contact.lastName}${account ? ` at ${account.accountName}` : ''} is ${daysUntilEvent === 0 ? 'today' : daysUntilEvent === 1 ? 'tomorrow' : `in ${daysUntilEvent} days`}`,
+                    priority: daysUntilEvent <= 1 ? 'high' : daysUntilEvent <= 3 ? 'medium' : 'low',
+                    dueDate: event.date,
+                    relatedId: contact.id,
+                    relatedType: 'contact',
+                    relatedName: `${contact.firstName} ${contact.lastName}`,
+                    status: savedAlert?.isCompleted ? 'completed' : 'pending',
+                    createdAt: new Date().toISOString(),
+                    actionRequired: true,
+                    contactOwner: relationshipOwnerName,
+                    vicePresident: vicePresidentName,
+                    isCompleted: savedAlert?.isCompleted || false,
+                    completedAt: savedAlert?.completedAt
+                  });
+                  
+                  console.log(`  ✓ Created contact event alert`);
+                }
+              }
+            });
+          }
+        });
+      }
+
+      // Process accounts for JBP and Account Event alerts
+      if (accounts && Array.isArray(accounts)) {
+        accounts.forEach(account => {
+          const relationshipOwnerName = account.accountOwner || 'Unassigned';
+          const vicePresidentName = account.vp || 'Unassigned';
+
+          // JBP alerts - only if nextJBPAlert is enabled and isJBP is true
+          if (account.isJBP && account.nextJBPDate && account.nextJBPAlert) {
+            const jbpDate = new Date(account.nextJBPDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            jbpDate.setHours(0, 0, 0, 0);
+            
+            const daysUntilJBP = Math.round((jbpDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            const alertDays = account.nextJBPAlertDays || alertSettings.jbpLeadDays;
+            
+            console.log(`JBP Check: ${account.accountName}`);
+            console.log(`  - Days until: ${daysUntilJBP}`);
+            console.log(`  - Alert days setting: ${alertDays}`);
+            
+            if (daysUntilJBP >= 0 && daysUntilJBP <= alertDays) {
+              const alertId = `jbp-${account.id}`;
+              
+              if (isAlertSnoozed(alertId)) {
+                console.log(`  ⏰ Alert is snoozed, skipping`);
+                return;
+              }
+              
+              const savedAlert = savedAlerts.find(a => a.id === alertId);
+              
+              generatedAlerts.push({
+                id: alertId,
+                type: 'jbp',
+                title: 'JBP Due',
+                description: `Joint Business Plan for ${account.accountName} is ${daysUntilJBP === 0 ? 'due today' : daysUntilJBP === 1 ? 'due tomorrow' : `due in ${daysUntilJBP} days`}`,
+                priority: daysUntilJBP <= 7 ? 'high' : daysUntilJBP <= 14 ? 'medium' : 'low',
+                dueDate: account.nextJBPDate,
+                relatedId: account.id,
+                relatedType: 'account',
+                relatedName: account.accountName,
+                status: savedAlert?.isCompleted ? 'completed' : 'pending',
+                createdAt: new Date().toISOString(),
+                actionRequired: true,
+                contactOwner: relationshipOwnerName,
+                vicePresident: vicePresidentName,
+                isCompleted: savedAlert?.isCompleted || false,
+                completedAt: savedAlert?.completedAt
+              });
+              
+              console.log(`  ✓ Created JBP alert`);
+            }
+          }
+
+          // Account Event alerts - process customerEvents array
+          if (account.customerEvents && Array.isArray(account.customerEvents)) {
+            account.customerEvents.forEach((event, index) => {
+              if (event.date && event.alertEnabled) {
+                const eventDate = new Date(event.date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                eventDate.setHours(0, 0, 0, 0);
+                
+                const daysUntilEvent = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                const alertDays = event.alertDays || alertSettings.eventLeadDays;
+                
+                console.log(`Account Event Check: ${event.title || 'Untitled Event'} for ${account.accountName}`);
+                console.log(`  - Days until: ${daysUntilEvent}`);
+                console.log(`  - Alert days setting: ${alertDays}`);
+                
+                if (daysUntilEvent >= 0 && daysUntilEvent <= alertDays) {
+                  const alertId = `account-event-${account.id}-${event.id || index}`;
+                  
+                  if (isAlertSnoozed(alertId)) {
+                    console.log(`  ⏰ Alert is snoozed, skipping`);
+                    return;
+                  }
+                  
+                  const savedAlert = savedAlerts.find(a => a.id === alertId);
+                  
+                  generatedAlerts.push({
+                    id: alertId,
+                    type: 'account-event',
+                    title: 'Account Event Reminder',
+                    description: `${event.title || 'Event'} for ${account.accountName} is ${daysUntilEvent === 0 ? 'today' : daysUntilEvent === 1 ? 'tomorrow' : `in ${daysUntilEvent} days`}`,
+                    priority: daysUntilEvent <= 1 ? 'high' : daysUntilEvent <= 3 ? 'medium' : 'low',
+                    dueDate: event.date,
+                    relatedId: account.id,
+                    relatedType: 'account',
+                    relatedName: account.accountName,
+                    status: savedAlert?.isCompleted ? 'completed' : 'pending',
+                    createdAt: new Date().toISOString(),
+                    actionRequired: true,
+                    contactOwner: relationshipOwnerName,
+                    vicePresident: vicePresidentName,
+                    isCompleted: savedAlert?.isCompleted || false,
+                    completedAt: savedAlert?.completedAt
+                  });
+                  
+                  console.log(`  ✓ Created account event alert`);
+                }
+              }
+            });
+          }
         });
       }
 
@@ -517,6 +681,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         birthday: generatedAlerts.filter(a => a.type === 'birthday').length,
         followUp: generatedAlerts.filter(a => a.type === 'follow-up').length,
         taskDue: generatedAlerts.filter(a => a.type === 'task-due').length,
+        jbp: generatedAlerts.filter(a => a.type === 'jbp').length,
+        accountEvent: generatedAlerts.filter(a => a.type === 'account-event').length,
+        contactEvent: generatedAlerts.filter(a => a.type === 'contact-event').length,
         completed: generatedAlerts.filter(a => a.isCompleted).length
       });
       
@@ -531,6 +698,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       case 'birthday': return '🎂';
       case 'follow-up': return '📞';
       case 'task-due': return '✅';
+      case 'jbp': return '📊';
+      case 'account-event': return '🏢';
+      case 'contact-event': return '👤';
       case 'contract-renewal': return '📋';
       case 'meeting': return '🤝';
       case 'milestone': return '🎯';
@@ -653,8 +823,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       return false;
     }
 
-    // Now supports birthday, next contact, and task alerts
-    if (alert.type !== 'birthday' && alert.type !== 'follow-up' && alert.type !== 'task-due') {
+    // Now supports birthday, next contact, task, JBP, and event alerts
+    if (alert.type !== 'birthday' && alert.type !== 'follow-up' && alert.type !== 'task-due' && 
+        alert.type !== 'jbp' && alert.type !== 'account-event' && alert.type !== 'contact-event') {
       const message = 'This alert type is not configured for Power Automate';
       console.warn(message);
       if (!isAutoSend) {
@@ -679,9 +850,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     }
 
     try {
-      // Find the related contact
+      // Find the related contact or account
       const contact = contacts.find(c => c.id === alert.relatedId);
-      const account = accounts.find(a => a.id === contact?.accountId);
+      const account = accounts.find(a => a.id === (contact?.accountId || alert.relatedId));
 
       console.log('Contact found:', contact ? `${contact.firstName} ${contact.lastName}` : 'Not found');
       console.log('Account found:', account?.accountName || 'Not found');
@@ -776,7 +947,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       }
 
       const powerAutomateAlert: PowerAutomateAlert = {
-        alertType: alert.type === 'birthday' ? 'birthday' : alert.type === 'follow-up' ? 'next-contact' : 'task-due',
+        alertType: alert.type === 'birthday' ? 'birthday' : 
+                   alert.type === 'follow-up' ? 'next-contact' : 
+                   alert.type === 'task-due' ? 'task-due' :
+                   alert.type === 'jbp' ? 'jbp' :
+                   alert.type === 'account-event' ? 'account-event' : 'contact-event',
         contactName: alert.relatedName,
         contactEmail: contact?.email?.trim(),
         accountName: account?.accountName,
@@ -808,7 +983,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         // Save to sent alerts tracking
         saveSentAlert({
           alertId: alert.id,
-          alertType: alert.type === 'birthday' ? 'birthday' : alert.type === 'follow-up' ? 'next-contact' : 'task-due',
+          alertType: alert.type === 'birthday' ? 'birthday' : 
+                     alert.type === 'follow-up' ? 'next-contact' : 
+                     alert.type === 'task-due' ? 'task-due' :
+                     alert.type === 'jbp' ? 'jbp' :
+                     alert.type === 'account-event' ? 'account-event' : 'contact-event',
           contactId: alert.relatedId,
           sentAt: new Date().toISOString(),
           dueDate: alert.dueDate
@@ -853,7 +1032,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
   };
 
   const canSendToPowerAutomate = (alert: AlertType): boolean => {
-    return powerAutomateEnabled && (alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'task-due');
+    return powerAutomateEnabled && (alert.type === 'birthday' || alert.type === 'follow-up' || 
+                                    alert.type === 'task-due' || alert.type === 'jbp' || 
+                                    alert.type === 'account-event' || alert.type === 'contact-event');
   };
 
   const pendingCount = (alerts || []).filter(a => a.status === 'pending' && !a.isCompleted).length;
@@ -883,7 +1064,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
   });
 
   const autoSendEligibleCount = alerts.filter(a => 
-    (a.type === 'birthday' || a.type === 'follow-up' || a.type === 'task-due') && 
+    (a.type === 'birthday' || a.type === 'follow-up' || a.type === 'task-due' || 
+     a.type === 'jbp' || a.type === 'account-event' || a.type === 'contact-event') && 
     a.status === 'pending' && 
     !a.isCompleted &&
     !sentAlerts.has(a.id) &&
@@ -902,7 +1084,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             <Bell className="w-6 h-6" />
             Alert System with Power Automate
           </h2>
-          <p className="text-gray-600">Birthday, next contact, and task alerts with automatic workflow automation</p>
+          <p className="text-gray-600">Birthday, next contact, task, JBP, and event alerts with automatic workflow automation</p>
         </div>
         <Button
           variant="outline"
@@ -931,7 +1113,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                   Automatic Alert Sending
                 </Label>
                 <p className="text-sm text-gray-600">
-                  Automatically send birthday, next contact, and task alerts to Power Automate when they're generated
+                  Automatically send birthday, next contact, task, JBP, and event alerts to Power Automate when they're generated
                 </p>
                 {autoSendEnabled && autoSendEligibleCount > 0 && (
                   <p className="text-sm text-blue-600 font-medium">
@@ -1007,6 +1189,44 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="jbp-lead">JBP Alerts</Label>
+                  <Select 
+                    value={alertSettings.jbpLeadDays.toString()} 
+                    onValueChange={(v) => handleSettingsChange('jbpLeadDays', parseInt(v))}
+                  >
+                    <SelectTrigger id="jbp-lead">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7">7 days</SelectItem>
+                      <SelectItem value="14">14 days</SelectItem>
+                      <SelectItem value="30">30 days (default)</SelectItem>
+                      <SelectItem value="60">60 days</SelectItem>
+                      <SelectItem value="90">90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="event-lead">Event Alerts</Label>
+                  <Select 
+                    value={alertSettings.eventLeadDays.toString()} 
+                    onValueChange={(v) => handleSettingsChange('eventLeadDays', parseInt(v))}
+                  >
+                    <SelectTrigger id="event-lead">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 day</SelectItem>
+                      <SelectItem value="3">3 days</SelectItem>
+                      <SelectItem value="7">7 days (default)</SelectItem>
+                      <SelectItem value="14">14 days</SelectItem>
+                      <SelectItem value="30">30 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
@@ -1068,7 +1288,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         <AlertDescription className={powerAutomateEnabled ? 'text-green-900' : 'text-orange-900'}>
           {powerAutomateEnabled ? (
             <>
-              <strong>Power Automate Connected:</strong> {autoSendEnabled ? 'Automatic sending is enabled. New birthday, next contact, and task alerts will be sent automatically with notification emails to relationship owners.' : 'Manual sending is available. You can resend alerts even if they were sent before.'}
+              <strong>Power Automate Connected:</strong> {autoSendEnabled ? 'Automatic sending is enabled. New birthday, next contact, task, JBP, and event alerts will be sent automatically with notification emails to relationship owners.' : 'Manual sending is available. You can resend alerts even if they were sent before.'}
             </>
           ) : (
             <>
@@ -1236,6 +1456,8 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                     <p>• Add contacts with birthdays and enable "Birthday Alert"</p>
                     <p>• Set next contact dates and enable "Next Contact Alert"</p>
                     <p>• Create tasks with due dates within {alertSettings.taskLeadDays} days</p>
+                    <p>• Set JBP dates for accounts and enable "JBP Alert"</p>
+                    <p>• Add customer events to accounts or contacts with alerts enabled</p>
                     {relationshipOwnerFilter !== 'all' && (
                       <p className="text-blue-600 font-medium">• Currently filtering by: {relationshipOwnerFilter}</p>
                     )}
