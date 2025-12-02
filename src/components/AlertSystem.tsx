@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import type { Alert as AlertType, Task } from '@/types/crm-advanced';
 import type { Account, Contact, RelationshipOwner } from '@/types/crm';
 import { loadFromStorage, saveToStorage, saveSentAlert, wasAlertSent, clearOldSentAlerts } from '@/lib/storage';
-import { powerAutomateService, type PowerAutomateAlert } from '@/services/power-automate';
+import { powerAutomateService, type PowerAutomateAlert, PowerAutomateConfigError } from '@/services/power-automate';
 import { parseBirthdayForComparison } from '@/lib/dateUtils';
 
 interface AlertSystemProps {
@@ -923,15 +923,31 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       }
 
       // Determine notification email and Teams channel
+      // For CONTACT-RELATED alerts (birthday, follow-up, contactEvent):
       // Priority: contact override > PRIMARY Diageo owner email > relationship owner default > contact's relationship owner email
+      // For ACCOUNT-RELATED alerts (jbp, accountEvent, task-due):
+      // Priority: relationship owner directory email > account email
       // IMPORTANT: Trim all whitespace and newlines from email addresses
-      const notificationEmail = (
-        contact?.notificationEmail || 
-        contact?.primaryDiageoRelationshipOwners?.ownerEmail ||
-        ownerDetails?.email || 
-        contact?.relationshipOwner?.email || 
-        ''
-      ).trim().replace(/[\r\n\t]/g, '');
+      
+      let notificationEmail = '';
+      
+      if (alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'contactEvent') {
+        // Contact-related alerts
+        notificationEmail = (
+          contact?.notificationEmail || 
+          contact?.primaryDiageoRelationshipOwners?.ownerEmail ||
+          ownerDetails?.email || 
+          contact?.relationshipOwner?.email || 
+          ''
+        ).trim().replace(/[\r\n\t]/g, '');
+      } else {
+        // Account-related alerts (jbp, accountEvent, task-due)
+        notificationEmail = (
+          ownerDetails?.email ||
+          account?.email ||
+          ''
+        ).trim().replace(/[\r\n\t]/g, '');
+      }
       
       const teamsChannel = (
         contact?.teamsChannelId || 
@@ -940,10 +956,15 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       ).trim();
 
       console.log('=== EMAIL RESOLUTION ===');
-      console.log('Contact notification email override:', contact?.notificationEmail || 'Not set');
-      console.log('Primary Diageo owner email:', contact?.primaryDiageoRelationshipOwners?.ownerEmail || 'Not set');
+      console.log('Alert type:', alert.type);
+      if (alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'contactEvent') {
+        console.log('Contact notification email override:', contact?.notificationEmail || 'Not set');
+        console.log('Primary Diageo owner email:', contact?.primaryDiageoRelationshipOwners?.ownerEmail || 'Not set');
+        console.log('Contact relationship owner email:', contact?.relationshipOwner?.email || 'Not set');
+      } else {
+        console.log('Account email:', account?.email || 'Not set');
+      }
       console.log('Owner directory email:', ownerDetails?.email || 'Not set');
-      console.log('Contact relationship owner email:', contact?.relationshipOwner?.email || 'Not set');
       console.log('Final notification email (cleaned):', notificationEmail || 'NOT FOUND');
       console.log('Teams Channel:', teamsChannel || 'Not set');
 
@@ -952,7 +973,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         const errorMsg = `No notification email configured for relationship owner "${alert.contactOwner}"`;
         console.error('❌ ERROR:', errorMsg);
         if (!isAutoSend) {
-          window.alert(`❌ ${errorMsg}\n\nPlease ensure this contact has:\n1. Primary Diageo Relationship Owner email set, OR\n2. The owner added to Relationship Owner Directory with email, OR\n3. A notification email override set for this contact`);
+          window.alert(`❌ ${errorMsg}\n\nPlease ensure:\n1. The relationship owner is added to Relationship Owner Directory with email, OR\n2. For contact alerts: Primary Diageo Relationship Owner email is set, OR\n3. For account alerts: Account has an email address set`);
         }
         return false;
       }
@@ -1032,8 +1053,17 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       }
     } catch (error) {
       console.error('❌ Error sending alert to Power Automate:', error);
-      if (!isAutoSend) {
-        window.alert(`❌ An error occurred while sending the alert:\n\n${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease check the browser console for more details.`);
+      
+      // Handle PowerAutomateConfigError specially to show the specific missing configuration
+      if (error instanceof PowerAutomateConfigError) {
+        const userMessage = `❌ Configuration Error:\n\n${error.message}\n\nPlease add ${error.envVarName} to your .env file with your Power Automate webhook URL, then restart the development server.`;
+        if (!isAutoSend) {
+          window.alert(userMessage);
+        }
+      } else {
+        if (!isAutoSend) {
+          window.alert(`❌ An error occurred while sending the alert:\n\n${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease check the browser console for more details.`);
+        }
       }
       return false;
     } finally {
