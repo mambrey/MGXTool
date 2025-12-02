@@ -172,14 +172,18 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     uploadedNotes: contact?.uploadedNotes || []
   });
 
-  // Contact Events state with alert functionality
-  const [contactEvents, setContactEvents] = useState<ContactEventWithAlert[]>(
-    (contact?.contactEvents || []).map(event => ({
-      ...event,
-      alertEnabled: false,
-      alertDays: 7
-    }))
-  );
+  // Contact Events state with alert functionality - FIXED: preserve alertEnabled from existing events
+  const [contactEvents, setContactEvents] = useState<ContactEventWithAlert[]>(() => {
+    if (contact?.contactEvents && Array.isArray(contact.contactEvents)) {
+      return contact.contactEvents.map(event => ({
+        ...event,
+        alertEnabled: event.alertEnabled ?? false,
+        alertDays: event.alertDays ?? 7
+      }));
+    }
+    return [];
+  });
+  
   const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
@@ -616,7 +620,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         salesLastCheckIn,
         supportLastCheckIn
       },
-      contactEvents: contactEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      contactEvents: contactEvents,
       createdAt: contact?.createdAt || new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
