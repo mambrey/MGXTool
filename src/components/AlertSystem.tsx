@@ -326,8 +326,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
 
       // Process real contacts for birthday alerts - add null check
       if (contacts && Array.isArray(contacts)) {
-        contacts.forEach(contact => {
+        console.log('\n=== PROCESSING CONTACTS ===');
+        contacts.forEach((contact, contactIndex) => {
           const account = accounts?.find(a => a.id === contact.accountId);
+          
+          console.log(`\n[Contact ${contactIndex + 1}] ${contact.firstName} ${contact.lastName}`);
           
           // Determine the relationship owner - prioritize PRIMARY Diageo relationship owner
           const relationshipOwnerName = contact.primaryDiageoRelationshipOwners?.ownerName || 
@@ -340,10 +343,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                                    account?.vp || 
                                    'Unassigned';
           
-          console.log(`Contact: ${contact.firstName} ${contact.lastName}`);
           console.log(`  - Primary Diageo Owner: ${contact.primaryDiageoRelationshipOwners?.ownerName || 'Not set'}`);
-          console.log(`  - Legacy Relationship Owner: ${contact.relationshipOwner?.name || 'Not set'}`);
-          console.log(`  - Account Owner: ${account?.accountOwner || 'Not set'}`);
           console.log(`  - Final Owner for Alert: ${relationshipOwnerName}`);
           
           // Birthday alerts - only if birthdayAlert is enabled
@@ -370,19 +370,19 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             // Calculate days until birthday
             const daysUntilBirthday = Math.round((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             
-            console.log(`Birthday Check: ${contact.firstName} ${contact.lastName}`);
-            console.log(`  - Days until: ${daysUntilBirthday}`);
-            console.log(`  - Lead days setting: ${alertSettings.birthdayLeadDays}`);
+            console.log(`  Birthday Check:`);
+            console.log(`    - Days until: ${daysUntilBirthday}`);
+            console.log(`    - Lead days setting: ${alertSettings.birthdayLeadDays}`);
             
             // Show alerts based on user's lead days setting
             if (daysUntilBirthday >= 0 && daysUntilBirthday <= alertSettings.birthdayLeadDays) {
-              console.log(`  ✓ Creating birthday alert (${daysUntilBirthday} days)`);
+              console.log(`    ✓ Creating birthday alert (${daysUntilBirthday} days)`);
               
               const alertId = `birthday-${contact.id}`;
               
               // Skip if snoozed
               if (isAlertSnoozed(alertId)) {
-                console.log(`  ⏰ Alert is snoozed, skipping`);
+                console.log(`    ⏰ Alert is snoozed, skipping`);
                 return;
               }
               
@@ -408,7 +408,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 completedAt: savedAlert?.completedAt
               });
             } else {
-              console.log(`  ✗ Birthday alert not created (${daysUntilBirthday} days - outside 0-${alertSettings.birthdayLeadDays} day window)`);
+              console.log(`    ✗ Birthday alert not created (${daysUntilBirthday} days - outside 0-${alertSettings.birthdayLeadDays} day window)`);
             }
           }
 
@@ -421,15 +421,15 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             
             const daysUntilContact = Math.round((nextContactDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             
-            console.log(`Next Contact Alert: ${contact.firstName} ${contact.lastName} in ${daysUntilContact} days`);
-            console.log(`  - Lead days setting: ${alertSettings.nextContactLeadDays}`);
+            console.log(`  Next Contact Alert: in ${daysUntilContact} days`);
+            console.log(`    - Lead days setting: ${alertSettings.nextContactLeadDays}`);
             
             if (daysUntilContact <= alertSettings.nextContactLeadDays || daysUntilContact < 0) {
               const alertId = `contact-${contact.id}`;
               
               // Skip if snoozed
               if (isAlertSnoozed(alertId)) {
-                console.log(`  ⏰ Alert is snoozed, skipping`);
+                console.log(`    ⏰ Alert is snoozed, skipping`);
                 return;
               }
               
@@ -458,8 +458,21 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
           }
 
           // Contact Event alerts - process contactEvents array
+          console.log(`  Contact Events Check:`);
+          console.log(`    - Has contactEvents: ${!!contact.contactEvents}`);
+          console.log(`    - Is array: ${Array.isArray(contact.contactEvents)}`);
+          console.log(`    - Length: ${contact.contactEvents?.length || 0}`);
+          
           if (contact.contactEvents && Array.isArray(contact.contactEvents)) {
+            console.log(`    - Processing ${contact.contactEvents.length} events...`);
+            
             contact.contactEvents.forEach((event, index) => {
+              console.log(`\n    [Event ${index + 1}] ${event.title || 'Untitled'}`);
+              console.log(`      - Has date: ${!!event.date}`);
+              console.log(`      - Date value: ${event.date}`);
+              console.log(`      - alertEnabled: ${event.alertEnabled}`);
+              console.log(`      - alertDays: ${event.alertDays}`);
+              
               if (event.date && event.alertEnabled) {
                 const eventDate = new Date(event.date);
                 const today = new Date();
@@ -469,15 +482,15 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 const daysUntilEvent = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                 const alertDays = event.alertDays || alertSettings.eventLeadDays;
                 
-                console.log(`Contact Event Check: ${event.title || 'Untitled Event'} for ${contact.firstName} ${contact.lastName}`);
-                console.log(`  - Days until: ${daysUntilEvent}`);
-                console.log(`  - Alert days setting: ${alertDays}`);
+                console.log(`      - Days until event: ${daysUntilEvent}`);
+                console.log(`      - Alert days setting: ${alertDays}`);
+                console.log(`      - Should create alert: ${daysUntilEvent >= 0 && daysUntilEvent <= alertDays}`);
                 
                 if (daysUntilEvent >= 0 && daysUntilEvent <= alertDays) {
                   const alertId = `contact-event-${contact.id}-${event.id || index}`;
                   
                   if (isAlertSnoozed(alertId)) {
-                    console.log(`  ⏰ Alert is snoozed, skipping`);
+                    console.log(`      ⏰ Alert is snoozed, skipping`);
                     return;
                   }
                   
@@ -502,10 +515,17 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                     completedAt: savedAlert?.completedAt
                   });
                   
-                  console.log(`  ✓ Created contact event alert`);
+                  console.log(`      ✓ Created contact event alert with ID: ${alertId}`);
+                } else {
+                  console.log(`      ✗ Event alert not created (${daysUntilEvent} days - outside 0-${alertDays} day window)`);
                 }
+              } else {
+                if (!event.date) console.log(`      ✗ No date set for event`);
+                if (!event.alertEnabled) console.log(`      ✗ Alert not enabled for event`);
               }
             });
+          } else {
+            console.log(`    ✗ No contact events array found`);
           }
         });
       }
@@ -675,7 +695,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
         });
       }
 
-      console.log('=== ALERT SUMMARY ===');
+      console.log('\n=== ALERT SUMMARY ===');
       console.log('Total alerts generated:', generatedAlerts.length);
       console.log('Alert breakdown:', {
         birthday: generatedAlerts.filter(a => a.type === 'birthday').length,
