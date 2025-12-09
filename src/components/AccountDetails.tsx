@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Switch } from '@/components/ui/switch';
+import { AddressMap } from '@/components/AddressMap';
 import type { Account, Contact, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
 import { formatBirthday } from '@/lib/dateUtils';
@@ -422,7 +423,7 @@ export default function AccountDetails({
                           <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
                           <InfoItem label="Publicly Traded" value={account.publiclyTraded ? 'Yes' : 'No'} />
                           
-                          {/* Address with embedded Google Map */}
+                          {/* Address with embedded Google Map using Maps JavaScript API */}
                           {account.address && (
                             <div className="md:col-span-2">
                               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -430,17 +431,7 @@ export default function AccountDetails({
                                 Address
                               </label>
                               <p className="text-base mt-1 mb-3">{account.address}</p>
-                              <div className="w-full h-64 rounded-lg overflow-hidden border border-gray-200">
-                                <iframe
-                                  width="100%"
-                                  height="100%"
-                                  style={{ border: 0 }}
-                                  loading="lazy"
-                                  allowFullScreen
-                                  referrerPolicy="no-referrer-when-downgrade"
-                                  src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(account.address)}`}
-                                />
-                              </div>
+                              <AddressMap address={account.address} />
                             </div>
                           )}
                           
@@ -588,6 +579,7 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
+            {/* Rest of the accordion items remain the same - Market Snapshot, Strategy, Strategic Info, Banners, Events, Tasks */}
             {/* Market Snapshot */}
             <AccordionItem value="market">
               <AccordionTrigger className="text-lg font-semibold">
