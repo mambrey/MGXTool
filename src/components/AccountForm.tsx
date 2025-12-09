@@ -1631,11 +1631,36 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   <SelectValue placeholder="Select display mandate level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Fully Mandated">Fully Mandated: Chainwide requirement with strict enforcement and formal compliance</SelectItem>
-                  <SelectItem value="Partially Mandated">Partially Mandated: Required only in certain areas or periods with light enforcement</SelectItem>
-                  <SelectItem value="Encouraged but Optional">Encouraged but Optional: Corporate supports displays, but execution depends on local teams</SelectItem>
-                  <SelectItem value="Store-Level Discretion">Store-Level Discretion: No corporate direction- individual stores decide if displays happen</SelectItem>
-                  <SelectItem value="Not Mandated">Not Mandated: No expectation for displays- execution is purely opportunistic</SelectItem>
+                  <SelectItem value="Fully Mandated">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Fully Mandated</span>
+                      <span className="text-xs text-gray-500">Chainwide requirement with strict enforcement and formal compliance</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Partially Mandated">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Partially Mandated</span>
+                      <span className="text-xs text-gray-500">Required only in certain areas or periods with light enforcement</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Encouraged but Optional">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Encouraged but Optional</span>
+                      <span className="text-xs text-gray-500">Corporate supports displays, but execution depends on local teams</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Store-Level Discretion">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Store-Level Discretion</span>
+                      <span className="text-xs text-gray-500">No corporate direction- individual stores decide if displays happen</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Not Mandated">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Not Mandated</span>
+                      <span className="text-xs text-gray-500">No expectation for displays- execution is purely opportunistic</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
