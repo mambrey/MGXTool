@@ -1263,7 +1263,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                <SelectItem value="Banner/Buying Office">Banner/Buying Office</SelectItem>
                 <SelectItem value="National Retailer">National Retailer</SelectItem>
                 <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
                 <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
