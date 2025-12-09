@@ -1622,7 +1622,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </Select>
             </div>
             <div>
-              <Label className="text-xs font-medium">Are all displays mandated</Label>
+              <Label className="text-xs font-medium">Are Displays Mandated</Label>
               <Select 
                 value={formData.displayMandates || 'none'} 
                 onValueChange={(value) => updateField('displayMandates', value)}
@@ -1631,10 +1631,11 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   <SelectValue placeholder="Select display mandate level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="All">All</SelectItem>
-                  <SelectItem value="Some">Some</SelectItem>
-                  <SelectItem value="None">None</SelectItem>
+                  <SelectItem value="Fully Mandated">Fully Mandated: Chainwide requirement with strict enforcement and formal compliance</SelectItem>
+                  <SelectItem value="Partially Mandated">Partially Mandated: Required only in certain areas or periods with light enforcement</SelectItem>
+                  <SelectItem value="Encouraged but Optional">Encouraged but Optional: Corporate supports displays, but execution depends on local teams</SelectItem>
+                  <SelectItem value="Store-Level Discretion">Store-Level Discretion: No corporate direction- individual stores decide if displays happen</SelectItem>
+                  <SelectItem value="Not Mandated">Not Mandated: No expectation for displays- execution is purely opportunistic</SelectItem>
                 </SelectContent>
               </Select>
             </div>
