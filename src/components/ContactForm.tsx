@@ -332,7 +332,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setHeadshotError('');
 
     if (!file.type.match(/image\/(jpeg|jpg)/)) {
-      setHeadshotError('Please upload a JPG or JPEG image file');
+      setHeadshotError('Please upload an image file (JPG, JPEG, PNG, GIF, or WebP)');
       e.target.value = '';
       return;
     }
@@ -757,18 +757,18 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <div>
               <Label htmlFor="headshot" className="flex items-center gap-2">
                 <Image className="w-4 h-4" />
-                Headshot (Linkedin Only)
+                Headshot
               </Label>
               <div className="space-y-2">
                 <Input
                   id="headshot"
                   type="file"
-                  accept=".jpg,.jpeg"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,image/*"
                   onChange={handleHeadshotUpload}
                   className="cursor-pointer"
                 />
                 <p className="text-xs text-gray-500">
-                  Upload a JPG or JPEG image (max 5MB)
+                  Upload an image file (JPG, PNG, GIF, WebP - max 5MB)
                 </p>
                 {headshotError && (
                   <p className="text-xs text-red-600">{headshotError}</p>
