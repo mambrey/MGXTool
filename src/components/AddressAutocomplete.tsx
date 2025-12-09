@@ -10,6 +10,7 @@ export function AddressAutocomplete({ value, onChange, placeholder }: AddressAut
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [localValue, setLocalValue] = useState(value);
+  const isSelectingFromAutocomplete = useRef(false);
 
   useEffect(() => {
     const initAutocomplete = async () => {
@@ -26,10 +27,15 @@ export function AddressAutocomplete({ value, onChange, placeholder }: AddressAut
         autocompleteRef.current.addListener('place_changed', () => {
           const place = autocompleteRef.current?.getPlace();
           if (place?.formatted_address) {
+            isSelectingFromAutocomplete.current = true;
             // Update local state to keep input value visible
             setLocalValue(place.formatted_address);
             // Update parent component
             onChange(place.formatted_address);
+            // Reset flag after a short delay
+            setTimeout(() => {
+              isSelectingFromAutocomplete.current = false;
+            }, 100);
           }
         });
       } catch (error) {
@@ -38,13 +44,15 @@ export function AddressAutocomplete({ value, onChange, placeholder }: AddressAut
     };
 
     initAutocomplete();
-  }, [onChange]);
+  }, []); // Remove onChange from dependencies to prevent re-initialization
 
-  // Sync local value with prop value
+  // Sync local value with prop value only if not currently selecting from autocomplete
   useEffect(() => {
-    setLocalValue(value);
-    if (inputRef.current) {
-      inputRef.current.value = value;
+    if (!isSelectingFromAutocomplete.current) {
+      setLocalValue(value);
+      if (inputRef.current && inputRef.current.value !== value) {
+        inputRef.current.value = value;
+      }
     }
   }, [value]);
 
