@@ -216,7 +216,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     designatedCharities: '',
     keyEvents: '',
     customerEvents: [],
-    // Level of Influence fields - default to 'none'
+    // HQ Level of Influence fields - default to 'none'
     influenceAssortmentShelf: 'none',
     influencePricePromo: 'none',
     influenceDisplayMerchandising: 'none',
@@ -1422,11 +1422,11 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Level of Influence */}
+          {/* HQ Level of Influence */}
           <div>
             <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              Level of Influence
+              HQ Level of Influence
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
