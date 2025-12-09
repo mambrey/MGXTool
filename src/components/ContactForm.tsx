@@ -757,7 +757,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <div>
               <Label htmlFor="headshot" className="flex items-center gap-2">
                 <Image className="w-4 h-4" />
-                Headshot
+                Headshot (Linkedin Only)
               </Label>
               <div className="space-y-2">
                 <Input
