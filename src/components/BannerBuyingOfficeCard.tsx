@@ -323,11 +323,12 @@ export default function BannerBuyingOfficeCard({
                   <SelectValue placeholder="Select channel mapping" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                  <SelectItem value="National Retailer">National Retailer</SelectItem>
-                  <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
-                  <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
-                </SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                <SelectItem value="Banner/Buying Office">Banner/Buying Office</SelectItem>
+                <SelectItem value="National Retailer">National Retailer</SelectItem>
+                <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
+                <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
+              </SelectContent>
               </Select>
             </div>
 
