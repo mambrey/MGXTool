@@ -421,8 +421,47 @@ export default function AccountDetails({
                           <InfoItem label="Parent Company" value={account.parentCompany} />
                           <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
                           <InfoItem label="Publicly Traded" value={account.publiclyTraded ? 'Yes' : 'No'} />
-                          <InfoItem label="Address" value={account.address} icon={MapPin} />
-                          <InfoItem label="Company Website" value={account.website} icon={Globe} />
+                          
+                          {/* Address with embedded Google Map */}
+                          {account.address && (
+                            <div className="md:col-span-2">
+                              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                Address
+                              </label>
+                              <p className="text-base mt-1 mb-3">{account.address}</p>
+                              <div className="w-full h-64 rounded-lg overflow-hidden border border-gray-200">
+                                <iframe
+                                  width="100%"
+                                  height="100%"
+                                  style={{ border: 0 }}
+                                  loading="lazy"
+                                  allowFullScreen
+                                  referrerPolicy="no-referrer-when-downgrade"
+                                  src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(account.address)}`}
+                                />
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Clickable Company Website */}
+                          {account.website && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                <Globe className="w-4 h-4" />
+                                Company Website
+                              </label>
+                              <a 
+                                href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-base mt-1 text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                              >
+                                {account.website}
+                                <Globe className="w-3 h-3" />
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
 
