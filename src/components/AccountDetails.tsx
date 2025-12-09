@@ -354,6 +354,90 @@ export default function AccountDetails({
     );
   };
 
+  // Collect all important dates from account and banners
+  const getAllImportantDates = () => {
+    const allDates: Array<{
+      id: string;
+      title: string;
+      date: string;
+      source: string; // 'account' | 'banner' | 'event'
+      bannerName?: string;
+      alertEnabled?: boolean;
+      alertDays?: number;
+    }> = [];
+
+    // Add account-level JBP dates
+    if (account.isJBP) {
+      if (account.lastJBPDate) {
+        allDates.push({
+          id: `account-last-jbp`,
+          title: 'Last JBP (Account)',
+          date: account.lastJBPDate,
+          source: 'account',
+          alertEnabled: false,
+          alertDays: 7
+        });
+      }
+      if (account.nextJBPDate) {
+        allDates.push({
+          id: `account-next-jbp`,
+          title: 'Next JBP (Account)',
+          date: account.nextJBPDate,
+          source: 'account',
+          alertEnabled: account.nextJBPAlert || false,
+          alertDays: account.nextJBPAlertDays || 7
+        });
+      }
+    }
+
+    // Add Banner/Buying Office JBP dates
+    if (account.bannerBuyingOffices && account.bannerBuyingOffices.length > 0) {
+      account.bannerBuyingOffices.forEach((banner, index) => {
+        if (banner.isJBP) {
+          if (banner.lastJBPDate) {
+            allDates.push({
+              id: `banner-${index}-last-jbp`,
+              title: `Last JBP`,
+              date: banner.lastJBPDate,
+              source: 'banner',
+              bannerName: banner.accountName || `Banner/Buying Office #${index + 1}`,
+              alertEnabled: false,
+              alertDays: 7
+            });
+          }
+          if (banner.nextJBPDate) {
+            allDates.push({
+              id: `banner-${index}-next-jbp`,
+              title: `Next JBP`,
+              date: banner.nextJBPDate,
+              source: 'banner',
+              bannerName: banner.accountName || `Banner/Buying Office #${index + 1}`,
+              alertEnabled: banner.nextJBPAlert || false,
+              alertDays: banner.nextJBPAlertDays || 7
+            });
+          }
+        }
+      });
+    }
+
+    // Add customer events
+    customerEvents.forEach(event => {
+      allDates.push({
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        source: 'event',
+        alertEnabled: event.alertEnabled,
+        alertDays: event.alertDays
+      });
+    });
+
+    // Sort by date (earliest first)
+    return allDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  const allImportantDates = getAllImportantDates();
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -1021,19 +1105,19 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Important Dates (Customer Events) */}
+            {/* Important Dates - UPDATED to include JBP dates and banner dates */}
             <AccordionItem value="events">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Important Dates ({customerEvents.length})
+                  Important Dates ({allImportantDates.length})
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">Events</CardTitle>
+                      <CardTitle className="text-base">All Important Dates</CardTitle>
                       <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Event
@@ -1043,7 +1127,7 @@ export default function AccountDetails({
                   <CardContent>
                     <ScrollArea className="h-[350px] pr-4">
                       <div className="space-y-3">
-                        {customerEvents.length === 0 ? (
+                        {allImportantDates.length === 0 ? (
                           <div className="text-center py-8 text-gray-500">
                             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                             <p className="text-sm mb-4">No important dates added yet</p>
@@ -1053,19 +1137,33 @@ export default function AccountDetails({
                             </Button>
                           </div>
                         ) : (
-                          customerEvents.map((event) => {
-                            const daysUntil = getDaysUntilEvent(event.date);
-                            const isUpcoming = daysUntil >= 0 && daysUntil <= (event.alertDays || 7);
+                          allImportantDates.map((date) => {
+                            const daysUntil = getDaysUntilEvent(date.date);
+                            const isUpcoming = daysUntil >= 0 && daysUntil <= (date.alertDays || 7);
+                            const isJBPDate = date.source === 'account' || date.source === 'banner';
                             
                             return (
-                              <Card key={event.id} className={`p-4 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
+                              <Card key={date.id} className={`p-4 ${isUpcoming && date.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
                                 <div className="space-y-3">
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1">
-                                      <h4 className="font-medium mb-1">{event.title}</h4>
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-medium">{date.title}</h4>
+                                        {date.source === 'banner' && (
+                                          <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                            <Building className="w-3 h-3 mr-1" />
+                                            {date.bannerName}
+                                          </Badge>
+                                        )}
+                                        {date.source === 'account' && (
+                                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                            Account Level
+                                          </Badge>
+                                        )}
+                                      </div>
                                       <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <Calendar className="w-3 h-3" />
-                                        <span>{new Date(event.date).toLocaleDateString()}</span>
+                                        <span>{new Date(date.date).toLocaleDateString()}</span>
                                         {daysUntil >= 0 && (
                                           <Badge variant={daysUntil <= 7 ? 'default' : 'secondary'} className="text-xs">
                                             {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`}
@@ -1078,62 +1176,82 @@ export default function AccountDetails({
                                         )}
                                       </div>
                                     </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeleteEvent(event.id)}
-                                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-
-                                  {/* Alert Settings for this Event */}
-                                  <div className="pt-3 border-t border-gray-200 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        {event.alertEnabled ? (
-                                          <Bell className="w-4 h-4 text-orange-600" />
-                                        ) : (
-                                          <BellOff className="w-4 h-4 text-gray-400" />
-                                        )}
-                                        <Label htmlFor={`alert-${event.id}`} className="text-sm font-medium cursor-pointer">
-                                          Enable Alert
-                                        </Label>
-                                      </div>
-                                      <Switch
-                                        id={`alert-${event.id}`}
-                                        checked={event.alertEnabled || false}
-                                        onCheckedChange={() => handleToggleEventAlert(event.id)}
-                                      />
-                                    </div>
-
-                                    {event.alertEnabled && (
-                                      <div className="space-y-2 pl-6">
-                                        <Label htmlFor={`alert-days-${event.id}`} className="text-xs text-gray-600">
-                                          Alert me (days before):
-                                        </Label>
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            id={`alert-days-${event.id}`}
-                                            type="number"
-                                            min="1"
-                                            max="90"
-                                            value={event.alertDays || 7}
-                                            onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
-                                            className="w-20 h-8 text-sm"
-                                          />
-                                          <span className="text-xs text-gray-500">days before event</span>
-                                        </div>
-                                        {isUpcoming && (
-                                          <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
-                                            <Bell className="w-3 h-3" />
-                                            <span>Alert active - event is within {event.alertDays} days</span>
-                                          </div>
-                                        )}
-                                      </div>
+                                    {date.source === 'event' && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteEvent(date.id)}
+                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
                                     )}
                                   </div>
+
+                                  {/* Alert Settings - only for custom events, JBP alerts are managed in account form */}
+                                  {date.source === 'event' && (
+                                    <div className="pt-3 border-t border-gray-200 space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          {date.alertEnabled ? (
+                                            <Bell className="w-4 h-4 text-orange-600" />
+                                          ) : (
+                                            <BellOff className="w-4 h-4 text-gray-400" />
+                                          )}
+                                          <Label htmlFor={`alert-${date.id}`} className="text-sm font-medium cursor-pointer">
+                                            Enable Alert
+                                          </Label>
+                                        </div>
+                                        <Switch
+                                          id={`alert-${date.id}`}
+                                          checked={date.alertEnabled || false}
+                                          onCheckedChange={() => handleToggleEventAlert(date.id)}
+                                        />
+                                      </div>
+
+                                      {date.alertEnabled && (
+                                        <div className="space-y-2 pl-6">
+                                          <Label htmlFor={`alert-days-${date.id}`} className="text-xs text-gray-600">
+                                            Alert me (days before):
+                                          </Label>
+                                          <div className="flex items-center gap-2">
+                                            <Input
+                                              id={`alert-days-${date.id}`}
+                                              type="number"
+                                              min="1"
+                                              max="90"
+                                              value={date.alertDays || 7}
+                                              onChange={(e) => handleUpdateEventAlertDays(date.id, parseInt(e.target.value) || 7)}
+                                              className="w-20 h-8 text-sm"
+                                            />
+                                            <span className="text-xs text-gray-500">days before event</span>
+                                          </div>
+                                          {isUpcoming && (
+                                            <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                              <Bell className="w-3 h-3" />
+                                              <span>Alert active - event is within {date.alertDays} days</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Show alert status for JBP dates (read-only) */}
+                                  {isJBPDate && date.alertEnabled && (
+                                    <div className="pt-3 border-t border-gray-200">
+                                      <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                        <Bell className="w-3 h-3" />
+                                        <span>Alert configured: {date.alertDays} days before (managed in account form)</span>
+                                      </div>
+                                      {isUpcoming && (
+                                        <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
+                                          <Bell className="w-3 h-3" />
+                                          <span>Alert active - event is within {date.alertDays} days</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </Card>
                             );
