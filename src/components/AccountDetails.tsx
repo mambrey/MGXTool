@@ -771,21 +771,13 @@ export default function AccountDetails({
                                   {/* Basic Information */}
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {banner.address && (
-                                      <div>
+                                      <div className="md:col-span-2">
                                         <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                                           <MapPin className="w-4 h-4" />
                                           Address
                                         </label>
-                                        <p className="text-sm mt-1">{banner.address}</p>
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm" 
-                                          className="mt-2"
-                                          onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(banner.address || '')}`, '_blank')}
-                                        >
-                                          <MapPin className="w-3 h-3 mr-2" />
-                                          View on Map
-                                        </Button>
+                                        <p className="text-sm mt-1 mb-3">{banner.address}</p>
+                                        <AddressMap address={banner.address} />
                                       </div>
                                     )}
                                     {banner.website && (
