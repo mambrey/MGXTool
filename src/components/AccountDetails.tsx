@@ -412,21 +412,137 @@ export default function AccountDetails({
               <AccordionContent>
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <InfoItem label="Account Name" value={account.accountName} icon={Building2} />
-                      <InfoItem label="Parent Company" value={account.parentCompany} />
-                      <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
-                      <InfoItem label="Publicly Traded" value={account.publiclyTraded ? 'Yes' : 'No'} />
-                      <InfoItem label="Channel" value={account.channel} />
-                      <InfoItem label="Sub-Channel" value={account.subChannel} />
-                      <InfoItem label="Footprint" value={account.footprint} />
-                      <InfoItem label="Operating States" value={Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates} />
-                      <InfoItem label="Spirits Outlets" value={account.spiritsOutlets} />
-                      <InfoItem label="HQ Influence" value={account.hqInfluence} />
-                      <InfoItem label="Display Mandates" value={account.displayMandates} />
-                      <InfoItem label="Primary Contact" value={primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner} icon={User} />
-                      <InfoItem label="Relationship Owner" value={relationshipOwnerName} icon={User} />
-                      <InfoItem label="VP" value={account.vp} />
+                    <div className="space-y-6">
+                      {/* Basic Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Basic Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Account Name" value={account.accountName} icon={Building2} />
+                          <InfoItem label="Parent Company" value={account.parentCompany} />
+                          <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
+                          <InfoItem label="Publicly Traded" value={account.publiclyTraded ? 'Yes' : 'No'} />
+                          <InfoItem label="Address" value={account.address} icon={MapPin} />
+                          <InfoItem label="Company Website" value={account.website} icon={Globe} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Channel & Footprint */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Channel & Footprint</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Channel" value={account.channel} />
+                          <InfoItem label="Sub-Channel" value={account.subChannel} />
+                          <InfoItem label="Channel Mapping" value={account.footprint} />
+                          <InfoItem label="Operating States" value={Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates} />
+                          <InfoItem label="Spirits Outlets" value={account.spiritsOutlets} />
+                          <InfoItem label="Full Proof Outlets" value={account.fullProofOutlets} />
+                          <InfoItem label="Total Buying Offices" value={account.totalBuyingOffices} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Influence & Mandates */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Influence & Mandates</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="HQ Influence" value={account.hqInfluence} />
+                          <InfoItem label="Display Mandates" value={account.displayMandates} />
+                          <InfoItem label="Execution Reliability Score" value={account.executionReliabilityScore} />
+                          <InfoItem label="Execution Reliability Rationale" value={account.executionReliabilityRationale} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Strategy & Capabilities */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Strategy & Capabilities</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Category Captain" value={account.categoryCaptain} />
+                          <InfoItem label="Category Advisor" value={account.categoryAdvisor} />
+                          <InfoItem label="Pricing Strategy" value={account.pricingStrategy} />
+                          <InfoItem label="Private Label" value={account.privateLabel} />
+                          <InfoItem label="Innovation Appetite" value={account.innovationAppetite} />
+                          <InfoItem label="JBP Status" value={account.jbpStatus} />
+                          <InfoItem label="JBP Date" value={account.jbpDate} />
+                          <InfoItem label="Last JBP" value={account.lastJBP} />
+                          <InfoItem label="Next JBP" value={account.nextJBP} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* E-commerce & Fulfillment */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">E-commerce & Fulfillment</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="E-commerce" value={account.ecommerce} />
+                          <InfoItem label="E-commerce Maturity Level" value={account.ecommerceMaturityLevel} />
+                          <InfoItem label="Fulfillment Types" value={Array.isArray(account.fulfillmentTypes) ? account.fulfillmentTypes.join(', ') : account.fulfillmentTypes} />
+                          <InfoItem label="E-commerce Partners" value={Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : account.ecommercePartners} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Planogram & Reset Windows */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Planogram & Reset Windows</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Has Planogram" value={account.hasPlanograms ? 'Yes' : 'No'} />
+                          <InfoItem label="Planogram Written By" value={account.planogramWrittenBy} />
+                          <InfoItem label="Reset Window Lead Time" value={account.resetWindowLeadTime} />
+                          <InfoItem label="Affected Categories" value={Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : account.affectedCategories} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Strategic Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Strategic Information</h4>
+                        <div className="space-y-4">
+                          {account.strategicPriorities && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600">Strategic Priorities</label>
+                              <p className="text-sm mt-1 whitespace-pre-wrap">{account.strategicPriorities}</p>
+                            </div>
+                          )}
+                          {account.keyCompetitors && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600">Key Competitors</label>
+                              <p className="text-sm mt-1 whitespace-pre-wrap">{account.keyCompetitors}</p>
+                            </div>
+                          )}
+                          {account.designatedCharities && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600">Designated Charities</label>
+                              <p className="text-sm mt-1 whitespace-pre-wrap">{account.designatedCharities}</p>
+                            </div>
+                          )}
+                          {account.keyEvents && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600">Key Events</label>
+                              <p className="text-sm mt-1 whitespace-pre-wrap">{account.keyEvents}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Team Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Team Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Primary Contact" value={primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner} icon={User} />
+                          <InfoItem label="Relationship Owner" value={relationshipOwnerName} icon={User} />
+                          <InfoItem label="VP" value={account.vp} />
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
