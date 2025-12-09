@@ -197,6 +197,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [headshotFileName, setHeadshotFileName] = useState('');
   const [headshotError, setHeadshotError] = useState('');
+  
+  // State for shipping address save feedback
+  const [addressSaved, setAddressSaved] = useState(false);
 
   // Primary Diageo Relationship Owner(s) state
   const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
@@ -1056,8 +1059,25 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 onChange={(address) => setFormData(prev => ({ ...prev, preferredShippingAddress: address }))}
                 placeholder="Start typing address..."
               />
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleSaveShippingAddress}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  Save Address
+                </Button>
+                {addressSaved && (
+                  <span className="text-sm text-green-600 flex items-center gap-1">
+                    <Check className="w-4 h-4" />
+                    Address saved!
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-500 mt-1">
-                Start typing to see address suggestions
+                Start typing to see address suggestions, then click Save Address
               </p>
             </div>
           </CardContent>
