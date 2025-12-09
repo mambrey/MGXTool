@@ -127,13 +127,20 @@ export default function CRMTool({ userName }: CRMToolProps) {
 
   const handleAccountSave = (account: Account) => {
     if (editingAccount) {
+      // Update existing account
       setAccounts(prev => (prev || []).map(a => a.id === account.id ? account : a));
+      // Update selectedAccount to show the latest changes
+      setSelectedAccount(account);
     } else {
+      // Add new account
       setAccounts(prev => [...(prev || []), account]);
     }
     setEditingAccount(null);
     setShowAccountForm(false);
-    setCurrentView('accounts');
+    // Only navigate to accounts list if we're adding a new account
+    if (!editingAccount) {
+      setCurrentView('accounts');
+    }
   };
 
   const handleAccountUpdate = (account: Account) => {
