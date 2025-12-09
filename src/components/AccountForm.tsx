@@ -1409,36 +1409,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               className="mt-1"
             />
           </div>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={openMap}
-              className="flex items-center gap-2"
-              disabled={!formData.address}
-            >
-              <MapPin className="w-4 h-4" />
-              View on Map
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={openWebsite}
-              className="flex items-center gap-2"
-              disabled={!formData.website}
-            >
-              <Globe className="w-4 h-4" />
-              Visit Website
-            </Button>
-          </div>
-          <div className="text-sm text-gray-600">
-            {formData.address && (
-              <p>• Click "View on Map" to open address in Google Maps</p>
-            )}
-            {formData.website && (
-              <p>• Click "Visit Website" to open company website in new tab</p>
-            )}
-          </div>
+
         </CardContent>
       </Card>
 
