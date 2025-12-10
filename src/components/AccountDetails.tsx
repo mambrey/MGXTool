@@ -29,7 +29,7 @@ interface AccountDetailsProps {
 // Extended CustomerEvent interface with alert functionality
 interface CustomerEventWithAlert extends CustomerEvent {
   alertEnabled?: boolean;
-  alertDays?: number;
+  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
 }
 
 // Helper function to get Support Style color matching ContactForm
@@ -123,6 +123,19 @@ const getPreferredContactInfo = (contact: Contact): {
   }
 };
 
+
+  const formatAlertOptions = (options?: ('same_day' | 'day_before' | 'week_before')[]) => {
+    if (!options || options.length === 0) return 'None';
+    return options.map(opt => {
+      switch (opt) {
+        case 'same_day': return 'Same Day';
+        case 'day_before': return 'Day Before';
+        case 'week_before': return 'Week Before';
+        default: return opt;
+      }
+    }).join(', ');
+  };
+
 export default function AccountDetails({ 
   account, 
   contacts, 
@@ -154,7 +167,7 @@ export default function AccountDetails({
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
-  const [newEventAlertDays, setNewEventAlertDays] = useState(7);
+  const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
   const [expandAll, setExpandAll] = useState(false);
 
   // Sample tasks related to this account
@@ -205,7 +218,7 @@ export default function AccountDetails({
       title: newEventTitle.trim(),
       date: newEventDate,
       alertEnabled: newEventAlertEnabled,
-      alertDays: newEventAlertDays
+      alertOptions: newEventAlertOptions
     };
 
     const updatedEvents = [...customerEvents, newEvent];
@@ -214,7 +227,7 @@ export default function AccountDetails({
     // Update the account with new events
     const updatedAccount = {
       ...account,
-      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -226,7 +239,7 @@ export default function AccountDetails({
     setNewEventTitle('');
     setNewEventDate('');
     setNewEventAlertEnabled(false);
-    setNewEventAlertDays(7);
+    setNewEventAlertOptions([]);
     setIsAddEventDialogOpen(false);
   };
 
@@ -238,7 +251,7 @@ export default function AccountDetails({
       // Update the account with new events
       const updatedAccount = {
         ...account,
-        customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+        customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
         lastModified: new Date().toISOString()
       };
 
@@ -259,7 +272,7 @@ export default function AccountDetails({
     // Update the account
     const updatedAccount = {
       ...account,
-      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -279,7 +292,7 @@ export default function AccountDetails({
     // Update the account
     const updatedAccount = {
       ...account,
-      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -1139,7 +1152,12 @@ export default function AccountDetails({
                         ) : (
                           allImportantDates.map((date) => {
                             const daysUntil = getDaysUntilEvent(date.date);
-                            const isUpcoming = daysUntil >= 0 && daysUntil <= (date.alertDays || 7);
+                            const isUpcoming = daysUntil >= 0 && (date.alertOptions || []).some(opt => {
+                            if (opt === 'same_day') return daysUntil === 0;
+                            if (opt === 'day_before') return daysUntil <= 1;
+                            if (opt === 'week_before') return daysUntil <= 7;
+                            return false;
+                          });
                             const isJBPDate = date.source === 'account' || date.source === 'banner';
                             
                             return (
@@ -1229,7 +1247,7 @@ export default function AccountDetails({
                                           {isUpcoming && (
                                             <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
                                               <Bell className="w-3 h-3" />
-                                              <span>Alert active - event is within {date.alertDays} days</span>
+                                              <span>Alert active</span>
                                             </div>
                                           )}
                                         </div>
@@ -1242,12 +1260,12 @@ export default function AccountDetails({
                                     <div className="pt-3 border-t border-gray-200">
                                       <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
                                         <Bell className="w-3 h-3" />
-                                        <span>Alert configured: {date.alertDays} days before (managed in account form)</span>
+                                        <span>Alert: {formatAlertOptions(date.alertOptions)} (managed in account form)</span>
                                       </div>
                                       {isUpcoming && (
                                         <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
                                           <Bell className="w-3 h-3" />
-                                          <span>Alert active - event is within {date.alertDays} days</span>
+                                          <span>Alert active</span>
                                         </div>
                                       )}
                                     </div>
@@ -1529,7 +1547,7 @@ export default function AccountDetails({
               setNewEventTitle('');
               setNewEventDate('');
               setNewEventAlertEnabled(false);
-              setNewEventAlertDays(7);
+              setNewEventAlertOptions([]);
             }}>
               Cancel
             </Button>
