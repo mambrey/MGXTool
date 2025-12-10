@@ -1102,9 +1102,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           ? currentOptions.filter(o => o !== option)
           : [...currentOptions, option];
         return { ...event, alertOptions: newOptions };
+
+  const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+    const currentOptions = formData.nextJBPAlertOptions || [];
+    const newOptions = currentOptions.includes(option)
+      ? currentOptions.filter(o => o !== option)
+      : [...currentOptions, option];
+    updateField('nextJBPAlertOptions', newOptions);
+  };
       }
       return event;
     }));
+  };
+
+  const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+    const currentOptions = formData.nextJBPAlertOptions || [];
+    const newOptions = currentOptions.includes(option)
+      ? currentOptions.filter(o => o !== option)
+      : [...currentOptions, option];
+    updateField('nextJBPAlertOptions', newOptions);
   };
 
 
@@ -1731,24 +1747,31 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 
                 {formData.nextJBPAlert && (
                   <div className="space-y-2 pl-6">
-                    <Label htmlFor="nextjbp-alert-days" className="text-sm text-gray-600">
-                      Alert me (days before event):
+                    <Label className="text-sm text-gray-600">
+                      Alert me:
                     </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="nextjbp-alert-days"
-                        type="number"
-                        min="1"
-                        max="90"
-                        value={formData.nextJBPAlertDays || 7}
-                        onChange={(e) => updateField('nextJBPAlertDays', parseInt(e.target.value) || 7)}
-                        className="w-24 h-9"
-                      />
-                      <span className="text-sm text-gray-500">days before</span>
+                    <div className="space-y-2">
+                      {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                        <div key={option} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`jbp-${option}`}
+                            checked={(formData.nextJBPAlertOptions || []).includes(option)}
+                            onCheckedChange={() => handleToggleJBPAlertOption(option)}
+                          />
+                          <Label
+                            htmlFor={`jbp-${option}`}
+                            className="text-sm font-normal cursor-pointer"
+                          >
+                            {getAlertOptionLabel(option)}
+                          </Label>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-xs text-gray-500">
-                      You'll receive an alert {formData.nextJBPAlertDays || 7} {(formData.nextJBPAlertDays || 7) === 1 ? 'day' : 'days'} before this date
-                    </p>
+                    {(formData.nextJBPAlertOptions || []).length > 0 && (
+                      <p className="text-xs text-gray-500">
+                        You'll receive {(formData.nextJBPAlertOptions || []).length} alert{(formData.nextJBPAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
