@@ -181,6 +181,7 @@ export interface Contact {
   currentRoleTenure?: string; // NEW: Current role tenure field
   managerId?: string; // ID of the manager contact (for reporting hierarchy)
   accountId?: string;
+  bannerBuyingOfficeId?: string; // NEW: Optional banner/buying office ID for contacts associated with specific banner/buying offices
   isPrimaryContact?: boolean; // UPDATED: Changed from contactType to isPrimaryContact boolean
   contactActiveStatus?: 'Active' | 'Inactive'; // NEW: Contact active status field
   birthday?: string;
