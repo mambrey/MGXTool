@@ -1094,26 +1094,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
 
 
-  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
-    setCustomerEvents(prev => prev.map(event => {
-      if (event.id === eventId) {
-        const currentOptions = event.alertOptions || [];
-        const newOptions = currentOptions.includes(option)
-          ? currentOptions.filter(o => o !== option)
-          : [...currentOptions, option];
-        return { ...event, alertOptions: newOptions };
-
-  const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
-    const currentOptions = formData.nextJBPAlertOptions || [];
-    const newOptions = currentOptions.includes(option)
-      ? currentOptions.filter(o => o !== option)
-      : [...currentOptions, option];
-    updateField('nextJBPAlertOptions', newOptions);
-  };
-      }
-      return event;
-    }));
-  };
 
   const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
     const currentOptions = formData.nextJBPAlertOptions || [];
@@ -1226,7 +1206,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           <div>
             <Label htmlFor="tickerSymbol" className="text-sm font-medium">
               Ticker Symbol
-              Ticker Symbol
             </Label>
             <div className="flex gap-2 mt-1">
               <Input
@@ -1251,8 +1230,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               <p className="text-xs text-green-600 mt-1">
                 ✓ New ticker symbol will be sent to Power Automate when saved
               </p>
-            )}
-            {loading && (
             )}
             {loading && (
               <p className="text-xs text-blue-600 mt-1">
@@ -1380,8 +1357,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           </div>
-          </div>
-
           {/* Market Snapshot Section - NEW */}
           {marketData && formData.tickerSymbol && (
             <div className="sm:col-span-2 mt-4 pt-4 border-t">
