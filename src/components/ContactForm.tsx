@@ -32,7 +32,7 @@ interface ContactFormProps {
 // Extended event interface with alert functionality
 interface ContactEventWithAlert extends CustomerEvent {
   alertEnabled?: boolean;
-  alertDays?: number;
+  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
 }
 
 // Category options for segment ownership - REORDERED Non-Alc below Whiskey Other
@@ -177,10 +177,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     responsibilityLevels: contact?.responsibilityLevels || {},
     birthday: contact?.birthday || '',
     birthdayAlert: contact?.birthdayAlert || false,
-    birthdayAlertDays: contact?.birthdayAlertDays || 7,
+    birthdayAlertOptions: contact?.birthdayAlertOptions || [],
     nextContactDate: contact?.nextContactDate || '',
     nextContactAlert: contact?.nextContactAlert || false,
-    nextContactAlertDays: contact?.nextContactAlertDays || 7,
+    nextContactAlertOptions: contact?.nextContactAlertOptions || [],
     lastContactDate: contact?.lastContactDate || '',
     linkedinProfile: contact?.linkedinProfile || '',
     knownPreferences: contact?.knownPreferences || '',
@@ -197,15 +197,15 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [contactEvents, setContactEvents] = useState<ContactEventWithAlert[]>(
     (contact?.contactEvents || []).map(event => ({
       ...event,
-      alertEnabled: false,
-      alertDays: 7
+      alertEnabled: event.alertEnabled || false,
+      alertOptions: event.alertOptions || []
     }))
   );
   const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
-  const [newEventAlertDays, setNewEventAlertDays] = useState(7);
+  const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
 
   const [newNote, setNewNote] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -259,6 +259,44 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   };
 
   // Initialize autocomplete when Google Maps is loaded
+
+  // Helper function to toggle alert options
+  const handleToggleBirthdayAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+    setFormData(prev => {
+      const currentOptions = prev.birthdayAlertOptions || [];
+      const newOptions = currentOptions.includes(option)
+        ? currentOptions.filter(o => o !== option)
+        : [...currentOptions, option];
+      return { ...prev, birthdayAlertOptions: newOptions };
+    });
+  };
+
+  const handleToggleNextContactAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+    setFormData(prev => {
+      const currentOptions = prev.nextContactAlertOptions || [];
+      const newOptions = currentOptions.includes(option)
+        ? currentOptions.filter(o => o !== option)
+        : [...currentOptions, option];
+      return { ...prev, nextContactAlertOptions: newOptions };
+    });
+  };
+
+  const handleToggleNewEventAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+    setNewEventAlertOptions(prev => {
+      return prev.includes(option)
+        ? prev.filter(o => o !== option)
+        : [...prev, option];
+    });
+  };
+
+  const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before') => {
+    switch (option) {
+      case 'same_day': return 'Same Day';
+      case 'day_before': return 'Day Before';
+      case 'week_before': return 'Week Before';
+    }
+  };
+
   useEffect(() => {
     if (isLoaded && inputRef.current && window.google) {
       autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
@@ -491,7 +529,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       title: newEventTitle.trim(),
       date: newEventDate,
       alertEnabled: newEventAlertEnabled,
-      alertDays: newEventAlertDays
+      alertOptions: newEventAlertOptions
     };
 
     setContactEvents([...contactEvents, newEvent]);
@@ -499,7 +537,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setNewEventTitle('');
     setNewEventDate('');
     setNewEventAlertEnabled(false);
-    setNewEventAlertDays(7);
+    setNewEventAlertOptions([]);
     setIsAddEventDialogOpen(false);
   };
 
@@ -517,12 +555,25 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     ));
   };
 
-  const handleUpdateEventAlertDays = (eventId: string, days: number) => {
+  const handleUpdateEventAlertOptions = (eventId: string, options: ('same_day' | 'day_before' | 'week_before')[]) => {
     setContactEvents(contactEvents.map(event => 
       event.id === eventId 
-        ? { ...event, alertDays: days }
+        ? { ...event, alertOptions: options }
         : event
     ));
+  };
+  
+  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
+    setContactEvents(contactEvents.map(event => {
+      if (event.id === eventId) {
+        const currentOptions = event.alertOptions || [];
+        const newOptions = currentOptions.includes(option)
+          ? currentOptions.filter(o => o !== option)
+          : [...currentOptions, option];
+        return { ...event, alertOptions: newOptions };
+      }
+      return event;
+    }));
   };
 
   const getDaysUntilEvent = (eventDate: string) => {
@@ -571,7 +622,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         salesLastCheckIn,
         supportLastCheckIn
       },
-      contactEvents: contactEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      contactEvents: contactEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       createdAt: contact?.createdAt || new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
@@ -1290,25 +1341,32 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </div>
                   
                   {formData.birthdayAlert && (
-                    <div className="space-y-2 pl-6">
-                      <Label htmlFor="birthday-alert-days" className="text-sm text-gray-600">
-                        Alert me (days before event):
+                    <div className="space-y-3 pl-6">
+                      <Label className="text-sm text-gray-600">
+                        Alert me:
                       </Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="birthday-alert-days"
-                          type="number"
-                          min="1"
-                          max="90"
-                          value={formData.birthdayAlertDays}
-                          onChange={(e) => setFormData(prev => ({ ...prev, birthdayAlertDays: parseInt(e.target.value) || 7 }))}
-                          className="w-24 h-9"
-                        />
-                        <span className="text-sm text-gray-500">days before</span>
+                      <div className="space-y-2">
+                        {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`birthday-${option}`}
+                              checked={(formData.birthdayAlertOptions || []).includes(option)}
+                              onCheckedChange={() => handleToggleBirthdayAlertOption(option)}
+                            />
+                            <Label
+                              htmlFor={`birthday-${option}`}
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {getAlertOptionLabel(option)}
+                            </Label>
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-xs text-gray-500">
-                        You'll receive an alert {formData.birthdayAlertDays} {formData.birthdayAlertDays === 1 ? 'day' : 'days'} before this date
-                      </p>
+                      {(formData.birthdayAlertOptions || []).length > 0 && (
+                        <p className="text-xs text-gray-500">
+                          You'll receive {(formData.birthdayAlertOptions || []).length} alert{(formData.birthdayAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1339,25 +1397,32 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </div>
                   
                   {formData.nextContactAlert && (
-                    <div className="space-y-2 pl-6">
-                      <Label htmlFor="next-contact-alert-days" className="text-sm text-gray-600">
-                        Alert me (days before event):
+                    <div className="space-y-3 pl-6">
+                      <Label className="text-sm text-gray-600">
+                        Alert me:
                       </Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="next-contact-alert-days"
-                          type="number"
-                          min="1"
-                          max="90"
-                          value={formData.nextContactAlertDays}
-                          onChange={(e) => setFormData(prev => ({ ...prev, nextContactAlertDays: parseInt(e.target.value) || 7 }))}
-                          className="w-24 h-9"
-                        />
-                        <span className="text-sm text-gray-500">days before</span>
+                      <div className="space-y-2">
+                        {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`next-contact-${option}`}
+                              checked={(formData.nextContactAlertOptions || []).includes(option)}
+                              onCheckedChange={() => handleToggleNextContactAlertOption(option)}
+                            />
+                            <Label
+                              htmlFor={`next-contact-${option}`}
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {getAlertOptionLabel(option)}
+                            </Label>
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-xs text-gray-500">
-                        You'll receive an alert {formData.nextContactAlertDays} {formData.nextContactAlertDays === 1 ? 'day' : 'days'} before this date
-                      </p>
+                      {(formData.nextContactAlertOptions || []).length > 0 && (
+                        <p className="text-xs text-gray-500">
+                          You'll receive {(formData.nextContactAlertOptions || []).length} alert{(formData.nextContactAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1383,7 +1448,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                     <div className="space-y-3">
                       {contactEvents.map((event) => {
                         const daysUntil = getDaysUntilEvent(event.date);
-                        const isUpcoming = daysUntil >= 0 && daysUntil <= (event.alertDays || 7);
+                        const isUpcoming = daysUntil >= 0 && (event.alertOptions || []).some(opt => {
+                          if (opt === 'same_day') return daysUntil === 0;
+                          if (opt === 'day_before') return daysUntil <= 1;
+                          if (opt === 'week_before') return daysUntil <= 7;
+                          return false;
+                        });
                         
                         return (
                           <Card key={event.id} className={`p-3 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
@@ -1437,24 +1507,30 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                 </div>
 
                                 {event.alertEnabled && (
-                                  <div className="space-y-1 pl-5">
-                                    <Label htmlFor={`alert-days-${event.id}`} className="text-xs text-gray-600">
-                                      Alert me (days before):
+                                  <div className="space-y-2 pl-5">
+                                    <Label className="text-xs text-gray-600">
+                                      Alert me:
                                     </Label>
-                                    <div className="flex items-center gap-2">
-                                      <Input
-                                        id={`alert-days-${event.id}`}
-                                        type="number"
-                                        min="1"
-                                        max="90"
-                                        value={event.alertDays || 7}
-                                        onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
-                                        className="w-16 h-7 text-xs"
-                                      />
-                                      <span className="text-xs text-gray-500">days</span>
+                                    <div className="space-y-1.5">
+                                      {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                                        <div key={option} className="flex items-center space-x-2">
+                                          <Checkbox
+                                            id={`event-${event.id}-${option}`}
+                                            checked={(event.alertOptions || []).includes(option)}
+                                            onCheckedChange={() => handleToggleEventAlertOption(event.id, option)}
+                                            className="h-3 w-3"
+                                          />
+                                          <Label
+                                            htmlFor={`event-${event.id}-${option}`}
+                                            className="text-xs font-normal cursor-pointer"
+                                          >
+                                            {getAlertOptionLabel(option)}
+                                          </Label>
+                                        </div>
+                                      ))}
                                     </div>
-                                    {isUpcoming && (
-                                      <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                    {isUpcoming && (event.alertOptions || []).length > 0 && (
+                                      <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
                                         <Bell className="w-3 h-3" />
                                         <span>Alert active</span>
                                       </div>
@@ -1983,25 +2059,32 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </div>
 
               {newEventAlertEnabled && (
-                <div className="space-y-2 pl-6 pt-2">
-                  <Label htmlFor="alert-days" className="text-sm">
-                    Alert me (days before event):
+                <div className="space-y-3 pl-6 pt-2">
+                  <Label className="text-sm">
+                    Alert me:
                   </Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="alert-days"
-                      type="number"
-                      min="1"
-                      max="90"
-                      value={newEventAlertDays}
-                      onChange={(e) => setNewEventAlertDays(parseInt(e.target.value) || 7)}
-                      className="w-24"
-                    />
-                    <span className="text-sm text-gray-500">days before</span>
+                  <div className="space-y-2">
+                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`new-event-${option}`}
+                          checked={newEventAlertOptions.includes(option)}
+                          onCheckedChange={() => handleToggleNewEventAlertOption(option)}
+                        />
+                        <Label
+                          htmlFor={`new-event-${option}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {getAlertOptionLabel(option)}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-xs text-gray-500">
-                    You'll receive an alert {newEventAlertDays} {newEventAlertDays === 1 ? 'day' : 'days'} before this event
-                  </p>
+                  {newEventAlertOptions.length > 0 && (
+                    <p className="text-xs text-gray-500">
+                      You'll receive {newEventAlertOptions.length} alert{newEventAlertOptions.length !== 1 ? 's' : ''} for this event
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -2012,7 +2095,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               setNewEventTitle('');
               setNewEventDate('');
               setNewEventAlertEnabled(false);
-              setNewEventAlertDays(7);
+              setNewEventAlertOptions([]);
             }}>
               Cancel
             </Button>

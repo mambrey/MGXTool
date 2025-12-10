@@ -3,7 +3,7 @@ export interface CustomerEvent {
   title: string;
   date: string;
   alertEnabled?: boolean;
-  alertDays?: number;
+  alertOptions?: ('same_day' | 'day_before' | 'week_before')[]; // NEW: Multi-select alert options
 }
 
 export interface CategoryResetWindow {
@@ -38,7 +38,7 @@ export interface BannerBuyingOffice {
   lastJBPDate: string;
   nextJBPDate: string;
   nextJBPAlert?: boolean;
-  nextJBPAlertDays?: number;
+  nextJBPAlertOptions?: ('same_day' | 'day_before' | 'week_before')[]; // NEW: Multi-select alert options
   pricingStrategy: string;
   privateLabel: string;
   displayMandates: string;
@@ -123,7 +123,7 @@ export interface Account {
   lastJBPDate?: string;
   nextJBPDate?: string;
   nextJBPAlert?: boolean;
-  nextJBPAlertDays?: number;
+  nextJBPAlertOptions?: ('same_day' | 'day_before' | 'week_before')[]; // NEW: Multi-select alert options
   hasPlanograms?: boolean;
   planogramWrittenBy?: string; // NEW: Author of the planogram
   // NEW: Planogram Reset Configuration fields
@@ -186,7 +186,7 @@ export interface Contact {
   contactActiveStatus?: 'Active' | 'Inactive'; // NEW: Contact active status field
   birthday?: string;
   birthdayAlert?: boolean;
-  birthdayAlertDays?: number;
+  birthdayAlertOptions?: ('same_day' | 'day_before' | 'week_before')[]; // NEW: Multi-select alert options (replaces birthdayAlertDays)
   relationshipStatus?: 'Promoter' | 'Supporter' | 'Neutral' | 'Detractor' | 'At Risk'; // UPDATED: Changed to specific dropdown values
   categorySegmentOwnership?: string[]; // NEW: Multi-select for category/segment ownership
   // Responsibility Levels - NEW
@@ -204,7 +204,7 @@ export interface Contact {
   lastContactDate?: string;
   nextContactDate?: string;
   nextContactAlert?: boolean;
-  nextContactAlertDays?: number;
+  nextContactAlertOptions?: ('same_day' | 'day_before' | 'week_before')[]; // NEW: Multi-select alert options (replaces nextContactAlertDays)
   socialHandles?: string[];
   linkedinProfile?: string; // LinkedIn profile URL
   knownPreferences?: string;

@@ -50,6 +50,19 @@ const formatBirthday = (birthday: string): string => {
   return birthday;
 };
 
+
+  const formatAlertOptions = (options?: ('same_day' | 'day_before' | 'week_before')[]) => {
+    if (!options || options.length === 0) return 'None';
+    return options.map(opt => {
+      switch (opt) {
+        case 'same_day': return 'Same Day';
+        case 'day_before': return 'Day Before';
+        case 'week_before': return 'Week Before';
+        default: return opt;
+      }
+    }).join(', ');
+  };
+
 export default function ContactDetails({ 
   contact, 
   account, 
@@ -70,7 +83,7 @@ export default function ContactDetails({
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
-  const [newEventAlertDays, setNewEventAlertDays] = useState(7);
+  const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
 
   const handleAddEvent = () => {
     if (!newEventTitle.trim() || !newEventDate) {
@@ -92,7 +105,7 @@ export default function ContactDetails({
     // Update the contact with new events
     const updatedContact = {
       ...contact,
-      contactEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      contactEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -104,7 +117,7 @@ export default function ContactDetails({
     setNewEventTitle('');
     setNewEventDate('');
     setNewEventAlertEnabled(false);
-    setNewEventAlertDays(7);
+    setNewEventAlertOptions([]);
     setIsAddEventDialogOpen(false);
   };
 
@@ -116,7 +129,7 @@ export default function ContactDetails({
       // Update the contact with new events
       const updatedContact = {
         ...contact,
-        contactEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+        contactEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
         lastModified: new Date().toISOString()
       };
 
@@ -137,7 +150,7 @@ export default function ContactDetails({
     // Update the contact
     const updatedContact = {
       ...contact,
-      contactEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      contactEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -157,7 +170,7 @@ export default function ContactDetails({
     // Update the contact
     const updatedContact = {
       ...contact,
-      contactEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      contactEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -765,7 +778,7 @@ export default function ContactDetails({
                           <div className="space-y-3">
                             {contactEvents.map((event) => {
                               const daysUntil = getDaysUntilEvent(event.date);
-                              const isUpcoming = daysUntil >= 0 && daysUntil <= (event.alertDays || 7);
+                              const isUpcoming = daysUntil >= 0 && daysUntil <= (formatAlertOptions(event.alertOptions) || 7);
                               
                               return (
                                 <Card key={event.id} className={`p-4 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
@@ -829,7 +842,7 @@ export default function ContactDetails({
                                               type="number"
                                               min="1"
                                               max="90"
-                                              value={event.alertDays || 7}
+                                              value={formatAlertOptions(event.alertOptions) || 7}
                                               onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
                                               className="w-20 h-8 text-sm"
                                             />
@@ -838,7 +851,7 @@ export default function ContactDetails({
                                           {isUpcoming && (
                                             <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
                                               <Bell className="w-3 h-3" />
-                                              <span>Alert active - event is within {event.alertDays} days</span>
+                                              <span>Alert active - event is within {formatAlertOptions(event.alertOptions)} days</span>
                                             </div>
                                           )}
                                         </div>
@@ -1003,7 +1016,7 @@ export default function ContactDetails({
               setNewEventTitle('');
               setNewEventDate('');
               setNewEventAlertEnabled(false);
-              setNewEventAlertDays(7);
+              setNewEventAlertOptions([]);
             }}>
               Cancel
             </Button>
