@@ -10,9 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Switch } from '@/components/ui/switch';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import { AddressMap } from '@/components/AddressMap';
 import type { Account, Contact, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
+import { formatBirthday } from '@/lib/dateUtils';
 
 interface AccountDetailsProps {
   account: Account;
@@ -28,27 +29,8 @@ interface AccountDetailsProps {
 // Extended CustomerEvent interface with alert functionality
 interface CustomerEventWithAlert extends CustomerEvent {
   alertEnabled?: boolean;
-  alertDays?: number;
+  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
 }
-
-// Google Maps API Key
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-
-// Google Maps libraries to load
-const libraries: ("places" | "geometry")[] = ["places", "geometry"];
-
-// Map container style
-const mapContainerStyle = {
-  width: '100%',
-  height: '400px',
-  borderRadius: '8px'
-};
-
-// Default map center (will be updated based on address)
-const defaultCenter = {
-  lat: 37.7749,
-  lng: -122.4194
-};
 
 // Helper function to get Support Style color matching ContactForm
 const getSupportStyleColor = (status: string) => {
@@ -141,6 +123,19 @@ const getPreferredContactInfo = (contact: Contact): {
   }
 };
 
+
+  const formatAlertOptions = (options?: ('same_day' | 'day_before' | 'week_before')[]) => {
+    if (!options || options.length === 0) return 'None';
+    return options.map(opt => {
+      switch (opt) {
+        case 'same_day': return 'Same Day';
+        case 'day_before': return 'Day Before';
+        case 'week_before': return 'Week Before';
+        default: return opt;
+      }
+    }).join(', ');
+  };
+
 export default function AccountDetails({ 
   account, 
   contacts, 
@@ -158,7 +153,7 @@ export default function AccountDetails({
 
   // Find the relationship owner - look for any contact with a relationship owner set
   const relationshipOwnerContact = contacts.find(c => c.relationshipOwner?.name);
-  const relationshipOwnerName = relationshipOwnerContact?.relationshipOwner?.name || 'Mora Ambrey';
+  const relationshipOwnerName = relationshipOwnerContact?.relationshipOwner?.name || 'No Assigned';
 
   // Customer Events state with alert functionality
   const [customerEvents, setCustomerEvents] = useState<CustomerEventWithAlert[]>(
@@ -172,38 +167,8 @@ export default function AccountDetails({
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
-  const [newEventAlertDays, setNewEventAlertDays] = useState(7);
+  const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
   const [expandAll, setExpandAll] = useState(false);
-
-  // Google Maps state
-  const [mapCenter, setMapCenter] = useState(defaultCenter);
-  const [mapError, setMapError] = useState<string>('');
-
-  // Load Google Maps script
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: libraries,
-  });
-
-  // Geocode address to get coordinates
-  React.useEffect(() => {
-    if (isLoaded && account.address && window.google) {
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ address: account.address }, (results, status) => {
-        if (status === 'OK' && results && results[0]) {
-          const location = results[0].geometry.location;
-          setMapCenter({
-            lat: location.lat(),
-            lng: location.lng()
-          });
-          setMapError('');
-        } else {
-          setMapError('Unable to geocode address. Please verify the address is correct.');
-          console.error('Geocoding failed:', status);
-        }
-      });
-    }
-  }, [isLoaded, account.address]);
 
   // Sample tasks related to this account
   const [accountTasks] = useState<Task[]>([
@@ -253,7 +218,7 @@ export default function AccountDetails({
       title: newEventTitle.trim(),
       date: newEventDate,
       alertEnabled: newEventAlertEnabled,
-      alertDays: newEventAlertDays
+      alertOptions: newEventAlertOptions
     };
 
     const updatedEvents = [...customerEvents, newEvent];
@@ -262,7 +227,7 @@ export default function AccountDetails({
     // Update the account with new events
     const updatedAccount = {
       ...account,
-      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -274,7 +239,7 @@ export default function AccountDetails({
     setNewEventTitle('');
     setNewEventDate('');
     setNewEventAlertEnabled(false);
-    setNewEventAlertDays(7);
+    setNewEventAlertOptions([]);
     setIsAddEventDialogOpen(false);
   };
 
@@ -286,7 +251,7 @@ export default function AccountDetails({
       // Update the account with new events
       const updatedAccount = {
         ...account,
-        customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+        customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
         lastModified: new Date().toISOString()
       };
 
@@ -307,7 +272,7 @@ export default function AccountDetails({
     // Update the account
     const updatedAccount = {
       ...account,
-      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -327,7 +292,7 @@ export default function AccountDetails({
     // Update the account
     const updatedAccount = {
       ...account,
-      customerEvents: updatedEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      customerEvents: updatedEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       lastModified: new Date().toISOString()
     };
 
@@ -369,7 +334,7 @@ export default function AccountDetails({
     return days;
   };
 
-  const InfoItem = ({ label, value, icon: Icon }: { label: string; value: string | number | undefined; icon?: React.ComponentType<{ className?: string }> }) => {
+  const InfoItem = ({ label, value, icon: Icon, muted }: { label: string; value: string | number | undefined; icon?: React.ComponentType<{ className?: string }>; muted?: boolean }) => {
     if (!value) return null;
     return (
       <div>
@@ -377,10 +342,114 @@ export default function AccountDetails({
           {Icon && <Icon className="w-4 h-4" />}
           {label}
         </label>
-        <p className="text-base mt-1">{value}</p>
+        <p className={`text-base mt-1 ${muted ? 'text-muted-foreground' : ''}`}>{value}</p>
       </div>
     );
   };
+
+  // Helper to display spirits outlets by state
+  const renderSpiritsOutletsByState = () => {
+    if (!account.spiritsOutletsByState || account.spiritsOutletsByState.length === 0) return null;
+    
+    return (
+      <div className="md:col-span-2">
+        <label className="text-sm font-medium text-gray-600">Spirits Outlets by State</label>
+        <div className="mt-2 p-3 bg-gray-50 rounded-lg border">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {account.spiritsOutletsByState.map((outlet, idx) => (
+              <div key={idx} className="text-sm">
+                <span className="font-medium">{outlet.state}:</span> {outlet.outletCount || 'N/A'}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Collect all important dates from account and banners
+  const getAllImportantDates = () => {
+    const allDates: Array<{
+      id: string;
+      title: string;
+      date: string;
+      source: string; // 'account' | 'banner' | 'event'
+      bannerName?: string;
+      alertEnabled?: boolean;
+      alertDays?: number;
+    }> = [];
+
+    // Add account-level JBP dates
+    if (account.isJBP) {
+      if (account.lastJBPDate) {
+        allDates.push({
+          id: `account-last-jbp`,
+          title: 'Last JBP (Account)',
+          date: account.lastJBPDate,
+          source: 'account',
+          alertEnabled: false,
+          alertDays: 7
+        });
+      }
+      if (account.nextJBPDate) {
+        allDates.push({
+          id: `account-next-jbp`,
+          title: 'Next JBP (Account)',
+          date: account.nextJBPDate,
+          source: 'account',
+          alertEnabled: account.nextJBPAlert || false,
+          alertDays: account.nextJBPAlertDays || 7
+        });
+      }
+    }
+
+    // Add Banner/Buying Office JBP dates
+    if (account.bannerBuyingOffices && account.bannerBuyingOffices.length > 0) {
+      account.bannerBuyingOffices.forEach((banner, index) => {
+        if (banner.isJBP) {
+          if (banner.lastJBPDate) {
+            allDates.push({
+              id: `banner-${index}-last-jbp`,
+              title: `Last JBP`,
+              date: banner.lastJBPDate,
+              source: 'banner',
+              bannerName: banner.accountName || `Banner/Buying Office #${index + 1}`,
+              alertEnabled: false,
+              alertDays: 7
+            });
+          }
+          if (banner.nextJBPDate) {
+            allDates.push({
+              id: `banner-${index}-next-jbp`,
+              title: `Next JBP`,
+              date: banner.nextJBPDate,
+              source: 'banner',
+              bannerName: banner.accountName || `Banner/Buying Office #${index + 1}`,
+              alertEnabled: banner.nextJBPAlert || false,
+              alertDays: banner.nextJBPAlertDays || 7
+            });
+          }
+        }
+      });
+    }
+
+    // Add customer events
+    customerEvents.forEach(event => {
+      allDates.push({
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        source: 'event',
+        alertEnabled: event.alertEnabled,
+        alertDays: event.alertDays
+      });
+    });
+
+    // Sort by date (earliest first)
+    return allDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  const allImportantDates = getAllImportantDates();
 
   return (
     <div className="space-y-6">
@@ -448,7 +517,7 @@ export default function AccountDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Collapsible Sections */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'market', 'headquarters', 'strategy', 'strategic-info', 'banners', 'events', 'tasks'] : undefined}>
+          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'hq-influence', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'hq-influence', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
             
             {/* Customer Overview */}
             <AccordionItem value="overview">
@@ -461,169 +530,140 @@ export default function AccountDetails({
               <AccordionContent>
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <InfoItem label="Account Name" value={account.accountName} icon={Building2} />
-                      <InfoItem label="Parent Company" value={account.parentCompany} />
-                      <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
-                      <InfoItem label="Publicly Traded" value={account.publiclyTraded ? 'Yes' : 'No'} />
-                      <InfoItem label="Channel" value={account.channel} />
-                      <InfoItem label="Sub-Channel" value={account.subChannel} />
-                      <InfoItem label="Footprint" value={account.footprint} />
-                      <InfoItem label="Operating States" value={Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates} />
-                      <InfoItem label="Spirits Outlets" value={account.spiritsOutlets} />
-                      <InfoItem label="HQ Influence" value={account.hqInfluence} />
-                      <InfoItem label="Display Mandates" value={account.displayMandates} />
-                      <InfoItem label="Primary Contact" value={primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner} icon={User} />
-                      <InfoItem label="Relationship Owner" value={relationshipOwnerName} icon={User} />
-                      <InfoItem label="VP" value={account.vp} />
+                    <div className="space-y-6">
+                      {/* Basic Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Basic Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Account Name" value={account.accountName} icon={Building2} />
+                          <InfoItem label="Parent Company" value={account.parentCompany} />
+                          <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
+                          <InfoItem label="Publicly Traded" value={account.publiclyTraded ? 'Yes' : 'No'} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Channel & Footprint */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Channel & Footprint</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Channel" value={account.channel} />
+                          <InfoItem label="Sub-Channel" value={account.subChannel} />
+                          <InfoItem label="Channel Mapping" value={account.footprint} />
+                          <InfoItem label="Operating States" value={Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates} />
+                          {renderSpiritsOutletsByState()}
+                          <InfoItem label="Full Proof Outlets" value={account.fullProofOutlets} />
+                          <InfoItem label="Total Buying Offices" value={account.totalBuyingOffices} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Execution Reliability */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Execution Reliability</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Execution Reliability Score" value={account.executionReliabilityScore} />
+                          {account.executionReliabilityRationale && (
+                            <div className="md:col-span-2">
+                              <label className="text-sm font-medium text-gray-600">Rationale/Notes</label>
+                              <p className="text-sm mt-1 whitespace-pre-wrap">{account.executionReliabilityRationale}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Team Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Team Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Primary Contact" value={primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner} icon={User} />
+                          <InfoItem 
+                            label="Relationship Owner" 
+                            value={relationshipOwnerName} 
+                            icon={User} 
+                            muted={relationshipOwnerName === 'No Assigned'}
+                          />
+                          <InfoItem label="VP" value={account.vp} />
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </AccordionContent>
             </AccordionItem>
 
-            {/* Market Snapshot */}
-            <AccordionItem value="market">
-              <AccordionTrigger className="text-lg font-semibold">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  Market Snapshot
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <InfoItem label="Current Price" value={account.currentPrice ? `$${account.currentPrice}` : undefined} icon={DollarSign} />
-                      <InfoItem label="Percent Change" value={account.percentChange ? `${account.percentChange}%` : undefined} />
-                      <InfoItem label="Market Cap" value={account.marketCap} />
-                      <InfoItem label="High Price" value={account.highPrice ? `$${account.highPrice}` : undefined} />
-                      <InfoItem label="Low Price" value={account.lowPrice ? `$${account.lowPrice}` : undefined} />
-                      <InfoItem label="Open Price" value={account.openPrice ? `$${account.openPrice}` : undefined} />
-                      <InfoItem label="Previous Close" value={account.previousClose ? `$${account.previousClose}` : undefined} />
-                      <InfoItem label="Annual Sales" value={account.annualSales} />
-                      <InfoItem label="Revenue" value={account.revenue ? `$${account.revenue.toLocaleString()}` : undefined} />
-                      <InfoItem label="Dividend Yield" value={account.dividendYield ? `${account.dividendYield}%` : undefined} />
-                      <InfoItem label="52-Week High" value={account.fiftyTwoWeekHigh ? `$${account.fiftyTwoWeekHigh}` : undefined} />
-                      <InfoItem label="52-Week Low" value={account.fiftyTwoWeekLow ? `$${account.fiftyTwoWeekLow}` : undefined} />
-                      <InfoItem label="PEG Ratio" value={account.pegRatio} />
-                    </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Headquarters */}
-            <AccordionItem value="headquarters">
+            {/* Parent Information */}
+            <AccordionItem value="parent-info">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
-                  Headquarters
+                  Parent Information
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-4">
+                      {/* Address with embedded Google Map */}
                       {account.address && (
                         <div>
                           <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                             <MapPin className="w-4 h-4" />
-                            HQ Address
+                            Parent Company Address
                           </label>
-                          <p className="text-base mt-1">{account.address}</p>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mt-2"
-                            onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(account.address || '')}`, '_blank')}
-                          >
-                            <MapPin className="w-4 h-4 mr-2" />
-                            View on Map
-                          </Button>
+                          <p className="text-base mt-1 mb-3">{account.address}</p>
+                          <AddressMap address={account.address} />
                         </div>
                       )}
-
-                      {/* Google Map Widget */}
-                      {account.address && (
-                        <div className="mt-6">
-                          <label className="text-sm font-medium text-gray-600 flex items-center gap-2 mb-3">
-                            <MapPin className="w-4 h-4" />
-                            Location Map
-                          </label>
-                          {!GOOGLE_MAPS_API_KEY ? (
-                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-8 text-center">
-                              <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                              <p className="text-sm text-gray-600">
-                                Google Maps API key not configured. Set VITE_GOOGLE_MAPS_API_KEY to enable map display.
-                              </p>
-                            </div>
-                          ) : loadError ? (
-                            <div className="bg-red-50 border border-red-300 rounded-lg p-8 text-center">
-                              <MapPin className="w-12 h-12 mx-auto mb-4 text-red-400" />
-                              <p className="text-sm text-red-600">
-                                Error loading Google Maps. Please check your API key and internet connection.
-                              </p>
-                            </div>
-                          ) : !isLoaded ? (
-                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-8 text-center">
-                              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                              <p className="text-sm text-gray-600">Loading map...</p>
-                            </div>
-                          ) : (
-                            <div className="border border-gray-300 rounded-lg overflow-hidden">
-                              <GoogleMap
-                                mapContainerStyle={mapContainerStyle}
-                                center={mapCenter}
-                                zoom={15}
-                                options={{
-                                  streetViewControl: false,
-                                  mapTypeControl: true,
-                                  fullscreenControl: true,
-                                }}
-                              >
-                                <Marker position={mapCenter} title={account.accountName} />
-                              </GoogleMap>
-                              {mapError && (
-                                <div className="bg-yellow-50 border-t border-yellow-300 p-3">
-                                  <p className="text-xs text-yellow-800">{mapError}</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
+                      
+                      {/* Clickable Company Website */}
                       {account.website && (
                         <div>
                           <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                             <Globe className="w-4 h-4" />
-                            Website
+                            Company Website
                           </label>
                           <a 
                             href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-base text-blue-600 hover:underline mt-1 block"
+                            className="text-base mt-1 text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
                           >
                             {account.website}
+                            <Globe className="w-3 h-3" />
                           </a>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mt-2"
-                            onClick={() => window.open(account.website?.startsWith('http') ? account.website : `https://${account.website}`, '_blank')}
-                          >
-                            <Globe className="w-4 h-4 mr-2" />
-                            Visit Website
-                          </Button>
                         </div>
                       )}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <InfoItem label="Phone" value={account.phone} icon={Phone} />
-                        <InfoItem label="Email" value={account.email} icon={Mail} />
-                        <InfoItem label="Total Buying Offices" value={account.totalBuyingOffices} />
-                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* HQ Level of Influence */}
+            <AccordionItem value="hq-influence">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  HQ Level of Influence
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <InfoItem label="Assortment / Shelf" value={account.influenceAssortmentShelf} />
+                      <InfoItem label="Price / Promo" value={account.influencePricePromo} />
+                      <InfoItem label="Display / Merchandising" value={account.influenceDisplayMerchandising} />
+                      <InfoItem label="Digital" value={account.influenceDigital} />
+                      <InfoItem label="eCommerce" value={account.influenceEcommerce} />
+                      <InfoItem label="In Store Events" value={account.influenceInStoreEvents} />
+                      <InfoItem label="Shrink Management" value={account.influenceShrinkManagement} />
+                      <InfoItem label="Buying / PO Ownership" value={account.influenceBuyingPOOwnership} />
                     </div>
                   </CardContent>
                 </Card>
@@ -642,35 +682,17 @@ export default function AccountDetails({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      {/* Planograms */}
+                      {/* JBP Information */}
                       <div>
-                        <h4 className="font-semibold mb-3 flex items-center gap-2">
-                          <Package className="w-4 h-4" />
-                          Planograms
-                        </h4>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="Planograms" value={account.planograms} />
-                          <InfoItem label="Written By" value={account.planogramWrittenBy} />
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      {/* Reset Windows */}
-                      <div>
-                        <h4 className="font-semibold mb-3 flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          Reset Windows
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="Q1 Reset Window" value={account.resetWindowQ1} />
-                          <InfoItem label="Q2 Reset Window" value={account.resetWindowQ2} />
-                          <InfoItem label="Q3 Reset Window" value={account.resetWindowQ3} />
-                          <InfoItem label="Q4 Reset Window" value={account.resetWindowQ4} />
-                          <InfoItem label="Spring Reset" value={account.resetWindowSpring} />
-                          <InfoItem label="Summer Reset" value={account.resetWindowSummer} />
-                          <InfoItem label="Fall Reset" value={account.resetWindowFall} />
-                          <InfoItem label="Winter Reset" value={account.resetWindowWinter} />
+                          <InfoItem label="JBP Customer" value={account.isJBP ? 'Yes' : 'No'} />
+                          {account.isJBP && (
+                            <>
+                              <InfoItem label="Last JBP" value={account.lastJBPDate} />
+                              <InfoItem label="Next JBP" value={account.nextJBPDate} />
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -678,17 +700,14 @@ export default function AccountDetails({
 
                       {/* Business Strategy */}
                       <div>
-                        <h4 className="font-semibold mb-3 flex items-center gap-2">
-                          <Briefcase className="w-4 h-4" />
-                          Business Strategy
-                        </h4>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Business Strategy</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="Category Captain/Advisor" value={account.categoryCaptainAdvisor} />
-                          <InfoItem label="JBP Status" value={account.jbpStatus} />
-                          <InfoItem label="JBP Date" value={account.jbpDate} />
                           <InfoItem label="Pricing Strategy" value={account.pricingStrategy} />
                           <InfoItem label="Private Label" value={account.privateLabel} />
+                          <InfoItem label="Display Mandates" value={account.displayMandates} />
                           <InfoItem label="Innovation Appetite" value={account.innovationAppetite} />
+                          <InfoItem label="Category Captain" value={account.categoryCaptain} />
+                          <InfoItem label="Category Validator" value={account.categoryAdvisor} />
                         </div>
                       </div>
 
@@ -696,13 +715,12 @@ export default function AccountDetails({
 
                       {/* E-commerce & Fulfillment */}
                       <div>
-                        <h4 className="font-semibold mb-3 flex items-center gap-2">
-                          <ShoppingCart className="w-4 h-4" />
-                          E-commerce & Fulfillment
-                        </h4>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">E-commerce & Fulfillment</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="E-commerce" value={account.ecommerce} />
-                          <InfoItem label="Fulfillment Types" value={account.fulfillmentTypes} />
+                          <InfoItem label="E-commerce Maturity Level" value={account.ecommerceMaturityLevel} />
+                          <InfoItem label="% of Sales from E-Commerce" value={account.ecommerceSalesPercentage ? `${account.ecommerceSalesPercentage}%` : undefined} />
+                          <InfoItem label="Fulfillment Types" value={Array.isArray(account.fulfillmentTypes) ? account.fulfillmentTypes.join(', ') : account.fulfillmentTypes} />
+                          <InfoItem label="E-commerce Partners" value={Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : account.ecommercePartners} />
                         </div>
                       </div>
                     </div>
@@ -711,12 +729,69 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Strategic Information */}
-            <AccordionItem value="strategic-info">
+            {/* Planogram Information */}
+            <AccordionItem value="planogram">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Planogram Information
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InfoItem label="Has Planogram" value={account.hasPlanograms ? 'Yes' : 'No'} />
+                        <InfoItem label="Planogram Written By" value={account.planogramWrittenBy} />
+                      </div>
+
+                      {account.hasPlanograms && (
+                        <>
+                          <Separator />
+                          <div>
+                            <h4 className="font-semibold mb-3 text-sm text-gray-700">Reset Information</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <InfoItem label="Affected Categories" value={Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : account.affectedCategories} />
+                              <InfoItem label="Reset Frequency" value={account.resetFrequency} />
+                              <InfoItem label="Reset Window Lead Time" value={account.resetWindowLeadTime} />
+                              <InfoItem label="Different Reset Windows per Category" value={account.hasDifferentResetWindows} />
+                              {account.hasDifferentResetWindows !== 'Yes' && (
+                                <InfoItem label="Reset Window Months" value={Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : account.resetWindowMonths} />
+                              )}
+                            </div>
+
+                            {/* Category-Specific Reset Windows */}
+                            {account.hasDifferentResetWindows === 'Yes' && account.categoryResetWindows && account.categoryResetWindows.length > 0 && (
+                              <div className="mt-4">
+                                <label className="text-sm font-medium text-gray-600 mb-2 block">Category-Specific Reset Windows</label>
+                                <div className="space-y-2">
+                                  {account.categoryResetWindows.map((crw, idx) => (
+                                    <div key={idx} className="p-3 bg-gray-50 rounded-lg border">
+                                      <p className="text-sm font-medium">{crw.category}</p>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        {Array.isArray(crw.months) ? crw.months.join(', ') : 'No months specified'}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Additional Information */}
+            <AccordionItem value="additional-info">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Strategic Information
+                  Additional Information
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -725,18 +800,24 @@ export default function AccountDetails({
                     <div className="space-y-4">
                       {account.strategicPriorities && (
                         <div>
-                          <label className="text-sm font-medium text-gray-600">Strategic Priorities</label>
-                          <p className="text-base mt-1 whitespace-pre-wrap">{account.strategicPriorities}</p>
+                          <label className="text-sm font-medium text-gray-600">Customer Strategic Priorities</label>
+                          <p className="text-sm mt-1 whitespace-pre-wrap">{account.strategicPriorities}</p>
                         </div>
                       )}
                       {account.keyCompetitors && (
                         <div>
                           <label className="text-sm font-medium text-gray-600">Key Competitors</label>
-                          <p className="text-base mt-1 whitespace-pre-wrap">{account.keyCompetitors}</p>
+                          <p className="text-sm mt-1 whitespace-pre-wrap">{account.keyCompetitors}</p>
                         </div>
                       )}
-                      {!account.strategicPriorities && !account.keyCompetitors && (
-                        <p className="text-gray-500 text-sm">No strategic information available</p>
+                      {account.designatedCharities && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Designated Charities</label>
+                          <p className="text-sm mt-1 whitespace-pre-wrap">{account.designatedCharities}</p>
+                        </div>
+                      )}
+                      {!account.strategicPriorities && !account.keyCompetitors && !account.designatedCharities && (
+                        <p className="text-gray-500 text-sm">No additional information available</p>
                       )}
                     </div>
                   </CardContent>
@@ -762,197 +843,274 @@ export default function AccountDetails({
                       </div>
                     ) : (
                       <ScrollArea className="h-[500px] pr-4">
-                        <div className="space-y-4">
+                        <Accordion type="multiple" className="space-y-3">
                           {account.bannerBuyingOffices.map((banner, index) => (
-                            <Card key={index} className="p-4 border-l-4 border-l-blue-500">
-                              <div className="space-y-4">
-                                {/* Banner Header - FIXED: Changed banner.name to banner.accountName */}
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <h4 className="font-semibold text-lg flex items-center gap-2">
-                                      <Building className="w-5 h-5 text-blue-600" />
-                                      {banner.accountName || `Banner/Buying Office #${index + 1}`}
-                                    </h4>
-                                    {banner.channel && (
-                                      <Badge variant="outline" className="mt-1">
-                                        {banner.channel}
-                                      </Badge>
-                                    )}
+                            <AccordionItem key={index} value={`banner-${index}`} className="border rounded-lg">
+                              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                                <div className="flex items-center justify-between w-full pr-4">
+                                  <div className="flex items-center gap-3">
+                                    <Building className="w-5 h-5 text-blue-600" />
+                                    <div className="text-left">
+                                      <h4 className="font-semibold text-base">
+                                        {banner.accountName || `Banner/Buying Office #${index + 1}`}
+                                      </h4>
+                                      {banner.channel && (
+                                        <Badge variant="outline" className="mt-1">
+                                          {banner.channel}
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-
-                                <Separator />
-
-                                {/* Basic Information */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {banner.address && (
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                        <MapPin className="w-4 h-4" />
-                                        Address
-                                      </label>
-                                      <p className="text-sm mt-1">{banner.address}</p>
-                                    </div>
-                                  )}
-                                  {banner.operatingStates && banner.operatingStates.length > 0 && (
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-600">Operating States</label>
-                                      <p className="text-sm mt-1">
-                                        {banner.operatingStates.join(', ')} ({banner.operatingStates.length} states)
-                                      </p>
-                                    </div>
-                                  )}
-                                  {banner.spiritsOutlets !== undefined && (
-                                    <InfoItem label="Spirits Outlets" value={banner.spiritsOutlets} />
-                                  )}
-                                  {banner.fullProofOutlets !== undefined && (
-                                    <InfoItem label="Full Proof Outlets" value={banner.fullProofOutlets} />
-                                  )}
-                                </div>
-
-                                {/* Strategy Fields */}
-                                {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
-                                  banner.privateLabel || banner.innovationAppetite || banner.displayMandates || 
-                                  banner.ecommerceMaturityLevel) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Target className="w-4 h-4" />
-                                        Strategy
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <InfoItem label="Category Captain" value={banner.categoryCaptain} />
-                                        <InfoItem label="Category Advisor" value={banner.categoryAdvisor} />
-                                        <InfoItem label="Pricing Strategy" value={banner.pricingStrategy} />
-                                        <InfoItem label="Private Label" value={banner.privateLabel} />
-                                        <InfoItem label="Innovation Appetite" value={banner.innovationAppetite} />
-                                        <InfoItem label="Display Mandates" value={banner.displayMandates} />
-                                        <InfoItem label="E-commerce Maturity" value={banner.ecommerceMaturityLevel} />
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4">
+                                <div className="space-y-4 pt-2">
+                                  {/* Basic Information */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {banner.address && (
+                                      <div className="md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                          <MapPin className="w-4 h-4" />
+                                          Address
+                                        </label>
+                                        <p className="text-sm mt-1 mb-3">{banner.address}</p>
+                                        <AddressMap address={banner.address} />
                                       </div>
-                                    </div>
-                                  </>
-                                )}
-
-                                {/* JBP Information */}
-                                {(banner.isJBP || banner.nextJBPDate) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4" />
-                                        JBP Information
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                          <label className="text-sm font-medium text-gray-600">JBP Customer</label>
-                                          <p className="text-sm mt-1">{banner.isJBP ? 'Yes' : 'No'}</p>
-                                        </div>
-                                        {banner.nextJBPDate && (
-                                          <InfoItem label="Next JBP Date" value={banner.nextJBPDate} />
-                                        )}
+                                    )}
+                                    {banner.website && (
+                                      <div>
+                                        <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                          <Globe className="w-4 h-4" />
+                                          Website
+                                        </label>
+                                        <a 
+                                          href={banner.website.startsWith('http') ? banner.website : `https://${banner.website}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-sm mt-1 text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                                        >
+                                          {banner.website}
+                                          <Globe className="w-3 h-3" />
+                                        </a>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                                    )}
+                                    {banner.footprint && (
+                                      <div>
+                                        <label className="text-sm font-medium text-gray-600">Channel Mapping</label>
+                                        <p className="text-sm mt-1">{banner.footprint}</p>
+                                      </div>
+                                    )}
+                                    {banner.operatingStates && banner.operatingStates.length > 0 && (
+                                      <div>
+                                        <label className="text-sm font-medium text-gray-600">Operating States</label>
+                                        <p className="text-sm mt-1">
+                                          {banner.operatingStates.join(', ')} ({banner.operatingStates.length} states)
+                                        </p>
+                                      </div>
+                                    )}
+                                    {banner.allSpiritsOutlets && (
+                                      <div>
+                                        <label className="text-sm font-medium text-gray-600">All Spirits Outlets</label>
+                                        <p className="text-sm mt-1">{banner.allSpiritsOutlets}</p>
+                                      </div>
+                                    )}
+                                    {banner.fullProofOutlets && (
+                                      <div>
+                                        <label className="text-sm font-medium text-gray-600">Full Proof Outlets</label>
+                                        <p className="text-sm mt-1">{banner.fullProofOutlets}</p>
+                                      </div>
+                                    )}
+                                  </div>
 
-                                {/* Fulfillment & E-commerce */}
-                                {(banner.fulfillmentTypes && banner.fulfillmentTypes.length > 0) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Truck className="w-4 h-4" />
-                                        Fulfillment & E-commerce
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                          <label className="text-sm font-medium text-gray-600">Fulfillment Types</label>
-                                          <div className="flex flex-wrap gap-1 mt-1">
-                                            {banner.fulfillmentTypes.map((type, idx) => (
-                                              <Badge key={idx} variant="secondary" className="text-xs">
-                                                {type}
-                                              </Badge>
-                                            ))}
-                                          </div>
+                                  {/* Level of Influence */}
+                                  {(banner.influenceAssortmentShelf || banner.influencePricePromo || 
+                                    banner.influenceDisplayMerchandising || banner.influenceDigital || 
+                                    banner.influenceEcommerce || banner.influenceInStoreEvents || 
+                                    banner.influenceShrinkManagement || banner.influenceBuyingPOOwnership) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3">Level of Influence</h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          {banner.influenceAssortmentShelf && <InfoItem label="Assortment/Shelf" value={banner.influenceAssortmentShelf} />}
+                                          {banner.influencePricePromo && <InfoItem label="Price/Promo" value={banner.influencePricePromo} />}
+                                          {banner.influenceDisplayMerchandising && <InfoItem label="Display/Merchandising" value={banner.influenceDisplayMerchandising} />}
+                                          {banner.influenceDigital && <InfoItem label="Digital" value={banner.influenceDigital} />}
+                                          {banner.influenceEcommerce && <InfoItem label="E-commerce" value={banner.influenceEcommerce} />}
+                                          {banner.influenceInStoreEvents && <InfoItem label="In-Store Events" value={banner.influenceInStoreEvents} />}
+                                          {banner.influenceShrinkManagement && <InfoItem label="Shrink Management" value={banner.influenceShrinkManagement} />}
+                                          {banner.influenceBuyingPOOwnership && <InfoItem label="Buying/PO Ownership" value={banner.influenceBuyingPOOwnership} />}
                                         </div>
-                                        {banner.ecommercePartners && banner.ecommercePartners.length > 0 && (
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* Strategy Fields */}
+                                  {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
+                                    banner.privateLabel || banner.innovationAppetite || banner.displayMandates || 
+                                    banner.ecommerceMaturityLevel) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Target className="w-4 h-4" />
+                                          Strategy
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          {banner.categoryCaptain && <InfoItem label="Category Captain" value={banner.categoryCaptain} />}
+                                          {banner.categoryAdvisor && <InfoItem label="Category Advisor" value={banner.categoryAdvisor} />}
+                                          {banner.pricingStrategy && <InfoItem label="Pricing Strategy" value={banner.pricingStrategy} />}
+                                          {banner.privateLabel && <InfoItem label="Private Label" value={banner.privateLabel} />}
+                                          {banner.innovationAppetite && <InfoItem label="Innovation Appetite" value={banner.innovationAppetite} />}
+                                          {banner.displayMandates && <InfoItem label="Display Mandates" value={banner.displayMandates} />}
+                                          {banner.ecommerceMaturityLevel && <InfoItem label="E-commerce Maturity" value={banner.ecommerceMaturityLevel} />}
+                                          {banner.ecommerceSalesPercentage && <InfoItem label="% of Sales from E-Commerce" value={`${banner.ecommerceSalesPercentage}%`} />}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* JBP Information */}
+                                  {(banner.isJBP || banner.lastJBPDate || banner.nextJBPDate) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Calendar className="w-4 h-4" />
+                                          JBP Information
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                           <div>
-                                            <label className="text-sm font-medium text-gray-600">E-commerce Partners</label>
+                                            <label className="text-sm font-medium text-gray-600">JBP Customer</label>
+                                            <p className="text-sm mt-1">{banner.isJBP ? 'Yes' : 'No'}</p>
+                                          </div>
+                                          {banner.lastJBPDate && <InfoItem label="Last JBP Date" value={banner.lastJBPDate} />}
+                                          {banner.nextJBPDate && <InfoItem label="Next JBP Date" value={banner.nextJBPDate} />}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* Fulfillment & E-commerce */}
+                                  {(banner.fulfillmentTypes && banner.fulfillmentTypes.length > 0) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Truck className="w-4 h-4" />
+                                          Fulfillment & E-commerce
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div>
+                                            <label className="text-sm font-medium text-gray-600">Fulfillment Types</label>
                                             <div className="flex flex-wrap gap-1 mt-1">
-                                              {banner.ecommercePartners.map((partner, idx) => (
+                                              {banner.fulfillmentTypes.map((type, idx) => (
                                                 <Badge key={idx} variant="secondary" className="text-xs">
-                                                  {partner}
+                                                  {type}
                                                 </Badge>
                                               ))}
                                             </div>
                                           </div>
-                                        )}
+                                          {banner.ecommercePartners && banner.ecommercePartners.length > 0 && (
+                                            <div>
+                                              <label className="text-sm font-medium text-gray-600">E-commerce Partners</label>
+                                              <div className="flex flex-wrap gap-1 mt-1">
+                                                {banner.ecommercePartners.map((partner, idx) => (
+                                                  <Badge key={idx} variant="secondary" className="text-xs">
+                                                    {partner}
+                                                  </Badge>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                                    </>
+                                  )}
 
-                                {/* Planogram Information */}
-                                {(banner.planograms || banner.planogramWrittenBy) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Package className="w-4 h-4" />
-                                        Planogram
-                                      </h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <InfoItem label="Planograms" value={banner.planograms} />
-                                        <InfoItem label="Written By" value={banner.planogramWrittenBy} />
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-
-                                {/* Level of Influence */}
-                                {(banner.influenceAssortmentShelf || banner.influencePricePromo || 
-                                  banner.influenceDisplayMerchandising || banner.influenceDigital || 
-                                  banner.influenceEcommerce || banner.influenceInStoreEvents || 
-                                  banner.influenceShrinkManagement || banner.influenceBuyingPOOwnership) && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3">Level of Influence</h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <InfoItem label="Assortment/Shelf" value={banner.influenceAssortmentShelf} />
-                                        <InfoItem label="Price/Promo" value={banner.influencePricePromo} />
-                                        <InfoItem label="Display/Merchandising" value={banner.influenceDisplayMerchandising} />
-                                        <InfoItem label="Digital" value={banner.influenceDigital} />
-                                        <InfoItem label="E-commerce" value={banner.influenceEcommerce} />
-                                        <InfoItem label="In-Store Events" value={banner.influenceInStoreEvents} />
-                                        <InfoItem label="Shrink Management" value={banner.influenceShrinkManagement} />
-                                        <InfoItem label="Buying/PO Ownership" value={banner.influenceBuyingPOOwnership} />
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-
-                                {/* Spirits Stores by State */}
-                                {banner.spiritsStoresByState && banner.spiritsStoresByState.length > 0 && (
-                                  <>
-                                    <Separator />
-                                    <div>
-                                      <h5 className="font-semibold mb-3">Spirits Stores by State</h5>
-                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                        {banner.spiritsStoresByState.map((stateData, idx) => (
-                                          <div key={idx} className="text-sm">
-                                            <span className="font-medium">{stateData.state}:</span> {stateData.count}
+                                  {/* Planogram Information */}
+                                  {(banner.hasPlanograms || banner.planogramWrittenBy) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Package className="w-4 h-4" />
+                                          Planogram
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div>
+                                            <label className="text-sm font-medium text-gray-600">Has Planogram</label>
+                                            <p className="text-sm mt-1">{banner.hasPlanograms ? 'Yes' : 'No'}</p>
                                           </div>
-                                        ))}
+                                          {banner.planogramWrittenBy && <InfoItem label="Written By" value={banner.planogramWrittenBy} />}
+                                          {banner.resetFrequency && <InfoItem label="Reset Frequency" value={banner.resetFrequency} />}
+                                          {banner.resetWindowLeadTime && <InfoItem label="Reset Window Lead Time" value={banner.resetWindowLeadTime} />}
+                                          {banner.affectedCategories && banner.affectedCategories.length > 0 && (
+                                            <div className="md:col-span-2">
+                                              <label className="text-sm font-medium text-gray-600">Affected Categories</label>
+                                              <p className="text-sm mt-1">{banner.affectedCategories.join(', ')}</p>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            </Card>
+                                    </>
+                                  )}
+
+                                  {/* Strategic Information */}
+                                  {(banner.strategicPriorities || banner.keyCompetitors || banner.designatedCharities) && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3">Strategic Information</h5>
+                                        <div className="space-y-3">
+                                          {banner.strategicPriorities && (
+                                            <div>
+                                              <label className="text-sm font-medium text-gray-600">Strategic Priorities</label>
+                                              <p className="text-sm mt-1 whitespace-pre-wrap">{banner.strategicPriorities}</p>
+                                            </div>
+                                          )}
+                                          {banner.keyCompetitors && (
+                                            <div>
+                                              <label className="text-sm font-medium text-gray-600">Key Competitors</label>
+                                              <p className="text-sm mt-1 whitespace-pre-wrap">{banner.keyCompetitors}</p>
+                                            </div>
+                                          )}
+                                          {banner.designatedCharities && (
+                                            <div>
+                                              <label className="text-sm font-medium text-gray-600">Designated Charities</label>
+                                              <p className="text-sm mt-1 whitespace-pre-wrap">{banner.designatedCharities}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* Customer Events */}
+                                  {banner.customerEvents && banner.customerEvents.length > 0 && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                                          <Calendar className="w-4 h-4" />
+                                          Customer Events
+                                        </h5>
+                                        <div className="space-y-2">
+                                          {banner.customerEvents.map((event, idx) => (
+                                            <div key={idx} className="p-2 bg-gray-50 rounded border">
+                                              <p className="text-sm font-medium">{event.title}</p>
+                                              <p className="text-xs text-gray-600">{new Date(event.date).toLocaleDateString()}</p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
                           ))}
-                        </div>
+                        </Accordion>
                       </ScrollArea>
                     )}
                   </CardContent>
@@ -960,19 +1118,19 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Important Dates (Customer Events) with Alert Functionality */}
+            {/* Important Dates - UPDATED to include JBP dates and banner dates */}
             <AccordionItem value="events">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Important Dates ({customerEvents.length})
+                  Important Dates ({allImportantDates.length})
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">Events</CardTitle>
+                      <CardTitle className="text-base">All Important Dates</CardTitle>
                       <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Event
@@ -982,7 +1140,7 @@ export default function AccountDetails({
                   <CardContent>
                     <ScrollArea className="h-[350px] pr-4">
                       <div className="space-y-3">
-                        {customerEvents.length === 0 ? (
+                        {allImportantDates.length === 0 ? (
                           <div className="text-center py-8 text-gray-500">
                             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                             <p className="text-sm mb-4">No important dates added yet</p>
@@ -992,19 +1150,38 @@ export default function AccountDetails({
                             </Button>
                           </div>
                         ) : (
-                          customerEvents.map((event) => {
-                            const daysUntil = getDaysUntilEvent(event.date);
-                            const isUpcoming = daysUntil >= 0 && daysUntil <= (event.alertDays || 7);
+                          allImportantDates.map((date) => {
+                            const daysUntil = getDaysUntilEvent(date.date);
+                            const isUpcoming = daysUntil >= 0 && (date.alertOptions || []).some(opt => {
+                            if (opt === 'same_day') return daysUntil === 0;
+                            if (opt === 'day_before') return daysUntil <= 1;
+                            if (opt === 'week_before') return daysUntil <= 7;
+                            return false;
+                          });
+                            const isJBPDate = date.source === 'account' || date.source === 'banner';
                             
                             return (
-                              <Card key={event.id} className={`p-4 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
+                              <Card key={date.id} className={`p-4 ${isUpcoming && date.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
                                 <div className="space-y-3">
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1">
-                                      <h4 className="font-medium mb-1">{event.title}</h4>
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-medium">{date.title}</h4>
+                                        {date.source === 'banner' && (
+                                          <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                            <Building className="w-3 h-3 mr-1" />
+                                            {date.bannerName}
+                                          </Badge>
+                                        )}
+                                        {date.source === 'account' && (
+                                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                            Account Level
+                                          </Badge>
+                                        )}
+                                      </div>
                                       <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <Calendar className="w-3 h-3" />
-                                        <span>{new Date(event.date).toLocaleDateString()}</span>
+                                        <span>{new Date(date.date).toLocaleDateString()}</span>
                                         {daysUntil >= 0 && (
                                           <Badge variant={daysUntil <= 7 ? 'default' : 'secondary'} className="text-xs">
                                             {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`}
@@ -1017,62 +1194,82 @@ export default function AccountDetails({
                                         )}
                                       </div>
                                     </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeleteEvent(event.id)}
-                                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-
-                                  {/* Alert Settings for this Event */}
-                                  <div className="pt-3 border-t border-gray-200 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        {event.alertEnabled ? (
-                                          <Bell className="w-4 h-4 text-orange-600" />
-                                        ) : (
-                                          <BellOff className="w-4 h-4 text-gray-400" />
-                                        )}
-                                        <Label htmlFor={`alert-${event.id}`} className="text-sm font-medium cursor-pointer">
-                                          Enable Alert
-                                        </Label>
-                                      </div>
-                                      <Switch
-                                        id={`alert-${event.id}`}
-                                        checked={event.alertEnabled || false}
-                                        onCheckedChange={() => handleToggleEventAlert(event.id)}
-                                      />
-                                    </div>
-
-                                    {event.alertEnabled && (
-                                      <div className="space-y-2 pl-6">
-                                        <Label htmlFor={`alert-days-${event.id}`} className="text-xs text-gray-600">
-                                          Alert me (days before):
-                                        </Label>
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            id={`alert-days-${event.id}`}
-                                            type="number"
-                                            min="1"
-                                            max="90"
-                                            value={event.alertDays || 7}
-                                            onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
-                                            className="w-20 h-8 text-sm"
-                                          />
-                                          <span className="text-xs text-gray-500">days before event</span>
-                                        </div>
-                                        {isUpcoming && (
-                                          <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
-                                            <Bell className="w-3 h-3" />
-                                            <span>Alert active - event is within {event.alertDays} days</span>
-                                          </div>
-                                        )}
-                                      </div>
+                                    {date.source === 'event' && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteEvent(date.id)}
+                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
                                     )}
                                   </div>
+
+                                  {/* Alert Settings - only for custom events, JBP alerts are managed in account form */}
+                                  {date.source === 'event' && (
+                                    <div className="pt-3 border-t border-gray-200 space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          {date.alertEnabled ? (
+                                            <Bell className="w-4 h-4 text-orange-600" />
+                                          ) : (
+                                            <BellOff className="w-4 h-4 text-gray-400" />
+                                          )}
+                                          <Label htmlFor={`alert-${date.id}`} className="text-sm font-medium cursor-pointer">
+                                            Enable Alert
+                                          </Label>
+                                        </div>
+                                        <Switch
+                                          id={`alert-${date.id}`}
+                                          checked={date.alertEnabled || false}
+                                          onCheckedChange={() => handleToggleEventAlert(date.id)}
+                                        />
+                                      </div>
+
+                                      {date.alertEnabled && (
+                                        <div className="space-y-2 pl-6">
+                                          <Label htmlFor={`alert-days-${date.id}`} className="text-xs text-gray-600">
+                                            Alert me (days before):
+                                          </Label>
+                                          <div className="flex items-center gap-2">
+                                            <Input
+                                              id={`alert-days-${date.id}`}
+                                              type="number"
+                                              min="1"
+                                              max="90"
+                                              value={date.alertDays || 7}
+                                              onChange={(e) => handleUpdateEventAlertDays(date.id, parseInt(e.target.value) || 7)}
+                                              className="w-20 h-8 text-sm"
+                                            />
+                                            <span className="text-xs text-gray-500">days before event</span>
+                                          </div>
+                                          {isUpcoming && (
+                                            <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                              <Bell className="w-3 h-3" />
+                                              <span>Alert active</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Show alert status for JBP dates (read-only) */}
+                                  {isJBPDate && date.alertEnabled && (
+                                    <div className="pt-3 border-t border-gray-200">
+                                      <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                        <Bell className="w-3 h-3" />
+                                        <span>Alert: {formatAlertOptions(date.alertOptions)} (managed in account form)</span>
+                                      </div>
+                                      {isUpcoming && (
+                                        <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
+                                          <Bell className="w-3 h-3" />
+                                          <span>Alert active</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </Card>
                             );
@@ -1230,6 +1427,22 @@ export default function AccountDetails({
                                   </div>
                                 )}
                                 
+                                {/* Preferred Shipping Address Display */}
+                                {contact.preferredShippingAddress && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <MapPin className="w-3 h-3" />
+                                    <span className="truncate">Ship to: {contact.preferredShippingAddress}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Birthday Display */}
+                                {contact.birthday && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>Birthday: {formatBirthday(contact.birthday)}</span>
+                                  </div>
+                                )}
+                                
                                 {contact.influence && (
                                   <div className="flex items-center gap-2 text-xs">
                                     <Badge variant="outline" className="text-xs">
@@ -1252,7 +1465,7 @@ export default function AccountDetails({
         </div>
       </div>
 
-      {/* Add Event Dialog with Alert Configuration */}
+      {/* Add Event Dialog */}
       <Dialog open={isAddEventDialogOpen} onOpenChange={setIsAddEventDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -1334,7 +1547,7 @@ export default function AccountDetails({
               setNewEventTitle('');
               setNewEventDate('');
               setNewEventAlertEnabled(false);
-              setNewEventAlertDays(7);
+              setNewEventAlertOptions([]);
             }}>
               Cancel
             </Button>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare, Building } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare, Building, BarChart3, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import { AddressMap } from '@/components/AddressMap';
 import type { Account, Contact, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
 import { formatBirthday } from '@/lib/dateUtils';
+import { useAlphaVantage } from '@/hooks/useAlphaVantage';
 
 interface AccountDetailsProps {
   account: Account;
@@ -169,6 +170,35 @@ export default function AccountDetails({
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
   const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
   const [expandAll, setExpandAll] = useState(false);
+
+  // Market data state using Alpha Vantage hook
+  const { marketData, loading: marketLoading, error: marketError, fetchMarketData } = useAlphaVantage();
+
+  // Fetch market data when account has a ticker symbol
+  useEffect(() => {
+    if (account.publiclyTraded && account.tickerSymbol) {
+      fetchMarketData(account.tickerSymbol);
+    }
+  }, [account.publiclyTraded, account.tickerSymbol]);
+
+  // Helper function to format large numbers
+  const formatLargeNumber = (value: string | number) => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(num)) return 'N/A';
+    
+    if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
+    return `$${num.toFixed(2)}`;
+  };
+
+  // Helper function to format percentage
+  const formatPercentage = (value: string | number) => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(num)) return 'N/A';
+    return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
+  };
 
   // Sample tasks related to this account
   const [accountTasks] = useState<Task[]>([
@@ -588,6 +618,151 @@ export default function AccountDetails({
                             muted={relationshipOwnerName === 'No Assigned'}
                           />
                           <InfoItem label="VP" value={account.vp} />
+
+                      <Separator />
+
+                      {/* Market Snapshot - Only show if publicly traded with ticker symbol */}
+                      {account.publiclyTraded && account.tickerSymbol && (
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
+                              <BarChart3 className="w-4 h-4" />
+                              Market Snapshot
+                            </h4>
+                            <button
+                              onClick={() => fetchMarketData(account.tickerSymbol!)}
+                              disabled={marketLoading}
+                              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 disabled:opacity-50"
+                            >
+                              <RefreshCw className={`w-3 h-3 ${marketLoading ? 'animate-spin' : ''}`} />
+                              Refresh
+                            </button>
+                          </div>
+
+                          {marketLoading && (
+                            <div className="p-4 bg-gray-50 rounded-lg border text-center">
+                              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
+                              <p className="text-sm text-gray-600">Loading market data...</p>
+                            </div>
+                          )}
+
+                          {marketError && !marketLoading && (
+                            <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                              <p className="text-sm text-red-600">{marketError}</p>
+                            </div>
+                          )}
+
+                          {marketData && !marketLoading && !marketError && (
+                            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                              {/* Company Name and Symbol */}
+                              <div className="mb-4">
+                                <h5 className="text-lg font-semibold text-gray-900">{marketData.name}</h5>
+                                <p className="text-sm text-gray-600">{marketData.symbol} • {marketData.currency}</p>
+                              </div>
+
+                              {/* Current Price and Change */}
+                              <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                                    <DollarSign className="w-3 h-3" />
+                                    Current Price
+                                  </label>
+                                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                                    ${parseFloat(marketData.currentPrice).toFixed(2)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                                    <TrendingUp className="w-3 h-3" />
+                                    Change
+                                  </label>
+                                  <p className={`text-2xl font-bold mt-1 ${parseFloat(marketData.percentChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {formatPercentage(marketData.percentChange)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Additional Market Metrics */}
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-blue-200">
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600">Market Cap</label>
+                                  <p className="text-sm font-semibold text-gray-900 mt-1">
+                                    {formatLargeNumber(marketData.marketCap)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600">Open</label>
+                                  <p className="text-sm font-semibold text-gray-900 mt-1">
+                                    ${parseFloat(marketData.openPrice).toFixed(2)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600">Previous Close</label>
+                                  <p className="text-sm font-semibold text-gray-900 mt-1">
+                                    ${parseFloat(marketData.previousClose).toFixed(2)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600">Day High</label>
+                                  <p className="text-sm font-semibold text-gray-900 mt-1">
+                                    ${parseFloat(marketData.highPrice).toFixed(2)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600">Day Low</label>
+                                  <p className="text-sm font-semibold text-gray-900 mt-1">
+                                    ${parseFloat(marketData.lowPrice).toFixed(2)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-gray-600">52W Range</label>
+                                  <p className="text-xs font-semibold text-gray-900 mt-1">
+                                    ${parseFloat(marketData.fiftyTwoWeekLow).toFixed(2)} - ${parseFloat(marketData.fiftyTwoWeekHigh).toFixed(2)}
+                                  </p>
+                                </div>
+                                {marketData.annualSales !== '0' && (
+                                  <div>
+                                    <label className="text-xs font-medium text-gray-600">Annual Sales</label>
+                                    <p className="text-sm font-semibold text-gray-900 mt-1">
+                                      {formatLargeNumber(marketData.annualSales)}
+                                    </p>
+                                  </div>
+                                )}
+                                {marketData.dividendYield !== '0' && (
+                                  <div>
+                                    <label className="text-xs font-medium text-gray-600">Dividend Yield</label>
+                                    <p className="text-sm font-semibold text-gray-900 mt-1">
+                                      {(parseFloat(marketData.dividendYield) * 100).toFixed(2)}%
+                                    </p>
+                                  </div>
+                                )}
+                                {marketData.pegRatio !== '0' && (
+                                  <div>
+                                    <label className="text-xs font-medium text-gray-600">PEG Ratio</label>
+                                    <p className="text-sm font-semibold text-gray-900 mt-1">
+                                      {parseFloat(marketData.pegRatio).toFixed(2)}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Last Updated */}
+                              <div className="mt-3 pt-3 border-t border-blue-200">
+                                <p className="text-xs text-gray-500">
+                                  Last updated: {new Date(marketData.lastUpdated).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {!marketData && !marketLoading && !marketError && (
+                            <div className="p-4 bg-gray-50 rounded-lg border text-center">
+                              <BarChart3 className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                              <p className="text-sm text-gray-600">Click refresh to load market data</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                         </div>
                       </div>
                     </div>

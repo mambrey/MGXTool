@@ -62,6 +62,8 @@ interface BannerBuyingOffice {
   isJBP: boolean;
   lastJBPDate: string;
   nextJBPDate: string;
+  nextJBPAlert?: boolean;
+  nextJBPAlertOptions?: ('same_day' | 'day_before' | 'week_before')[];
   pricingStrategy: string;
   privateLabel: string;
   displayMandates: string;
@@ -466,6 +468,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       isJBP: false,
       lastJBPDate: '',
       nextJBPDate: '',
+      nextJBPAlert: false,
+      nextJBPAlertOptions: [],
       pricingStrategy: 'none',
       privateLabel: 'none',
       displayMandates: 'none',
@@ -1092,8 +1096,20 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     );
   };
 
-
-
+  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
+    setCustomerEvents(prev =>
+      prev.map(event => {
+        if (event.id === eventId) {
+          const currentOptions = event.alertOptions || [];
+          const newOptions = currentOptions.includes(option)
+            ? currentOptions.filter(o => o !== option)
+            : [...currentOptions, option];
+          return { ...event, alertOptions: newOptions };
+        }
+        return event;
+      })
+    );
+  };
 
   const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
     const currentOptions = formData.nextJBPAlertOptions || [];
