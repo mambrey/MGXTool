@@ -15,7 +15,7 @@ interface CustomerEvent {
   title: string;
   date: string;
   alertEnabled?: boolean;
-  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  alertDays?: number;
 }
 
 interface CategoryResetWindow {
@@ -55,7 +55,7 @@ interface BannerBuyingOffice {
   lastJBPDate: string;
   nextJBPDate: string;
   nextJBPAlert?: boolean;
-  nextJBPAlertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  nextJBPAlertDays?: number;
   pricingStrategy: string;
   privateLabel: string;
   displayMandates: string;
@@ -110,18 +110,6 @@ interface BannerBuyingOfficeCardProps {
   onRemove: (bannerId: string) => void;
   formatDateForInput: (dateString: string) => string;
 }
-
-// Helper function to get alert option label
-const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before'): string => {
-  switch (option) {
-    case 'same_day':
-      return 'Same Day (0 days before)';
-    case 'day_before':
-      return 'Day Before (1 day before)';
-    case 'week_before':
-      return 'Week Before (7 days before)';
-  }
-};
 
 export default function BannerBuyingOfficeCard({
   banner,
@@ -213,26 +201,11 @@ export default function BannerBuyingOfficeCard({
     onUpdateField(banner.id, 'customerEvents', updatedEvents);
   };
 
-  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
-    const updatedEvents = banner.customerEvents.map(event => {
-      if (event.id === eventId) {
-        const currentOptions = event.alertOptions || [];
-        const newOptions = currentOptions.includes(option)
-          ? currentOptions.filter(o => o !== option)
-          : [...currentOptions, option];
-        return { ...event, alertOptions: newOptions };
-      }
-      return event;
-    });
+  const updateEventAlertDays = (eventId: string, days: number) => {
+    const updatedEvents = banner.customerEvents.map(event =>
+      event.id === eventId ? { ...event, alertDays: days } : event
+    );
     onUpdateField(banner.id, 'customerEvents', updatedEvents);
-  };
-
-  const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
-    const currentOptions = banner.nextJBPAlertOptions || [];
-    const newOptions = currentOptions.includes(option)
-      ? currentOptions.filter(o => o !== option)
-      : [...currentOptions, option];
-    onUpdateField(banner.id, 'nextJBPAlertOptions', newOptions);
   };
 
   return (
@@ -681,7 +654,7 @@ export default function BannerBuyingOfficeCard({
                   </div>
                 </div>
                 
-                {/* Alert Section - UPDATED WITH MULTI-SELECT */}
+                {/* Alert Section */}
                 <div className="space-y-3 pt-2 border-t border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -699,31 +672,24 @@ export default function BannerBuyingOfficeCard({
                   
                   {banner.nextJBPAlert && (
                     <div className="space-y-2 pl-6">
-                      <Label className="text-sm text-gray-600">
-                        Alert me:
+                      <Label htmlFor={`banner-${banner.id}-nextjbp-alert-days`} className="text-sm text-gray-600">
+                        Alert me (days before event):
                       </Label>
-                      <div className="space-y-2">
-                        {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`banner-${banner.id}-jbp-${option}`}
-                              checked={(banner.nextJBPAlertOptions || []).includes(option)}
-                              onCheckedChange={() => handleToggleJBPAlertOption(option)}
-                            />
-                            <Label
-                              htmlFor={`banner-${banner.id}-jbp-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {getAlertOptionLabel(option)}
-                            </Label>
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id={`banner-${banner.id}-nextjbp-alert-days`}
+                          type="number"
+                          min="1"
+                          max="90"
+                          value={banner.nextJBPAlertDays || 7}
+                          onChange={(e) => onUpdateField(banner.id, 'nextJBPAlertDays', parseInt(e.target.value) || 7)}
+                          className="w-24 h-9"
+                        />
+                        <span className="text-sm text-gray-500">days before</span>
                       </div>
-                      {(banner.nextJBPAlertOptions || []).length > 0 && (
-                        <p className="text-xs text-gray-500">
-                          You'll receive {(banner.nextJBPAlertOptions || []).length} alert{(banner.nextJBPAlertOptions || []).length !== 1 ? 's' : ''} for this date
-                        </p>
-                      )}
+                      <p className="text-xs text-gray-500">
+                        You'll receive an alert {banner.nextJBPAlertDays || 7} {(banner.nextJBPAlertDays || 7) === 1 ? 'day' : 'days'} before this date
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1187,7 +1153,7 @@ export default function BannerBuyingOfficeCard({
                         </div>
                       </div>
                       
-                      {/* Alert Section for Customer Events - UPDATED WITH MULTI-SELECT */}
+                      {/* Alert Section for Customer Events */}
                       <div className="mt-3 pt-3 border-t border-gray-200">
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
@@ -1206,31 +1172,24 @@ export default function BannerBuyingOfficeCard({
                           
                           {event.alertEnabled && (
                             <div className="space-y-2 pl-6">
-                              <Label className="text-sm text-gray-600">
-                                Alert me:
+                              <Label htmlFor={`banner-${banner.id}-event-alert-days-${event.id}`} className="text-sm text-gray-600">
+                                Alert me (days before event):
                               </Label>
-                              <div className="space-y-2">
-                                {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                                  <div key={option} className="flex items-center space-x-2">
-                                    <Checkbox
-                                      id={`banner-${banner.id}-event-${event.id}-${option}`}
-                                      checked={(event.alertOptions || []).includes(option)}
-                                      onCheckedChange={() => handleToggleEventAlertOption(event.id, option)}
-                                    />
-                                    <Label
-                                      htmlFor={`banner-${banner.id}-event-${event.id}-${option}`}
-                                      className="text-sm font-normal cursor-pointer"
-                                    >
-                                      {getAlertOptionLabel(option)}
-                                    </Label>
-                                  </div>
-                                ))}
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  id={`banner-${banner.id}-event-alert-days-${event.id}`}
+                                  type="number"
+                                  min="1"
+                                  max="90"
+                                  value={event.alertDays || 7}
+                                  onChange={(e) => updateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
+                                  className="w-24 h-9"
+                                />
+                                <span className="text-sm text-gray-500">days before</span>
                               </div>
-                              {(event.alertOptions || []).length > 0 && (
-                                <p className="text-xs text-gray-500">
-                                  You'll receive {(event.alertOptions || []).length} alert{(event.alertOptions || []).length !== 1 ? 's' : ''} for this event
-                                </p>
-                              )}
+                              <p className="text-xs text-gray-500">
+                                You'll receive an alert {event.alertDays || 7} {(event.alertDays || 7) === 1 ? 'day' : 'days'} before this event
+                              </p>
                             </div>
                           )}
                         </div>
