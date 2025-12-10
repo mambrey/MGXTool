@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase } from 'lucide-react';
+import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,12 +19,14 @@ import SharePointImport from './SharePointImport';
 import ContactImport from './ContactImport';
 import MarketSnapshotUpload from './MarketSnapshotUpload';
 import RelationshipOwnerDirectory from './RelationshipOwnerDirectory';
+import BannerBuyingOfficeList from './BannerBuyingOfficeList';
+import BannerBuyingOfficeDetails from './BannerBuyingOfficeDetails';
 import FAQPage from '../pages/FAQPage';
-import type { Account, Contact, RelationshipOwner } from '@/types/crm';
+import type { Account, Contact, RelationshipOwner, BannerBuyingOffice } from '@/types/crm';
 import { saveToStorage, loadFromStorage } from '@/lib/storage';
 import { formatBirthday } from '@/lib/dateUtils';
 
-type View = 'welcome' | 'accounts' | 'contacts' | 'data-view' | 'document-storage' | 'contact-hierarchy' | 'task-management' | 'alert-system' | 'sharepoint-sync' | 'relationship-owners' | 'faq';
+type View = 'welcome' | 'accounts' | 'contacts' | 'banners' | 'data-view' | 'document-storage' | 'contact-hierarchy' | 'task-management' | 'alert-system' | 'sharepoint-sync' | 'relationship-owners' | 'faq';
 
 interface CRMToolProps {
   userName: string;
@@ -36,6 +38,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [selectedBanner, setSelectedBanner] = useState<{ banner: BannerBuyingOffice; accountName: string } | null>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -197,6 +200,10 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setSelectedContact(contact);
   };
 
+  const handleViewBanner = (banner: BannerBuyingOffice, accountName: string) => {
+    setSelectedBanner({ banner, accountName });
+  };
+
   // New handler for viewing contact from account page
   const handleViewContactFromAccount = (contact: Contact, accountId: string) => {
     setSelectedContact(contact);
@@ -221,6 +228,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const handleBackToList = () => {
     setSelectedAccount(null);
     setSelectedContact(null);
+    setSelectedBanner(null);
     setEditingAccount(null);
     setEditingContact(null);
     setShowAccountForm(false);
@@ -452,6 +460,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const navigationItems = [
     { id: 'welcome', label: 'Home', icon: Home },
     { id: 'accounts', label: 'Customer Accounts', icon: Building2 },
+    { id: 'banners', label: 'Banner/Buying Offices', icon: Building },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'data-view', label: 'Data View', icon: BarChart3 },
     { id: 'contact-hierarchy', label: 'Contact Hierarchy', icon: Network },
@@ -544,6 +553,19 @@ export default function CRMTool({ userName }: CRMToolProps) {
           onEdit={handleContactEdit}
           onDelete={handleContactDelete}
           onBack={handleBackToAccount}
+        />
+      );
+    }
+
+    if (selectedBanner) {
+      return (
+        <BannerBuyingOfficeDetails
+          banner={selectedBanner.banner}
+          accountName={selectedBanner.accountName}
+          onBack={() => {
+            setSelectedBanner(null);
+            setCurrentView('banners');
+          }}
         />
       );
     }
@@ -694,6 +716,15 @@ export default function CRMTool({ userName }: CRMToolProps) {
               )}
             </div>
           </div>
+        );
+      
+      case 'banners':
+        return (
+          <BannerBuyingOfficeList
+            accounts={accounts || []}
+            onViewBanner={handleViewBanner}
+            onBack={() => setCurrentView('welcome')}
+          />
         );
       
       case 'contacts':
