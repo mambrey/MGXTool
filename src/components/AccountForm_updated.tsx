@@ -1,0 +1,16 @@
+import React, { useState, useEffect } from 'react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp, ChevronDown, ChevronUp, Bell, Edit, DollarSign, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
+import type { Account, Contact } from '@/types/crm';
+import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
+import { useAlphaVantage } from '@/hooks/useAlphaVantage';
+import BannerBuyingOfficeCard from '@/components/BannerBuyingOfficeCard';
+import { AddressAutocomplete } from './AddressAutocomplete';

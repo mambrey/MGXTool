@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import type { Account, Contact } from '@/types/crm';
 import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
-import { useMarketData } from '@/hooks/useMarketData';
+import { useAlphaVantage } from '@/hooks/useAlphaVantage';
 import BannerBuyingOfficeCard from '@/components/BannerBuyingOfficeCard';
 import { AddressAutocomplete } from './AddressAutocomplete';
 
@@ -274,7 +274,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const [originalTickerSymbol, setOriginalTickerSymbol] = useState<string>(account?.tickerSymbol || '');
 
   // Use the market data hook
-  const { marketData, loading, error, fetchMarketData, clearMarketData } = useMarketData();
+  const { marketData, loading, error, fetchMarketData, clearMarketData } = useAlphaVantage();
 
   // Filter contacts for this account
   const accountContacts = account ? contacts.filter(contact => contact.accountId === account.id) : [];
@@ -1226,7 +1226,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           <div>
             <Label htmlFor="tickerSymbol" className="text-sm font-medium">
               Ticker Symbol
-              <span className="ml-2 text-xs text-green-600">(Auto-loads from CSV)</span>
+              Ticker Symbol
             </Label>
             <div className="flex gap-2 mt-1">
               <Input
@@ -1242,7 +1242,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 size="icon"
                 onClick={handleRefreshMarketData}
                 disabled={loading || !formData.tickerSymbol}
-                title="Manually refresh market data from CSV file"
+                title="Fetch market data from Alpha Vantage API"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
@@ -1253,8 +1253,10 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </p>
             )}
             {loading && (
+            )}
+            {loading && (
               <p className="text-xs text-blue-600 mt-1">
-                🔄 Fetching market data from CSV file...
+                🔄 Fetching market data from Alpha Vantage API...
               </p>
             )}
             {error && (
@@ -1378,6 +1380,129 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           </div>
+          </div>
+
+          {/* Market Snapshot Section - NEW */}
+          {marketData && formData.tickerSymbol && (
+            <div className="sm:col-span-2 mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                  Market Snapshot - {marketData.name} ({marketData.symbol})
+                </Label>
+                <span className="text-xs text-gray-500">
+                  Last updated: {new Date(marketData.lastUpdated).toLocaleString()}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                {/* Current Price */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                    <DollarSign className="w-3 h-3" />
+                    Current Price
+                  </Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${parseFloat(marketData.currentPrice).toFixed(2)}
+                  </p>
+                  <p className={`text-xs font-medium mt-1 ${parseFloat(marketData.percentChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {parseFloat(marketData.percentChange) >= 0 ? '↑' : '↓'} {Math.abs(parseFloat(marketData.percentChange)).toFixed(2)}%
+                  </p>
+                </div>
+
+                {/* Market Cap */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600">Market Cap</Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${(parseFloat(marketData.marketCap) / 1000000000).toFixed(2)}B
+                  </p>
+                </div>
+
+                {/* Day High */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600">Day High</Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${parseFloat(marketData.highPrice).toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Day Low */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600">Day Low</Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${parseFloat(marketData.lowPrice).toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Open Price */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600">Open</Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${parseFloat(marketData.openPrice).toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Previous Close */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600">Prev Close</Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${parseFloat(marketData.previousClose).toFixed(2)}
+                  </p>
+                </div>
+
+                {/* 52 Week High */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600">52W High</Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${parseFloat(marketData.fiftyTwoWeekHigh).toFixed(2)}
+                  </p>
+                </div>
+
+                {/* 52 Week Low */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <Label className="text-xs font-medium text-gray-600">52W Low</Label>
+                  <p className="text-lg font-bold text-gray-900 mt-1">
+                    ${parseFloat(marketData.fiftyTwoWeekLow).toFixed(2)}
+                  </p>
+                </div>
+
+                {/* PEG Ratio */}
+                {marketData.pegRatio && parseFloat(marketData.pegRatio) > 0 && (
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <Label className="text-xs font-medium text-gray-600">PEG Ratio</Label>
+                    <p className="text-lg font-bold text-gray-900 mt-1">
+                      {parseFloat(marketData.pegRatio).toFixed(2)}
+                    </p>
+                  </div>
+                )}
+
+                {/* Annual Sales */}
+                {marketData.annualSales && parseFloat(marketData.annualSales) > 0 && (
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <Label className="text-xs font-medium text-gray-600">Annual Revenue</Label>
+                    <p className="text-lg font-bold text-gray-900 mt-1">
+                      ${(parseFloat(marketData.annualSales) / 1000000000).toFixed(2)}B
+                    </p>
+                  </div>
+                )}
+
+                {/* Dividend Yield */}
+                {marketData.dividendYield && parseFloat(marketData.dividendYield) > 0 && (
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <Label className="text-xs font-medium text-gray-600">Div Yield</Label>
+                    <p className="text-lg font-bold text-gray-900 mt-1">
+                      {(parseFloat(marketData.dividendYield) * 100).toFixed(2)}%
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                Data provided by Alpha Vantage API in {marketData.currency}
+              </p>
+            </div>
+          )}
         </CardContent>
 
         <div className="space-y-4 pt-4 border-t px-6 pb-6">
