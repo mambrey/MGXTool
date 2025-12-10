@@ -579,9 +579,34 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     onSave(contactData);
   };
 
-  const handleAccountChange = (accountId: string) => {
-    setFormData(prev => ({ ...prev, accountId }));
+  // Handle account/banner selection - stores both accountId and bannerBuyingOfficeId
+  const handleAccountOrBannerChange = (value: string) => {
+    // Value format: "account:{accountId}" or "banner:{accountId}:{bannerId}"
+    if (value.startsWith('account:')) {
+      const accountId = value.replace('account:', '');
+      setFormData(prev => ({ ...prev, accountId, bannerBuyingOfficeId: '' }));
+    } else if (value.startsWith('banner:')) {
+      const [, accountId, bannerId] = value.split(':');
+      setFormData(prev => ({ ...prev, accountId, bannerBuyingOfficeId: bannerId }));
+    }
     setAccountSearchOpen(false);
+  };
+
+  // Get display name for selected account/banner
+  const getSelectedAccountOrBannerName = () => {
+    if (!formData.accountId) return 'Select';
+    
+    const account = accounts.find(a => a.id === formData.accountId);
+    if (!account) return 'Select';
+    
+    if (formData.bannerBuyingOfficeId && account.bannerBuyingOffices) {
+      const banner = account.bannerBuyingOffices.find(b => b.id === formData.bannerBuyingOfficeId);
+      if (banner) {
+        return `${banner.accountName} (${account.accountName})`;
+      }
+    }
+    
+    return account.accountName;
   };
 
   const handleManagerChange = (managerId: string) => {
