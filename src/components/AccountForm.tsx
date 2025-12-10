@@ -27,7 +27,7 @@ interface CustomerEvent {
   title: string;
   date: string;
   alertEnabled?: boolean;
-  alertDays?: number;
+  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
 }
 
 interface CategoryResetWindow {
@@ -151,6 +151,19 @@ const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+// Helper function to get alert option label
+const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before'): string => {
+  switch (option) {
+    case 'same_day':
+      return 'Same Day (0 days before)';
+    case 'day_before':
+      return 'Day Before (1 day before)';
+    case 'week_before':
+      return 'Week Before (7 days before)';
+  }
+};
+
 
 export default function AccountForm({ account, contacts = [], onSave, onCancel }: AccountFormProps) {
   const currentTime = new Date().toISOString();
@@ -698,7 +711,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             title: '',
             date: '',
             alertEnabled: false,
-            alertDays: 7
+            alertOptions: []
           };
           return { ...banner, customerEvents: [...banner.customerEvents, newEvent] };
         }
@@ -1058,7 +1071,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       title: '',
       date: '',
       alertEnabled: false,
-      alertDays: 7
+      alertOptions: []
     };
     setCustomerEvents(prev => [...prev, newEvent]);
   };
@@ -1079,13 +1092,21 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     );
   };
 
-  const updateEventAlertDays = (id: string, days: number) => {
-    setCustomerEvents(prev =>
-      prev.map(event =>
-        event.id === id ? { ...event, alertDays: days } : event
-      )
-    );
+
+
+  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
+    setCustomerEvents(prev => prev.map(event => {
+      if (event.id === eventId) {
+        const currentOptions = event.alertOptions || [];
+        const newOptions = currentOptions.includes(option)
+          ? currentOptions.filter(o => o !== option)
+          : [...currentOptions, option];
+        return { ...event, alertOptions: newOptions };
+      }
+      return event;
+    }));
   };
+
 
   const removeCustomerEvent = (id: string) => {
     setCustomerEvents(prev => prev.filter(event => event.id !== id));
