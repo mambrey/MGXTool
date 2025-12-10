@@ -2232,24 +2232,31 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                         
                         {event.alertEnabled && (
                           <div className="space-y-2 pl-6">
-                            <Label htmlFor={`event-alert-days-${event.id}`} className="text-sm text-gray-600">
-                              Alert me (days before event):
+                            <Label className="text-sm text-gray-600">
+                              Alert me:
                             </Label>
-                            <div className="flex items-center gap-2">
-                              <Input
-                                id={`event-alert-days-${event.id}`}
-                                type="number"
-                                min="1"
-                                max="90"
-                                value={event.alertDays || 7}
-                                onChange={(e) => updateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
-                                className="w-24 h-9"
-                              />
-                              <span className="text-sm text-gray-500">days before</span>
+                            <div className="space-y-2">
+                              {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                                <div key={option} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`event-${event.id}-${option}`}
+                                    checked={(event.alertOptions || []).includes(option)}
+                                    onCheckedChange={() => handleToggleEventAlertOption(event.id, option)}
+                                  />
+                                  <Label
+                                    htmlFor={`event-${event.id}-${option}`}
+                                    className="text-sm font-normal cursor-pointer"
+                                  >
+                                    {getAlertOptionLabel(option)}
+                                  </Label>
+                                </div>
+                              ))}
                             </div>
-                            <p className="text-xs text-gray-500">
-                              You'll receive an alert {event.alertDays || 7} {(event.alertDays || 7) === 1 ? 'day' : 'days'} before this event
-                            </p>
+                            {(event.alertOptions || []).length > 0 && (
+                              <p className="text-xs text-gray-500">
+                                You'll receive {(event.alertOptions || []).length} alert{(event.alertOptions || []).length !== 1 ? 's' : ''} for this event
+                              </p>
+                            )}
                           </div>
                         )}
                       </div>
