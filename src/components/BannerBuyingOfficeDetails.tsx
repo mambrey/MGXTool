@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, MapPin, Globe, Calendar, Target, Package, Truck, TrendingUp, ShoppingCart, FileText } from 'lucide-react';
+import { Building, MapPin, Globe, Calendar, Target, Package, Truck, TrendingUp, ShoppingCart, FileText, User, Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,15 +7,25 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { AddressMap } from '@/components/AddressMap';
-import type { BannerBuyingOffice } from '@/types/crm';
+import type { BannerBuyingOffice, Contact } from '@/types/crm';
 
 interface BannerBuyingOfficeDetailsProps {
   banner: BannerBuyingOffice;
   accountName: string;
+  accountId: string;
+  contacts: Contact[];
   onBack: () => void;
+  onViewContact?: (contact: Contact) => void;
 }
 
-export default function BannerBuyingOfficeDetails({ banner, accountName, onBack }: BannerBuyingOfficeDetailsProps) {
+export default function BannerBuyingOfficeDetails({ 
+  banner, 
+  accountName, 
+  accountId,
+  contacts,
+  onBack,
+  onViewContact 
+}: BannerBuyingOfficeDetailsProps) {
   const InfoItem = ({ label, value, icon: Icon }: { label: string; value: string | number | undefined; icon?: React.ComponentType<{ className?: string }> }) => {
     if (!value) return null;
     return (
@@ -27,6 +37,31 @@ export default function BannerBuyingOfficeDetails({ banner, accountName, onBack 
         <p className="text-base mt-1">{value}</p>
       </div>
     );
+  };
+
+  // Find primary contact for this account
+  const primaryContact = contacts.find(c => c.accountId === accountId && c.isPrimaryContact);
+  // If no primary contact, get the first contact for this account
+  const displayContact = primaryContact || contacts.find(c => c.accountId === accountId);
+
+  // Get display name with preferred first name if available
+  const getContactDisplayName = (contact: Contact) => {
+    const firstName = contact.preferredFirstName || contact.firstName;
+    return `${firstName} ${contact.lastName}`;
+  };
+
+  // Get preferred contact method icon
+  const getContactMethodIcon = (method?: string) => {
+    switch (method) {
+      case 'email':
+        return <Mail className="w-3 h-3" />;
+      case 'mobile phone':
+        return <MessageCircle className="w-3 h-3" />;
+      case 'office phone':
+        return <Phone className="w-3 h-3" />;
+      default:
+        return <Mail className="w-3 h-3" />;
+    }
   };
 
   return (
@@ -397,6 +432,72 @@ export default function BannerBuyingOfficeDetails({ banner, accountName, onBack 
                     <label className="font-medium text-gray-600">Parent Account</label>
                     <p className="text-gray-900 mt-1">{accountName}</p>
                   </div>
+
+                  {/* Primary Contact Section */}
+                  {displayContact ? (
+                    <>
+                      <Separator />
+                      <div>
+                        <label className="font-medium text-gray-600 flex items-center gap-2 mb-2">
+                          <User className="w-4 h-4" />
+                          {primaryContact ? 'Primary Contact' : 'Contact'}
+                        </label>
+                        <div className="space-y-2">
+                          <p className="text-gray-900 font-medium">
+                            {getContactDisplayName(displayContact)}
+                          </p>
+                          {displayContact.title && (
+                            <p className="text-xs text-gray-600">{displayContact.title}</p>
+                          )}
+                          {displayContact.email && (
+                            <a 
+                              href={`mailto:${displayContact.email}`}
+                              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              <Mail className="w-3 h-3" />
+                              {displayContact.email}
+                            </a>
+                          )}
+                          {(displayContact.mobilePhone || displayContact.officePhone) && (
+                            <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <Phone className="w-3 h-3" />
+                              {displayContact.mobilePhone || displayContact.officePhone}
+                            </div>
+                          )}
+                          {displayContact.preferredContactMethod && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              {getContactMethodIcon(displayContact.preferredContactMethod)}
+                              Prefers: {displayContact.preferredContactMethod}
+                            </div>
+                          )}
+                          {onViewContact && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full mt-2 text-xs"
+                              onClick={() => onViewContact(displayContact)}
+                            >
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              View Full Contact
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <Separator />
+                    </>
+                  ) : (
+                    <>
+                      <Separator />
+                      <div>
+                        <label className="font-medium text-gray-600 flex items-center gap-2 mb-2">
+                          <User className="w-4 h-4" />
+                          Primary Contact
+                        </label>
+                        <p className="text-xs text-gray-500 italic">No contact assigned</p>
+                      </div>
+                      <Separator />
+                    </>
+                  )}
                   
                   {banner.channel && (
                     <div>

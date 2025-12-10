@@ -38,7 +38,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [selectedBanner, setSelectedBanner] = useState<{ banner: BannerBuyingOffice; accountName: string } | null>(null);
+  const [selectedBanner, setSelectedBanner] = useState<{ banner: BannerBuyingOffice; accountName: string; accountId: string } | null>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -48,6 +48,8 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const [showContactForm, setShowContactForm] = useState(false);
   // Track if we're viewing a contact from an account page
   const [viewingContactFromAccount, setViewingContactFromAccount] = useState<string | null>(null);
+  // Track if we're viewing a contact from a banner page
+  const [viewingContactFromBanner, setViewingContactFromBanner] = useState<boolean>(false);
 
   // One-time data cleaning on component mount
   useEffect(() => {
@@ -201,7 +203,16 @@ export default function CRMTool({ userName }: CRMToolProps) {
   };
 
   const handleViewBanner = (banner: BannerBuyingOffice, accountName: string) => {
-    setSelectedBanner({ banner, accountName });
+    // Find the account ID for this banner
+    const account = accounts.find(a => a.accountName === accountName);
+    setSelectedBanner({ banner, accountName, accountId: account?.id || '' });
+  };
+
+  // Handler for viewing contact from banner page
+  const handleViewContactFromBanner = (contact: Contact) => {
+    setSelectedContact(contact);
+    setViewingContactFromBanner(true);
+    setSelectedBanner(null); // Hide banner details while viewing contact
   };
 
   // New handler for viewing contact from account page
@@ -211,9 +222,15 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setSelectedAccount(null); // Hide account details while viewing contact
   };
 
-  // New handler for going back from contact to account
+  // New handler for going back from contact to account or banner
   const handleBackToAccount = () => {
-    if (viewingContactFromAccount) {
+    if (viewingContactFromBanner) {
+      // Go back to banner details
+      setSelectedContact(null);
+      setViewingContactFromBanner(false);
+      // selectedBanner should still be in state, so it will show again
+      setCurrentView('banners');
+    } else if (viewingContactFromAccount) {
       const account = accounts.find(a => a.id === viewingContactFromAccount);
       if (account) {
         setSelectedAccount(account);
@@ -234,6 +251,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setShowAccountForm(false);
     setShowContactForm(false);
     setViewingContactFromAccount(null);
+    setViewingContactFromBanner(false);
   };
 
   const handleAddAccount = () => {
@@ -417,7 +435,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
   const filteredAccounts = (accounts || []).filter(account => {
     const primaryContact = account.primaryContactId 
       ? (contacts || []).find(c => c.id === account.primaryContactId)
-      : (contacts || []).find(c => c.accountId === account.id && c.contactType === 'Primary');
+      : (contacts || []).find(c => c.accountId === account.id && c.isPrimaryContact);
     
     const ownerName = primaryContact 
       ? `${primaryContact.firstName} ${primaryContact.lastName}` 
@@ -562,10 +580,13 @@ export default function CRMTool({ userName }: CRMToolProps) {
         <BannerBuyingOfficeDetails
           banner={selectedBanner.banner}
           accountName={selectedBanner.accountName}
+          accountId={selectedBanner.accountId}
+          contacts={contacts || []}
           onBack={() => {
             setSelectedBanner(null);
             setCurrentView('banners');
           }}
+          onViewContact={handleViewContactFromBanner}
         />
       );
     }
@@ -647,7 +668,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
                   // Find the primary contact for this account
                   const primaryContact = account.primaryContactId 
                     ? (contacts || []).find(c => c.id === account.primaryContactId)
-                    : (contacts || []).find(c => c.accountId === account.id && c.contactType === 'Primary');
+                    : (contacts || []).find(c => c.accountId === account.id && c.isPrimaryContact);
 
                   // Find relationship owner contact - look for any contact with a relationship owner set
                   const relationshipOwnerContact = (contacts || []).find(c => 
