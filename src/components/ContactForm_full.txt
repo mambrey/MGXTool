@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar as CalendarIcon, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText, Building, Building2 } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar as CalendarIcon, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -19,7 +19,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useLoadScript } from '@react-google-maps/api';
-import type { Contact, Account, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
+import type { Contact, Account, CustomerEvent } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
 
 interface ContactFormProps {
@@ -169,7 +169,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     currentRoleTenure: contact?.currentRoleTenure || '',
     managerId: contact?.managerId || '',
     accountId: contact?.accountId || '',
-    bannerBuyingOfficeId: contact?.bannerBuyingOfficeId || '',
     isPrimaryContact: contact?.isPrimaryContact || false,
     contactActiveStatus: contact?.contactActiveStatus || 'Active',
     relationshipStatus: contact?.relationshipStatus || '',
@@ -794,82 +793,42 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                     aria-expanded={accountSearchOpen}
                     className="w-full justify-between"
                   >
-                    {getSelectedAccountOrBannerName()}
+                    {formData.accountId
+                      ? accounts.find(account => account.id === formData.accountId)?.accountName
+                      : "Select"}
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[500px] p-0" align="start">
+                <PopoverContent className="w-[400px] p-0" align="start">
                   <Command shouldFilter={true}>
                     <CommandInput 
-                      placeholder="Search accounts and banners..." 
+                      placeholder="Search accounts by name, industry, or owner..." 
                     />
                     <CommandList>
-                      <CommandEmpty>No account or banner found.</CommandEmpty>
+                      <CommandEmpty>No account found.</CommandEmpty>
                       <CommandGroup>
                         {accounts.map((account) => {
-                          const accountValue = `account:${account.id}`;
-                          const isAccountSelected = formData.accountId === account.id && !formData.bannerBuyingOfficeId;
                           const searchableText = `${account.accountName} ${account.industry || ''} ${account.accountOwner || ''}`;
-                          
                           return (
-                            <React.Fragment key={account.id}>
-                              {/* Parent Account */}
-                              <CommandItem
-                                value={searchableText}
-                                onSelect={() => handleAccountOrBannerChange(accountValue)}
-                                className="flex items-center gap-2"
-                              >
-                                <Check
-                                  className={cn(
-                                    "h-4 w-4 shrink-0",
-                                    isAccountSelected ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <span className="font-medium truncate">{account.accountName}</span>
-                                  <span className="text-xs text-gray-500 truncate">
-                                    {account.industry && `${account.industry} • `}
-                                    {account.accountOwner && `Owner: ${account.accountOwner}`}
-                                  </span>
-                                </div>
-                              </CommandItem>
-                              
-                              {/* Banner/Buying Offices under this account */}
-                              {account.bannerBuyingOffices && account.bannerBuyingOffices.length > 0 && (
-                                <>
-                                  {account.bannerBuyingOffices.map((banner) => {
-                                    const bannerValue = `banner:${account.id}:${banner.id}`;
-                                    const isBannerSelected = formData.accountId === account.id && formData.bannerBuyingOfficeId === banner.id;
-                                    const bannerSearchText = `${banner.accountName} ${banner.channel || ''} ${account.accountName}`;
-                                    
-                                    return (
-                                      <CommandItem
-                                        key={banner.id}
-                                        value={bannerSearchText}
-                                        onSelect={() => handleAccountOrBannerChange(bannerValue)}
-                                        className="flex items-center gap-2 pl-8"
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "h-4 w-4 shrink-0",
-                                            isBannerSelected ? "opacity-100" : "opacity-0"
-                                          )}
-                                        />
-                                        <Building className="h-4 w-4 text-purple-600 shrink-0" />
-                                        <div className="flex flex-col flex-1 min-w-0">
-                                          <span className="font-medium text-sm truncate">{banner.accountName}</span>
-                                          <span className="text-xs text-gray-500 truncate">
-                                            {banner.channel && `${banner.channel} • `}
-                                            Parent: {account.accountName}
-                                          </span>
-                                        </div>
-                                      </CommandItem>
-                                    );
-                                  })}
-                                </>
-                              )}
-                            </React.Fragment>
+                            <CommandItem
+                              key={account.id}
+                              value={searchableText}
+                              onSelect={() => handleAccountChange(account.id)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.accountId === account.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">{account.accountName}</span>
+                                <span className="text-xs text-gray-500">
+                                  {account.industry && `${account.industry} • `}
+                                  {account.accountOwner && `Owner: ${account.accountOwner}`}
+                                </span>
+                              </div>
+                            </CommandItem>
                           );
                         })}
                       </CommandGroup>
@@ -877,9 +836,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </Command>
                 </PopoverContent>
               </Popover>
-              <p className="text-xs text-gray-500 mt-1">
-                Select a parent account or a specific banner/buying office
-              </p>
             </div>
 
             <div>
