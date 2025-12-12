@@ -154,9 +154,21 @@ export default function CRMTool({ userName }: CRMToolProps) {
   };
 
   const handleContactSave = (contact: Contact) => {
+    console.log('🔍 DEBUG: handleContactSave called');
+    console.log('🔍 DEBUG: editingContact exists?', !!editingContact);
+    console.log('🔍 DEBUG: editingContact.id:', editingContact?.id);
+    console.log('🔍 DEBUG: incoming contact.id:', contact.id);
+    console.log('🔍 DEBUG: incoming contact.primaryDiageoRelationshipOwners:', contact.primaryDiageoRelationshipOwners);
+    
     if (editingContact) {
-      setContacts(prev => (prev || []).map(c => c.id === contact.id ? contact : c));
+      console.log('🔍 DEBUG: UPDATING existing contact');
+      setContacts(prev => {
+        const updated = (prev || []).map(c => c.id === contact.id ? contact : c);
+        console.log('🔍 DEBUG: Updated contacts array:', updated.find(c => c.id === contact.id)?.primaryDiageoRelationshipOwners);
+        return updated;
+      });
     } else {
+      console.log('🔍 DEBUG: ADDING new contact');
       setContacts(prev => [...(prev || []), contact]);
     }
     setEditingContact(null);
@@ -165,6 +177,8 @@ export default function CRMTool({ userName }: CRMToolProps) {
   };
 
   const handleContactUpdate = (contact: Contact) => {
+    console.log('🔍 DEBUG: handleContactUpdate called');
+    console.log('🔍 DEBUG: contact.primaryDiageoRelationshipOwners:', contact.primaryDiageoRelationshipOwners);
     setContacts(prev => (prev || []).map(c => c.id === contact.id ? contact : c));
     setSelectedContact(contact); // Update the selected contact to reflect changes
   };
@@ -175,6 +189,9 @@ export default function CRMTool({ userName }: CRMToolProps) {
   };
 
   const handleContactEdit = (contact: Contact) => {
+    console.log('🔍 DEBUG: handleContactEdit called');
+    console.log('🔍 DEBUG: contact being edited:', contact.id);
+    console.log('🔍 DEBUG: contact.primaryDiageoRelationshipOwners:', contact.primaryDiageoRelationshipOwners);
     setEditingContact(contact);
     setShowContactForm(true);
   };
