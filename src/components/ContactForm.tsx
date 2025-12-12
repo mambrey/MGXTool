@@ -610,6 +610,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation: If ownerName is filled, ownerEmail must also be filled
+    if (ownerName && !ownerEmail) {
+      alert('Primary Owner Email is required when Primary Owner is specified.');
+      return;
+    }
+    
     const contactData: Contact = {
       id: contact?.id || Date.now().toString(),
       ...formData,
@@ -1751,24 +1757,27 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
               <div>
-                <Label htmlFor="ownerName">Primary Owner *</Label>
+                <Label htmlFor="ownerName">Primary Owner</Label>
                 <Input
                   id="ownerName"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
                   placeholder="Enter owner name"
-                  required
                 />
               </div>
               <div>
-                <Label htmlFor="ownerEmail">Primary Owner Email</Label>
+                <Label htmlFor="ownerEmail">Primary Owner Email *</Label>
                 <Input
                   id="ownerEmail"
                   type="email"
                   value={ownerEmail}
                   onChange={(e) => setOwnerEmail(e.target.value)}
                   placeholder="owner@company.com"
+                  required={!!ownerName}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Required when Primary Owner is specified
+                </p>
               </div>
             </div>
 
