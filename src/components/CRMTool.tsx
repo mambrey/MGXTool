@@ -713,29 +713,29 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                   <p className="text-gray-600 mt-1">{account.industry}</p>
                                 )}
                                 
-                                {/* Address */}
-                                {account.address && (
-                                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                                    <MapPin className="w-4 h-4" />
-                                    <span>{account.address}</span>
-                                  </div>
-                                )}
+                                {/* Address - ALWAYS SHOW */}
+                                <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                                  <MapPin className="w-4 h-4" />
+                                  <span>{account.address || 'No address'}</span>
+                                </div>
 
-                                {/* Primary Contact Name */}
-                                {primaryContact && (
-                                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                                    <User className="w-4 h-4" />
-                                    <span>Primary Contact: {primaryContact.firstName} {primaryContact.lastName}</span>
-                                  </div>
-                                )}
+                                {/* Primary Contact Name - ALWAYS SHOW */}
+                                <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                                  <User className="w-4 h-4" />
+                                  <span>
+                                    Primary Contact: {primaryContact 
+                                      ? `${primaryContact.firstName} ${primaryContact.lastName}` 
+                                      : 'Not assigned'}
+                                  </span>
+                                </div>
 
-                                {/* Diageo Relationship Owner */}
-                                {diageoOwnerContact?.primaryDiageoRelationshipOwners?.ownerName && (
-                                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                                    <Briefcase className="w-4 h-4" />
-                                    <span>Diageo Owner: {diageoOwnerContact.primaryDiageoRelationshipOwners.ownerName}</span>
-                                  </div>
-                                )}
+                                {/* Diageo Relationship Owner - ALWAYS SHOW */}
+                                <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                                  <Briefcase className="w-4 h-4" />
+                                  <span>
+                                    Diageo Owner: {diageoOwnerContact?.primaryDiageoRelationshipOwners?.ownerName || 'Not assigned'}
+                                  </span>
+                                </div>
 
                                 <div className="flex flex-wrap gap-2 mt-3">
                                   {account.accountStatus && (
