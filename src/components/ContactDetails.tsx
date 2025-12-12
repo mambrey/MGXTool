@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink, Briefcase, Users, MapPin, Building2 } from 'lucide-react';
+import { Edit2, Printer, Mail, Phone, Linkedin, Calendar, Trash2, TrendingUp, Plus, Bell, BellOff, X, User, ExternalLink, Briefcase, Users, MapPin, Building2, ChevronDown, ChevronUp, Package, FileText, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import type { Contact, Account } from '@/types/crm';
 
 interface ContactDetailsProps {
@@ -53,18 +54,17 @@ const formatBirthday = (birthday: string): string => {
   return birthday;
 };
 
-
-  const formatAlertOptions = (options?: ('same_day' | 'day_before' | 'week_before')[]) => {
-    if (!options || options.length === 0) return 'None';
-    return options.map(opt => {
-      switch (opt) {
-        case 'same_day': return 'Same Day';
-        case 'day_before': return 'Day Before';
-        case 'week_before': return 'Week Before';
-        default: return opt;
-      }
-    }).join(', ');
-  };
+const formatAlertOptions = (options?: ('same_day' | 'day_before' | 'week_before')[]) => {
+  if (!options || options.length === 0) return 'None';
+  return options.map(opt => {
+    switch (opt) {
+      case 'same_day': return 'Same Day';
+      case 'day_before': return 'Day Before';
+      case 'week_before': return 'Week Before';
+      default: return opt;
+    }
+  }).join(', ');
+};
 
 export default function ContactDetails({ 
   contact, 
@@ -89,6 +89,7 @@ export default function ContactDetails({
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
   const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
+  const [expandAll, setExpandAll] = useState(false);
 
   const handleToggleNewEventAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
     setNewEventAlertOptions(prev => {
@@ -210,35 +211,6 @@ export default function ContactDetails({
     return days;
   };
 
-  // Helper function to get influencer level badge with color coding
-  const getInfluencerLevelBadge = (level?: number) => {
-    if (!level) return null;
-    
-    let className = '';
-    let label = '';
-    
-    if (level <= 3) {
-      className = 'bg-gray-100 text-gray-800 border-gray-300';
-      label = 'Low';
-    } else if (level <= 6) {
-      className = 'bg-blue-100 text-blue-800 border-blue-300';
-      label = 'Medium';
-    } else if (level <= 8) {
-      className = 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      label = 'High';
-    } else {
-      className = 'bg-green-100 text-green-800 border-green-300';
-      label = 'Very High';
-    }
-    
-    return (
-      <Badge variant="outline" className={`${className}`}>
-        <TrendingUp className="w-3 h-3 mr-1 inline" />
-        Influence Rating: {level}/10 ({label})
-      </Badge>
-    );
-  };
-
   // Helper function to get initials from name
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -246,79 +218,24 @@ export default function ContactDetails({
 
   // Helper function to format LinkedIn URL
   const formatLinkedInUrl = (url: string) => {
-    // If URL already starts with http:// or https://, return as is
     if (url.match(/^https?:\/\//i)) {
       return url;
     }
-    // Otherwise, add https://
     return `https://${url}`;
   };
 
   // Helper function to get support style color
   const getSupportStyleColor = (status: string) => {
-    if (status.includes('Promoter')) return '#166534'; // Dark green
-    if (status.includes('Supporter')) return '#16a34a'; // Green
-    if (status.includes('Neutral')) return '#6b7280'; // Gray
-    if (status.includes('Detractor')) return '#f87171'; // Light red (changed from #ea580c)
-    if (status.includes('Adversarial')) return '#991b1b'; // Dark red
-    return '#6b7280'; // Default gray
+    if (status.includes('Promoter')) return '#166534';
+    if (status.includes('Supporter')) return '#16a34a';
+    if (status.includes('Neutral')) return '#6b7280';
+    if (status.includes('Detractor')) return '#f87171';
+    if (status.includes('Adversarial')) return '#991b1b';
+    return '#6b7280';
   };
 
   const printContact = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Contact: ${contact.firstName} ${contact.lastName}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px; }
-            h2 { color: #4b5563; margin-top: 20px; }
-            .section { margin-bottom: 20px; }
-            .label { font-weight: bold; color: #6b7280; }
-            .value { margin-left: 10px; }
-            @media print { button { display: none; } }
-          </style>
-        </head>
-        <body>
-          <h1>${contact.firstName} ${contact.lastName}</h1>
-          ${contact.title ? `<p style="font-size: 18px; color: #6b7280;">${contact.title}</p>` : ''}
-          ${account ? `<p style="color: #2563eb;">Account: ${account.accountName}</p>` : ''}
-          
-          <div class="section">
-            <h2>Contact Information</h2>
-            ${contact.email ? `<p><span class="label">Email:</span><span class="value">${contact.email}</span></p>` : ''}
-            ${contact.mobilePhone ? `<p><span class="label">Mobile:</span><span class="value">${contact.mobilePhone}</span></p>` : ''}
-            ${contact.officePhone ? `<p><span class="label">Office:</span><span class="value">${contact.officePhone}</span></p>` : ''}
-            ${contact.preferredShippingAddress ? `<p><span class="label">Shipping Address:</span><span class="value">${contact.preferredShippingAddress}</span></p>` : ''}
-          </div>
-          
-          ${contact.relationshipStatus || contact.preferredContactMethod ? `
-          <div class="section">
-            <h2>Relationship Details</h2>
-            ${contact.relationshipStatus ? `<p><span class="label">Status:</span><span class="value">${contact.relationshipStatus}</span></p>` : ''}
-            ${contact.preferredContactMethod ? `<p><span class="label">Preferred Contact:</span><span class="value">${contact.preferredContactMethod}</span></p>` : ''}
-          </div>` : ''}
-          
-          ${contact.knownPreferences ? `
-          <div class="section">
-            <h2>Known Preferences</h2>
-            <p>${contact.knownPreferences}</p>
-          </div>` : ''}
-          
-          ${contact.notes ? `
-          <div class="section">
-            <h2>Notes</h2>
-            <p style="white-space: pre-wrap;">${contact.notes}</p>
-          </div>` : ''}
-          
-          <button onclick="window.print()">Print</button>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    window.print();
   };
 
   // Display name with preferred first name
@@ -335,21 +252,27 @@ export default function ContactDetails({
     ? account.bannerBuyingOffices.find(b => b.id === contact.bannerBuyingOfficeId)
     : undefined;
 
+  // InfoItem component matching AccountDetails pattern
+  const InfoItem = ({ label, value, icon: Icon }: { label: string; value: string | number | undefined; icon?: React.ComponentType<{ className?: string }> }) => {
+    if (!value) return null;
+    return (
+      <div>
+        <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+          {Icon && <Icon className="w-4 h-4" />}
+          {label}
+        </label>
+        <p className="text-base mt-1">{value}</p>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Header with Headshot */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="flex-1">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
           <Button variant="ghost" onClick={onBack} className="mb-2">
-            {account ? (
-              <>
-                ← Back to {account.accountName}
-              </>
-            ) : (
-              <>
-                ← Back to Contacts
-              </>
-            )}
+            {account ? `← Back to ${account.accountName}` : '← Back to Contacts'}
           </Button>
           <div className="flex items-center gap-4">
             {/* Headshot Display */}
@@ -389,433 +312,293 @@ export default function ContactDetails({
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-3">
-          {/* Created and Modified Dates - ONE LINE */}
-          <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Created:</span>
-              <span className="text-xs text-gray-700 font-medium">
-                {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Not available'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Modified:</span>
-              <span className="text-xs text-gray-700 font-medium">
-                {contact.lastModified ? new Date(contact.lastModified).toLocaleDateString() : 'Not available'}
-              </span>
-            </div>
-          </div>
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              onClick={printContact}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Printer className="w-4 h-4" />
-              Print
-            </Button>
-            <Button
-              onClick={() => onEdit(contact)}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Edit2 className="w-4 h-4" />
-              Edit Contact
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => {
-                if (window.confirm(`Are you sure you want to delete ${displayName}? This action cannot be undone.`)) {
-                  onDelete(contact.id);
-                }
-              }}
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </Button>
-          </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setExpandAll(!expandAll)}
+          >
+            {expandAll ? (
+              <>
+                <ChevronUp className="w-4 h-4 mr-2" />
+                Collapse All
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4 mr-2" />
+                Expand All
+              </>
+            )}
+          </Button>
+          <Button variant="outline" onClick={printContact}>
+            <Printer className="w-4 h-4 mr-2" />
+            Print
+          </Button>
+          <Button variant="outline" onClick={() => onEdit(contact)}>
+            <Edit2 className="w-4 h-4 mr-2" />
+            Edit
+          </Button>
+          <Button 
+            variant="destructive" 
+            onClick={() => {
+              if (window.confirm(`Are you sure you want to delete ${displayName}? This action cannot be undone.`)) {
+                onDelete(contact.id);
+              }
+            }}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
+          </Button>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-4 sm:p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            {/* Contact Information */}
-            <div>
-              <h3 className="text-base sm:text-lg font-semibold mb-4">Contact Information</h3>
-              <div className="space-y-3">
-                {contact.email && (
-                  <div className="flex items-start gap-3">
-                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Email</p>
-                      <a href={`mailto:${contact.email}`} className="text-blue-600 hover:text-blue-800 text-sm break-all">
+      {/* Accordion Sections */}
+      <Accordion type="multiple" defaultValue={expandAll ? ['basic', 'contact-info', 'ways-of-working', 'dates', 'linkedin', 'preferences', 'relationship-owner', 'notes'] : ['basic']} value={expandAll ? ['basic', 'contact-info', 'ways-of-working', 'dates', 'linkedin', 'preferences', 'relationship-owner', 'notes'] : undefined}>
+        
+        {/* Basic Information */}
+        <AccordionItem value="basic">
+          <AccordionTrigger className="text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Basic Information
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InfoItem label="First Name" value={contact.firstName} icon={User} />
+                  {contact.preferredFirstName && (
+                    <InfoItem label="Preferred First Name" value={contact.preferredFirstName} />
+                  )}
+                  <InfoItem label="Last Name" value={contact.lastName} />
+                  <InfoItem label="Job Title" value={contact.title} icon={Briefcase} />
+                  <InfoItem label="Current Role Tenure" value={contact.currentRoleTenure} />
+                  {account && (
+                    <InfoItem label="Account" value={account.accountName} icon={Building2} />
+                  )}
+                  {bannerBuyingOffice && (
+                    <InfoItem label="Banner/Buying Office" value={bannerBuyingOffice.accountName} />
+                  )}
+                  {manager && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Reports To
+                      </label>
+                      <p className="text-base mt-1">{manager.firstName} {manager.lastName}</p>
+                      {manager.title && (
+                        <p className="text-sm text-gray-500">{manager.title}</p>
+                      )}
+                      {managerAccount && (
+                        <p className="text-sm text-gray-500">{managerAccount.accountName}</p>
+                      )}
+                    </div>
+                  )}
+                  {contact.isPrimaryContact && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Contact Type</label>
+                      <div className="mt-1">
+                        <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
+                          Primary Contact
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+                  {contact.contactActiveStatus && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Status</label>
+                      <div className="mt-1">
+                        <Badge variant={contact.contactActiveStatus === 'Active' ? 'default' : 'secondary'}>
+                          {contact.contactActiveStatus}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Created</label>
+                    <p className="text-base mt-1">
+                      {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Not available'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Last Modified</label>
+                    <p className="text-base mt-1">
+                      {contact.lastModified ? new Date(contact.lastModified).toLocaleDateString() : 'Not available'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Contact Information */}
+        <AccordionItem value="contact-info">
+          <AccordionTrigger className="text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <Mail className="w-5 h-5" />
+              Contact Information
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {contact.email && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Email Address
+                      </label>
+                      <a href={`mailto:${contact.email}`} className="text-base mt-1 text-blue-600 hover:text-blue-800 block break-all">
                         {contact.email}
                       </a>
                     </div>
-                  </div>
-                )}
-                {contact.mobilePhone && (
-                  <div className="flex items-start gap-3">
-                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Mobile</p>
-                      <a href={`tel:${contact.mobilePhone}`} className="text-blue-600 hover:text-blue-800 text-sm">
-                        {contact.mobilePhone}
-                      </a>
-                    </div>
-                  </div>
-                )}
-                {contact.officePhone && (
-                  <div className="flex items-start gap-3">
-                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Office</p>
-                      <a href={`tel:${contact.officePhone}`} className="text-blue-600 hover:text-blue-800 text-sm">
+                  )}
+                  {contact.officePhone && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Office Phone
+                      </label>
+                      <a href={`tel:${contact.officePhone}`} className="text-base mt-1 text-blue-600 hover:text-blue-800 block">
                         {contact.officePhone}
                       </a>
                     </div>
-                  </div>
-                )}
-                {contact.preferredContactMethod && (
-                  <div className="flex items-start gap-3">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Preferred Contact Method</p>
-                      <p className="text-sm text-gray-700 capitalize">
-                        {contact.preferredContactMethod}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {contact.preferredShippingAddress && (
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Preferred Shipping Address</p>
-                      <p className="text-sm text-gray-700">
-                        {contact.preferredShippingAddress}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {contact.currentRoleTenure && (
-                  <div className="flex items-start gap-3">
-                    <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Current Role Tenure</p>
-                      <p className="text-sm text-gray-700">
-                        {contact.currentRoleTenure}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {manager && (
-                  <div className="flex items-start gap-3">
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Reports To</p>
-                      <p className="text-sm text-gray-700 font-medium">
-                        {manager.firstName} {manager.lastName}
-                      </p>
-                      {manager.title && (
-                        <p className="text-xs text-gray-500">{manager.title}</p>
-                      )}
-                      {managerAccount && (
-                        <p className="text-xs text-gray-500">{managerAccount.accountName}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {contact.linkedinProfile && (
-                  <div className="flex items-start gap-3">
-                    <Linkedin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">LinkedIn Profile</p>
-                      <a 
-                        href={formatLinkedInUrl(contact.linkedinProfile)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 hover:underline text-sm flex items-center gap-1 break-all"
-                      >
-                        View LinkedIn Profile
-                        <ExternalLink className="w-3 h-3 shrink-0" />
+                  )}
+                  {contact.mobilePhone && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Mobile Phone
+                      </label>
+                      <a href={`tel:${contact.mobilePhone}`} className="text-base mt-1 text-blue-600 hover:text-blue-800 block">
+                        {contact.mobilePhone}
                       </a>
                     </div>
-                  </div>
-                )}
-                {contact.socialHandles && contact.socialHandles.length > 0 && (
-                  <div className="flex items-start gap-3">
-                    <Linkedin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 mb-1">LinkedIn Profile (Legacy)</p>
-                      <div className="space-y-2">
-                        {contact.socialHandles.map((handle, index) => (
-                          <a 
-                            key={index}
-                            href={formatLinkedInUrl(handle)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 hover:underline text-sm flex items-center gap-1 break-all"
-                          >
-                            {handle}
-                            <ExternalLink className="w-3 h-3 shrink-0" />
-                          </a>
-                        ))}
+                  )}
+                  <InfoItem label="Preferred Contact Method" value={contact.preferredContactMethod} />
+                  {contact.preferredShippingAddress && (
+                    <div className="md:col-span-2">
+                      <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        Preferred Shipping Address
+                      </label>
+                      <p className="text-base mt-1">{contact.preferredShippingAddress}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Ways of Working */}
+        <AccordionItem value="ways-of-working">
+          <AccordionTrigger className="text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <Briefcase className="w-5 h-5" />
+              Ways of Working
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-6">
+                  {/* Support Style */}
+                  {contact.relationshipStatus && (
+                    <div>
+                      <h4 className="font-semibold mb-3 text-sm text-gray-700">Support Style</h4>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{backgroundColor: getSupportStyleColor(contact.relationshipStatus)}}
+                        ></div>
+                        <p className="text-base">{contact.relationshipStatus}</p>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
+                  )}
 
-            {/* Relationship Details */}
-            <div>
-              <h3 className="text-base sm:text-lg font-semibold mb-4">Relationship Details</h3>
-              <div className="space-y-3">
-                {contact.isPrimaryContact && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Contact Type</p>
-                    <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
-                      Primary Contact
-                    </Badge>
-                  </div>
-                )}
-                {contact.contactActiveStatus && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Status</p>
-                    <Badge variant={contact.contactActiveStatus === 'Active' ? 'default' : 'secondary'}>
-                      {contact.contactActiveStatus}
-                    </Badge>
-                  </div>
-                )}
-                {contact.relationshipStatus && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Support Style</p>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{backgroundColor: getSupportStyleColor(contact.relationshipStatus)}}
-                      ></div>
-                      <p className="text-sm">{contact.relationshipStatus}</p>
-                    </div>
-                  </div>
-                )}
-                {contact.categorySegmentOwnership && contact.categorySegmentOwnership.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-2">Category/Segment Ownership</p>
-                    <div className="flex flex-wrap gap-1">
-                      {contact.categorySegmentOwnership.map((category, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {category}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {contact.responsibilityLevels && Object.keys(contact.responsibilityLevels).length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-2">Responsibility Levels</p>
-                    <div className="space-y-1">
-                      {Object.entries(contact.responsibilityLevels).map(([key, value]) => {
-                        if (value && value !== 'None') {
-                          const label = key.replace(/([A-Z])/g, ' $1').trim();
-                          return (
-                            <div key={key} className="flex items-center justify-between text-xs">
-                              <span className="text-gray-600 capitalize">{label}:</span>
-                              <Badge variant="outline" className="text-xs">{value}</Badge>
+                  {contact.categorySegmentOwnership && contact.categorySegmentOwnership.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Category/Segment Ownership</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {contact.categorySegmentOwnership.map((category, index) => (
+                            <Badge key={index} variant="secondary">
+                              {category}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {contact.responsibilityLevels && Object.keys(contact.responsibilityLevels).length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Responsibility Levels</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {Object.entries(contact.responsibilityLevels).map(([key, value]) => {
+                            if (value && value !== 'None') {
+                              const label = key.replace(/([A-Z])/g, ' $1').trim();
+                              return (
+                                <div key={key} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                  <span className="text-sm text-gray-600 capitalize">{label}</span>
+                                  <Badge variant="outline">{value}</Badge>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {(contact.entertainment || contact.decisionBiasProfile || contact.followThrough) && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Additional Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Allowed to Entertain" value={contact.entertainment} />
+                          <InfoItem label="Decision Bias Profile" value={contact.decisionBiasProfile} />
+                          {contact.followThrough && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600">Follow Through</label>
+                              <div className="mt-1">
+                                <Badge variant="outline">{contact.followThrough}</Badge>
+                              </div>
                             </div>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-                  </div>
-                )}
-                {contact.entertainment && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Allowed to Entertain</p>
-                    <p className="text-sm">{contact.entertainment}</p>
-                  </div>
-                )}
-                {contact.decisionBiasProfile && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Decision Bias Profile</p>
-                    <p className="text-sm">{contact.decisionBiasProfile}</p>
-                  </div>
-                )}
-                {contact.followThrough && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Follow Through</p>
-                    <Badge variant="outline">{contact.followThrough}</Badge>
-                  </div>
-                )}
-                {contact.birthday && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Birthday</p>
-                    <div className="flex flex-col gap-2">
-                      <p className="text-sm font-medium">{formatBirthday(contact.birthday)}</p>
-                      {contact.birthdayAlert && (
-                        <div className="space-y-1">
-                          <Badge variant="secondary" className="text-xs">
-                            Alert Enabled
-                          </Badge>
-                          {contact.birthdayAlertOptions && contact.birthdayAlertOptions.length > 0 && (
-                            <p className="text-xs text-gray-600">
-                              Alert: {formatAlertOptions(contact.birthdayAlertOptions)}
-                            </p>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {/* Relationship Owner - Simplified formatting */}
-                {contact.relationshipOwner && (contact.relationshipOwner.name || contact.relationshipOwner.email || contact.relationshipOwner.vicePresident) && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Relationship Owner</p>
-                    <div className="text-sm text-gray-700 space-y-1">
-                      {contact.relationshipOwner.name && (
-                        <p>{contact.relationshipOwner.name}</p>
-                      )}
-                      {contact.relationshipOwner.email && (
-                        <p className="text-blue-600">{contact.relationshipOwner.email}</p>
-                      )}
-                      {contact.relationshipOwner.vicePresident && (
-                        <p>VP: {contact.relationshipOwner.vicePresident}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Primary Diageo Relationship Owner(s) Section */}
-          {contact.primaryDiageoRelationshipOwners && (
-            (contact.primaryDiageoRelationshipOwners.ownerName || 
-             contact.primaryDiageoRelationshipOwners.ownerEmail || 
-             contact.primaryDiageoRelationshipOwners.svp ||
-             Object.keys(contact.primaryDiageoRelationshipOwners.sales || {}).length > 0 || 
-             Object.keys(contact.primaryDiageoRelationshipOwners.support || {}).length > 0)
-          ) && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-indigo-600" />
-                Diageo Relationship Owner(s)
-              </h3>
-
-              {/* Display Owner Name, Owner Email, and SVP */}
-              {(contact.primaryDiageoRelationshipOwners.ownerName || 
-                contact.primaryDiageoRelationshipOwners.ownerEmail || 
-                contact.primaryDiageoRelationshipOwners.svp) && (
-                <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {contact.primaryDiageoRelationshipOwners.ownerName && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Primary Owner</p>
-                        <p className="text-sm font-medium text-gray-700">
-                          {contact.primaryDiageoRelationshipOwners.ownerName}
-                        </p>
                       </div>
-                    )}
-                    {contact.primaryDiageoRelationshipOwners.ownerEmail && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Primary Owner Email</p>
-                        <a 
-                          href={`mailto:${contact.primaryDiageoRelationshipOwners.ownerEmail}`}
-                          className="text-sm text-blue-600 hover:text-blue-800 break-all"
-                        >
-                          {contact.primaryDiageoRelationshipOwners.ownerEmail}
-                        </a>
-                      </div>
-                    )}
-                    {contact.primaryDiageoRelationshipOwners.svp && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">SVP</p>
-                        <p className="text-sm font-medium text-gray-700">
-                          {contact.primaryDiageoRelationshipOwners.svp}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    </>
+                  )}
                 </div>
-              )}
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Sales Section */}
-                {contact.primaryDiageoRelationshipOwners.sales && Object.keys(contact.primaryDiageoRelationshipOwners.sales).length > 0 && (
-                  <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      Sales
-                    </h4>
-                    <div className="space-y-2">
-                      {Object.entries(contact.primaryDiageoRelationshipOwners.sales).map(([role, cadence]) => {
-                        const lastCheckIn = contact.primaryDiageoRelationshipOwners?.salesLastCheckIn?.[role];
-                        return (
-                          <div key={role} className="p-2 bg-white rounded border border-indigo-100">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-gray-700">{role}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {cadence || 'Not set'}
-                              </Badge>
-                            </div>
-                            {lastCheckIn && (
-                              <p className="text-xs text-gray-500">
-                                Last Check In: {new Date(lastCheckIn).toLocaleDateString()}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Support Section */}
-                {contact.primaryDiageoRelationshipOwners.support && Object.keys(contact.primaryDiageoRelationshipOwners.support).length > 0 && (
-                  <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      Support
-                    </h4>
-                    <div className="space-y-2">
-                      {Object.entries(contact.primaryDiageoRelationshipOwners.support).map(([role, cadence]) => {
-                        const lastCheckIn = contact.primaryDiageoRelationshipOwners?.supportLastCheckIn?.[role];
-                        return (
-                          <div key={role} className="p-2 bg-white rounded border border-indigo-100">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-gray-700">{role}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {cadence || 'Not set'}
-                              </Badge>
-                            </div>
-                            {lastCheckIn && (
-                              <p className="text-xs text-gray-500">
-                                Last Check In: {new Date(lastCheckIn).toLocaleDateString()}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
+        {/* Important Dates */}
+        <AccordionItem value="dates">
+          <AccordionTrigger className="text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Important Dates
             </div>
-          )}
-
-          {/* Important Dates with Event Management */}
-          <div className="mt-6 pt-6 border-t">
+          </AccordionTrigger>
+          <AccordionContent>
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Important Dates ({contactEvents.length + (contact.lastContactDate ? 1 : 0) + (contact.nextContactDate ? 1 : 0)})
+                  <CardTitle className="text-base font-semibold">
+                    All Dates ({contactEvents.length + (contact.birthday ? 1 : 0) + (contact.lastContactDate ? 1 : 0) + (contact.nextContactDate ? 1 : 0)})
                   </CardTitle>
                   <Button size="sm" onClick={() => setIsAddEventDialogOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
@@ -824,48 +607,75 @@ export default function ContactDetails({
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* System Dates (Last Contact, Next Contact) */}
-                  {(contact.lastContactDate || contact.nextContactDate) && (
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium text-gray-700">Contact Schedule</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {contact.lastContactDate && (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-gray-500 mb-1">Last Contact</p>
-                            <p className="text-sm font-medium">{new Date(contact.lastContactDate).toLocaleDateString()}</p>
-                          </div>
-                        )}
-                        {contact.nextContactDate && (
-                          <div className="p-3 bg-blue-50 rounded-lg">
-                            <p className="text-xs text-gray-500 mb-1">Next Contact</p>
-                            <div className="flex flex-col gap-2">
-                              <p className="text-sm font-medium">{new Date(contact.nextContactDate).toLocaleDateString()}</p>
-                              {contact.nextContactAlert && (
-                                <div className="space-y-1">
-                                  <Badge variant="secondary" className="text-xs w-fit">
-                                    Alert Enabled
-                                  </Badge>
-                                  {contact.nextContactAlertOptions && contact.nextContactAlertOptions.length > 0 && (
-                                    <p className="text-xs text-gray-600">
-                                      Alert: {formatAlertOptions(contact.nextContactAlertOptions)}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                <div className="space-y-6">
+                  {/* Birthday */}
+                  {contact.birthday && (
+                    <div>
+                      <h4 className="font-semibold mb-3 text-sm text-gray-700">Birthday</h4>
+                      <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-base font-medium">{formatBirthday(contact.birthday)}</p>
+                          {contact.birthdayAlert && (
+                            <Badge variant="secondary" className="text-xs">
+                              <Bell className="w-3 h-3 mr-1" />
+                              Alert Enabled
+                            </Badge>
+                          )}
+                        </div>
+                        {contact.birthdayAlert && contact.birthdayAlertOptions && contact.birthdayAlertOptions.length > 0 && (
+                          <p className="text-sm text-gray-600">
+                            Alert: {formatAlertOptions(contact.birthdayAlertOptions)}
+                          </p>
                         )}
                       </div>
                     </div>
                   )}
 
+                  {/* Contact Schedule */}
+                  {(contact.lastContactDate || contact.nextContactDate) && (
+                    <>
+                      {contact.birthday && <Separator />}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Contact Schedule</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {contact.lastContactDate && (
+                            <div className="p-4 bg-gray-50 rounded-lg border">
+                              <label className="text-sm font-medium text-gray-600">Last Contact Date</label>
+                              <p className="text-base mt-1">{new Date(contact.lastContactDate).toLocaleDateString()}</p>
+                            </div>
+                          )}
+                          {contact.nextContactDate && (
+                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                              <label className="text-sm font-medium text-gray-600">Next Contact Date</label>
+                              <div className="space-y-2 mt-1">
+                                <p className="text-base font-medium">{new Date(contact.nextContactDate).toLocaleDateString()}</p>
+                                {contact.nextContactAlert && (
+                                  <>
+                                    <Badge variant="secondary" className="text-xs">
+                                      <Bell className="w-3 h-3 mr-1" />
+                                      Alert Enabled
+                                    </Badge>
+                                    {contact.nextContactAlertOptions && contact.nextContactAlertOptions.length > 0 && (
+                                      <p className="text-sm text-gray-600">
+                                        Alert: {formatAlertOptions(contact.nextContactAlertOptions)}
+                                      </p>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                   {/* Custom Events */}
                   {contactEvents.length > 0 && (
                     <>
-                      {(contact.lastContactDate || contact.nextContactDate) && <Separator className="my-4" />}
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-gray-700">Custom Events</h4>
+                      {(contact.birthday || contact.lastContactDate || contact.nextContactDate) && <Separator />}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Custom Events</h4>
                         <ScrollArea className="h-[350px] pr-4">
                           <div className="space-y-3">
                             {contactEvents.map((event) => {
@@ -908,7 +718,7 @@ export default function ContactDetails({
                                       </Button>
                                     </div>
 
-                                    {/* Alert Settings for this Event */}
+                                    {/* Alert Settings */}
                                     <div className="pt-3 border-t border-gray-200 space-y-3">
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
@@ -951,12 +761,6 @@ export default function ContactDetails({
                                               </div>
                                             ))}
                                           </div>
-                                          {isUpcoming && (event.alertOptions || []).length > 0 && (
-                                            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
-                                              <Bell className="w-3 h-3" />
-                                              <span>Alert active</span>
-                                            </div>
-                                          )}
                                         </div>
                                       )}
                                     </div>
@@ -971,7 +775,7 @@ export default function ContactDetails({
                   )}
 
                   {/* Empty State */}
-                  {contactEvents.length === 0 && !contact.lastContactDate && !contact.nextContactDate && (
+                  {contactEvents.length === 0 && !contact.birthday && !contact.lastContactDate && !contact.nextContactDate && (
                     <div className="text-center py-8 text-gray-500">
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p className="text-sm mb-4">No important dates added yet</p>
@@ -984,60 +788,261 @@ export default function ContactDetails({
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </AccordionContent>
+        </AccordionItem>
 
-          {/* Preferences */}
-          {contact.knownPreferences && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">Known Preferences</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.knownPreferences}</p>
-            </div>
-          )}
-
-          {/* Values */}
-          {contact.values && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">What They Value (Business Perspective)</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.values}</p>
-            </div>
-          )}
-
-          {/* Pain Points */}
-          {contact.painPoints && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">Pain Points</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.painPoints}</p>
-            </div>
-          )}
-
-          {/* Notes */}
-          {contact.notes && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">General Notes</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.notes}</p>
-            </div>
-          )}
-
-          {/* Uploaded Notes */}
-          {contact.uploadedNotes && contact.uploadedNotes.length > 0 && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">Additional Notes</h3>
-              <div className="space-y-2">
-                {contact.uploadedNotes.map((note) => (
-                  <div key={note.id} className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm">{note.content}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(note.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                ))}
+        {/* LinkedIn Profile */}
+        {(contact.linkedinProfile || (contact.socialHandles && contact.socialHandles.length > 0)) && (
+          <AccordionItem value="linkedin">
+            <AccordionTrigger className="text-lg font-semibold">
+              <div className="flex items-center gap-2">
+                <Linkedin className="w-5 h-5" />
+                LinkedIn Profile
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </AccordionTrigger>
+            <AccordionContent>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {contact.linkedinProfile && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">LinkedIn Profile URL</label>
+                        <a 
+                          href={formatLinkedInUrl(contact.linkedinProfile)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-base mt-1 text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2 break-all"
+                        >
+                          View LinkedIn Profile
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      </div>
+                    )}
+                    {contact.socialHandles && contact.socialHandles.length > 0 && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">LinkedIn Profile (Legacy)</label>
+                        <div className="space-y-2 mt-1">
+                          {contact.socialHandles.map((handle, index) => (
+                            <a 
+                              key={index}
+                              href={formatLinkedInUrl(handle)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-base text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2 break-all"
+                            >
+                              {handle}
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-      {/* Add Event Dialog with Alert Configuration */}
+        {/* Preferences & Notes */}
+        {(contact.knownPreferences || contact.values || contact.painPoints || contact.notes) && (
+          <AccordionItem value="preferences">
+            <AccordionTrigger className="text-lg font-semibold">
+              <div className="flex items-center gap-2">
+                <Heart className="w-5 h-5" />
+                Preferences & Notes
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-6">
+                    {contact.knownPreferences && (
+                      <div>
+                        <h4 className="font-semibold mb-2 text-sm text-gray-700">Known Preferences</h4>
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.knownPreferences}</p>
+                      </div>
+                    )}
+                    {contact.values && (
+                      <>
+                        {contact.knownPreferences && <Separator />}
+                        <div>
+                          <h4 className="font-semibold mb-2 text-sm text-gray-700">What They Value (Business Perspective)</h4>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.values}</p>
+                        </div>
+                      </>
+                    )}
+                    {contact.painPoints && (
+                      <>
+                        {(contact.knownPreferences || contact.values) && <Separator />}
+                        <div>
+                          <h4 className="font-semibold mb-2 text-sm text-gray-700">Pain Points</h4>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.painPoints}</p>
+                        </div>
+                      </>
+                    )}
+                    {contact.notes && (
+                      <>
+                        {(contact.knownPreferences || contact.values || contact.painPoints) && <Separator />}
+                        <div>
+                          <h4 className="font-semibold mb-2 text-sm text-gray-700">General Notes</h4>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{contact.notes}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* Diageo Relationship Owner(s) */}
+        {contact.primaryDiageoRelationshipOwners && (
+          (contact.primaryDiageoRelationshipOwners.ownerName || 
+           contact.primaryDiageoRelationshipOwners.ownerEmail || 
+           contact.primaryDiageoRelationshipOwners.svp ||
+           Object.keys(contact.primaryDiageoRelationshipOwners.sales || {}).length > 0 || 
+           Object.keys(contact.primaryDiageoRelationshipOwners.support || {}).length > 0)
+        ) && (
+          <AccordionItem value="relationship-owner">
+            <AccordionTrigger className="text-lg font-semibold">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5" />
+                Diageo Relationship Owner(s)
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-6">
+                    {/* Primary Owner Info */}
+                    {(contact.primaryDiageoRelationshipOwners.ownerName || 
+                      contact.primaryDiageoRelationshipOwners.ownerEmail || 
+                      contact.primaryDiageoRelationshipOwners.svp) && (
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Primary Owner Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <InfoItem label="Primary Owner" value={contact.primaryDiageoRelationshipOwners.ownerName} />
+                          {contact.primaryDiageoRelationshipOwners.ownerEmail && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600">Primary Owner Email</label>
+                              <a 
+                                href={`mailto:${contact.primaryDiageoRelationshipOwners.ownerEmail}`}
+                                className="text-base mt-1 text-blue-600 hover:text-blue-800 block break-all"
+                              >
+                                {contact.primaryDiageoRelationshipOwners.ownerEmail}
+                              </a>
+                            </div>
+                          )}
+                          <InfoItem label="SVP" value={contact.primaryDiageoRelationshipOwners.svp} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sales Roles */}
+                    {contact.primaryDiageoRelationshipOwners.sales && Object.keys(contact.primaryDiageoRelationshipOwners.sales).length > 0 && (
+                      <>
+                        {(contact.primaryDiageoRelationshipOwners.ownerName || contact.primaryDiageoRelationshipOwners.ownerEmail || contact.primaryDiageoRelationshipOwners.svp) && <Separator />}
+                        <div>
+                          <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                            <Briefcase className="w-4 h-4" />
+                            Sales Roles
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {Object.entries(contact.primaryDiageoRelationshipOwners.sales).map(([role, cadence]) => {
+                              const lastCheckIn = contact.primaryDiageoRelationshipOwners?.salesLastCheckIn?.[role];
+                              return (
+                                <div key={role} className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-700">{role}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {cadence || 'Not set'}
+                                    </Badge>
+                                  </div>
+                                  {lastCheckIn && (
+                                    <p className="text-xs text-gray-600">
+                                      Last Check In: {new Date(lastCheckIn).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Support Roles */}
+                    {contact.primaryDiageoRelationshipOwners.support && Object.keys(contact.primaryDiageoRelationshipOwners.support).length > 0 && (
+                      <>
+                        {(contact.primaryDiageoRelationshipOwners.ownerName || contact.primaryDiageoRelationshipOwners.ownerEmail || contact.primaryDiageoRelationshipOwners.svp || Object.keys(contact.primaryDiageoRelationshipOwners.sales || {}).length > 0) && <Separator />}
+                        <div>
+                          <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            Support Roles
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {Object.entries(contact.primaryDiageoRelationshipOwners.support).map(([role, cadence]) => {
+                              const lastCheckIn = contact.primaryDiageoRelationshipOwners?.supportLastCheckIn?.[role];
+                              return (
+                                <div key={role} className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-700">{role}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {cadence || 'Not set'}
+                                    </Badge>
+                                  </div>
+                                  {lastCheckIn && (
+                                    <p className="text-xs text-gray-600">
+                                      Last Check In: {new Date(lastCheckIn).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* Additional Notes & Files */}
+        {contact.uploadedNotes && contact.uploadedNotes.length > 0 && (
+          <AccordionItem value="notes">
+            <AccordionTrigger className="text-lg font-semibold">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Additional Notes & Files
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-3">
+                    {contact.uploadedNotes.map((note) => (
+                      <div key={note.id} className="p-4 bg-gray-50 rounded-lg border">
+                        <p className="text-sm text-gray-700">{note.content}</p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {new Date(note.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+      </Accordion>
+
+      {/* Add Event Dialog */}
       <Dialog open={isAddEventDialogOpen} onOpenChange={setIsAddEventDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
