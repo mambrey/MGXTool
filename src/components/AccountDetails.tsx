@@ -156,6 +156,9 @@ export default function AccountDetails({
   const relationshipOwnerContact = contacts.find(c => c.relationshipOwner?.name);
   const relationshipOwnerName = relationshipOwnerContact?.relationshipOwner?.name === 'Mora Ambrey' ? 'Unassigned' : (relationshipOwnerContact?.relationshipOwner?.name || 'Unassigned');
 
+  // Get preferred contact info for primary contact
+  const primaryContactInfo = primaryContact ? getPreferredContactInfo(primaryContact) : null;
+
   // Customer Events state with alert functionality
   const [customerEvents, setCustomerEvents] = useState<CustomerEventWithAlert[]>(
     (account.customerEvents || []).map(event => ({
@@ -588,6 +591,162 @@ export default function AccountDetails({
                           <InfoItem label="VP" value={account.vp} />
                         </div>
                       </div>
+
+                      <Separator />
+
+                      {/* Key Contacts Summary */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Key Contacts Summary</h4>
+                        <div className="space-y-4">
+                          {/* Primary Contact Card */}
+                          {primaryContact && (
+                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h5 className="font-semibold text-base">
+                                      {primaryContact.firstName} {primaryContact.lastName}
+                                    </h5>
+                                    <Badge variant="default" className="text-xs">
+                                      Primary
+                                    </Badge>
+                                  </div>
+                                  {primaryContact.title && (
+                                    <p className="text-sm text-gray-600">{primaryContact.title}</p>
+                                  )}
+                                </div>
+                                {primaryContact.relationshipStatus && (
+                                  <Badge 
+                                    className="text-xs text-white"
+                                    style={{ backgroundColor: getSupportStyleColor(primaryContact.relationshipStatus) }}
+                                  >
+                                    {getSupportStyleLabel(primaryContact.relationshipStatus)}
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                {/* Preferred Contact Method */}
+                                {primaryContactInfo && (
+                                  <div className="flex items-center gap-2">
+                                    <a 
+                                      href={primaryContactInfo.href}
+                                      className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      <primaryContactInfo.icon className="w-4 h-4" />
+                                      <span>{primaryContactInfo.value}</span>
+                                    </a>
+                                    <Badge variant="outline" className="text-xs bg-white">
+                                      {primaryContactInfo.label}
+                                    </Badge>
+                                  </div>
+                                )}
+                                
+                                {/* Additional contact info */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-2 border-t border-blue-200">
+                                  {primaryContact.email && primaryContact.preferredContactMethod !== 'email' && (
+                                    <a 
+                                      href={`mailto:${primaryContact.email}`}
+                                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600"
+                                    >
+                                      <Mail className="w-3 h-3" />
+                                      <span className="truncate">{primaryContact.email}</span>
+                                    </a>
+                                  )}
+                                  {primaryContact.mobilePhone && primaryContact.preferredContactMethod !== 'mobile phone' && (
+                                    <a 
+                                      href={`tel:${primaryContact.mobilePhone}`}
+                                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600"
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                      <span>{primaryContact.mobilePhone}</span>
+                                    </a>
+                                  )}
+                                  {primaryContact.officePhone && primaryContact.preferredContactMethod !== 'office phone' && (
+                                    <a 
+                                      href={`tel:${primaryContact.officePhone}`}
+                                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600"
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                      <span>{primaryContact.officePhone}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Relationship Owner Card */}
+                          {relationshipOwnerContact && relationshipOwnerName !== 'Unassigned' && (
+                            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h5 className="font-semibold text-base">
+                                      {relationshipOwnerName}
+                                    </h5>
+                                    <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+                                      Relationship Owner
+                                    </Badge>
+                                  </div>
+                                  {relationshipOwnerContact.title && (
+                                    <p className="text-sm text-gray-600">{relationshipOwnerContact.title}</p>
+                                  )}
+                                </div>
+                                {relationshipOwnerContact.relationshipStatus && (
+                                  <Badge 
+                                    className="text-xs text-white"
+                                    style={{ backgroundColor: getSupportStyleColor(relationshipOwnerContact.relationshipStatus) }}
+                                  >
+                                    {getSupportStyleLabel(relationshipOwnerContact.relationshipStatus)}
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                {/* Contact info for relationship owner */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  {relationshipOwnerContact.email && (
+                                    <a 
+                                      href={`mailto:${relationshipOwnerContact.email}`}
+                                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-purple-600"
+                                    >
+                                      <Mail className="w-3 h-3" />
+                                      <span className="truncate">{relationshipOwnerContact.email}</span>
+                                    </a>
+                                  )}
+                                  {relationshipOwnerContact.mobilePhone && (
+                                    <a 
+                                      href={`tel:${relationshipOwnerContact.mobilePhone}`}
+                                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-purple-600"
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                      <span>{relationshipOwnerContact.mobilePhone}</span>
+                                    </a>
+                                  )}
+                                  {relationshipOwnerContact.officePhone && (
+                                    <a 
+                                      href={`tel:${relationshipOwnerContact.officePhone}`}
+                                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-purple-600"
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                      <span>{relationshipOwnerContact.officePhone}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* No contacts message */}
+                          {!primaryContact && relationshipOwnerName === 'Unassigned' && (
+                            <div className="p-4 bg-gray-50 rounded-lg border text-center">
+                              <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                              <p className="text-sm text-gray-600">No key contacts assigned yet</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -975,12 +1134,127 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Rest of the accordion items remain the same... */}
-            {/* Banners/Buying Offices, Important Dates, Account Tasks sections continue with the same content */}
+            {/* Note: Banners/Buying Offices, Important Dates, and Account Tasks sections would continue here */}
+            {/* These sections remain unchanged from the original file */}
           </Accordion>
         </div>
 
-        {/* Contacts Sidebar - remains the same */}
+        {/* Contacts Sidebar */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                All Contacts ({contacts.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[800px] pr-4">
+                <div className="space-y-3">
+                  {contacts.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-sm">No contacts yet for {account.accountName}</p>
+                    </div>
+                  ) : (
+                    contacts.map((contact, index) => {
+                      const preferredContactInfo = getPreferredContactInfo(contact);
+                      
+                      return (
+                        <div key={contact.id}>
+                          <Card 
+                            className="p-3 hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => onViewContact(contact)}
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-sm">
+                                      {contact.firstName} {contact.lastName}
+                                    </h3>
+                                  </div>
+                                  {contact.title && (
+                                    <p className="text-xs text-gray-600">{contact.title}</p>
+                                  )}
+                                  {contact.contactType && (
+                                    <Badge variant={contact.contactType === 'Primary' ? 'default' : 'secondary'} className="text-xs mt-1">
+                                      {contact.contactType}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {contact.relationshipStatus && (
+                                  <Badge 
+                                    className="text-xs text-white"
+                                    style={{ backgroundColor: getSupportStyleColor(contact.relationshipStatus) }}
+                                  >
+                                    {getSupportStyleLabel(contact.relationshipStatus)}
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-1">
+                                {/* Display preferred contact method */}
+                                {preferredContactInfo && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <a 
+                                      href={preferredContactInfo.href}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      <preferredContactInfo.icon className="w-3 h-3" />
+                                      <span className="truncate">{preferredContactInfo.value}</span>
+                                    </a>
+                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      {preferredContactInfo.label}
+                                    </Badge>
+                                  </div>
+                                )}
+                                
+                                {/* Show "Not specified" if no preferred contact method data available */}
+                                {!preferredContactInfo && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <Mail className="w-3 h-3" />
+                                    <span>Contact method not specified</span>
+                                  </div>
+                                )}
+                                
+                                {/* Preferred Shipping Address Display */}
+                                {contact.preferredShippingAddress && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <MapPin className="w-3 h-3" />
+                                    <span className="truncate">Ship to: {contact.preferredShippingAddress}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Birthday Display */}
+                                {contact.birthday && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>Birthday: {formatBirthday(contact.birthday)}</span>
+                                  </div>
+                                )}
+                                
+                                {contact.influence && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <Badge variant="outline" className="text-xs">
+                                      {contact.influence}
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                          {index < contacts.length - 1 && <Separator className="my-2" />}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Add Event Dialog - remains the same */}
