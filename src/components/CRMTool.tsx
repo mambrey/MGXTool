@@ -450,7 +450,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
     const relationshipOwnerContact = (contacts || []).find(c => 
       c.accountId === account.id && c.relationshipOwner?.name
     );
-    const relationshipOwner = relationshipOwnerContact?.relationshipOwner?.name || 'Mora Ambrey';
+    const relationshipOwner = relationshipOwnerContact?.relationshipOwner?.name || 'Unassigned';
 
     const searchTerm = accountSearchTerm.toLowerCase();
     
@@ -714,7 +714,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                     }
                                   </Badge>
                                   <Badge variant="outline" className="text-xs">
-                                    Relationship Owner: {relationshipOwnerContact?.relationshipOwner?.name || 'Mora Ambrey'}
+                                    Relationship Owner: {relationshipOwnerContact?.relationshipOwner?.name || 'Unassigned'}
                                   </Badge>
                                   {account.revenue && (
                                     <Badge variant="outline" className="text-xs">
