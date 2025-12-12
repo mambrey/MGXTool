@@ -783,6 +783,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
         return (
           <BannerBuyingOfficeList
             accounts={accounts || []}
+            contacts={contacts || []}
             onViewBanner={handleViewBanner}
             onBack={() => setCurrentView('welcome')}
           />

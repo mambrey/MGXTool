@@ -1,30 +1,32 @@
 import React, { useState } from 'react';
-import { Building, Search, MapPin, Globe, Calendar, Target, Package, Truck, ChevronRight } from 'lucide-react';
+import { Building, Search, MapPin, Globe, Calendar, Target, Package, Truck, ChevronRight, User, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Account, BannerBuyingOffice } from '@/types/crm';
+import type { Account, BannerBuyingOffice, Contact } from '@/types/crm';
 
 interface BannerBuyingOfficeListProps {
   accounts: Account[];
+  contacts: Contact[];
   onViewBanner: (banner: BannerBuyingOffice, accountName: string) => void;
   onBack: () => void;
 }
 
-export default function BannerBuyingOfficeList({ accounts, onViewBanner, onBack }: BannerBuyingOfficeListProps) {
+export default function BannerBuyingOfficeList({ accounts, contacts, onViewBanner, onBack }: BannerBuyingOfficeListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Collect all banner/buying offices from all accounts
-  const allBanners: Array<{ banner: BannerBuyingOffice; accountName: string }> = [];
+  const allBanners: Array<{ banner: BannerBuyingOffice; accountName: string; accountId: string }> = [];
   
   accounts.forEach(account => {
     if (account.bannerBuyingOffices && account.bannerBuyingOffices.length > 0) {
       account.bannerBuyingOffices.forEach(banner => {
         allBanners.push({
           banner,
-          accountName: account.accountName
+          accountName: account.accountName,
+          accountId: account.id
         });
       });
     }
@@ -95,102 +97,131 @@ export default function BannerBuyingOfficeList({ accounts, onViewBanner, onBack 
               </div>
             </Card>
           ) : (
-            filteredBanners.map(({ banner, accountName }, index) => (
-              <Card 
-                key={`${banner.id}-${index}`} 
-                className="hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => onViewBanner(banner, accountName)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Building className="w-5 h-5 text-purple-600" />
-                            <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                              {banner.accountName || 'Unnamed Banner/Buying Office'}
-                            </h3>
+            filteredBanners.map(({ banner, accountName, accountId }, index) => {
+              // Find contacts associated with this banner or account
+              const bannerContacts = (contacts || []).filter(c => 
+                c.bannerBuyingOfficeId === banner.id || c.accountId === accountId
+              );
+              
+              // Find primary contact for this banner/account
+              const primaryContact = bannerContacts.find(c => c.isPrimaryContact);
+              
+              // Find Diageo relationship owner from contacts
+              const diageoOwnerContact = bannerContacts.find(c => c.primaryDiageoRelationshipOwners?.ownerName);
+
+              return (
+                <Card 
+                  key={`${banner.id}-${index}`} 
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => onViewBanner(banner, accountName)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <Building className="w-5 h-5 text-purple-600" />
+                              <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                                {banner.accountName || 'Unnamed Banner/Buying Office'}
+                              </h3>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2">
+                              Parent Account: <span className="font-medium">{accountName}</span>
+                            </p>
+
+                            {/* Address - ALWAYS SHOW */}
+                            <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                              <MapPin className="w-4 h-4" />
+                              <span>{banner.address || 'No address'}</span>
+                            </div>
+
+                            {/* Primary Contact Name - ALWAYS SHOW */}
+                            <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                              <User className="w-4 h-4" />
+                              <span>
+                                Primary Contact: {primaryContact 
+                                  ? `${primaryContact.firstName} ${primaryContact.lastName}` 
+                                  : 'Not assigned'}
+                              </span>
+                            </div>
+
+                            {/* Diageo Relationship Owner - ALWAYS SHOW */}
+                            <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                              <Briefcase className="w-4 h-4" />
+                              <span>
+                                Diageo Owner: {diageoOwnerContact?.primaryDiageoRelationshipOwners?.ownerName || 'Not assigned'}
+                              </span>
+                            </div>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">
-                            Parent Account: <span className="font-medium">{accountName}</span>
-                          </p>
+                        </div>
+
+                        {/* Key Information */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 mt-3">
+                          {banner.channel && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Badge variant="secondary">{banner.channel}</Badge>
+                            </div>
+                          )}
+                          {banner.footprint && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <MapPin className="w-4 h-4" />
+                              {banner.footprint}
+                            </div>
+                          )}
+                          {banner.operatingStates && banner.operatingStates.length > 0 && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <MapPin className="w-4 h-4" />
+                              {banner.operatingStates.length} state{banner.operatingStates.length !== 1 ? 's' : ''}
+                            </div>
+                          )}
+                          {banner.allSpiritsOutlets && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Building className="w-4 h-4" />
+                              {banner.allSpiritsOutlets} spirits outlets
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Additional Badges */}
+                        <div className="flex flex-wrap gap-2">
+                          {banner.isJBP && (
+                            <Badge variant="outline" className="text-xs">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              JBP Customer
+                            </Badge>
+                          )}
+                          {banner.categoryCaptain && banner.categoryCaptain !== 'none' && (
+                            <Badge variant="outline" className="text-xs">
+                              <Target className="w-3 h-3 mr-1" />
+                              Category Captain: {banner.categoryCaptain}
+                            </Badge>
+                          )}
+                          {banner.hasPlanograms && (
+                            <Badge variant="outline" className="text-xs">
+                              <Package className="w-3 h-3 mr-1" />
+                              Has Planogram
+                            </Badge>
+                          )}
+                          {banner.fulfillmentTypes && banner.fulfillmentTypes.length > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              <Truck className="w-3 h-3 mr-1" />
+                              {banner.fulfillmentTypes.length} fulfillment type{banner.fulfillmentTypes.length !== 1 ? 's' : ''}
+                            </Badge>
+                          )}
+                          {banner.ecommerceMaturityLevel && banner.ecommerceMaturityLevel !== 'none' && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              E-commerce: {banner.ecommerceMaturityLevel.split('—')[0].trim()}
+                            </Badge>
+                          )}
                         </div>
                       </div>
-
-                      {/* Key Information */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                        {banner.channel && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Badge variant="secondary">{banner.channel}</Badge>
-                          </div>
-                        )}
-                        {banner.footprint && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <MapPin className="w-4 h-4" />
-                            {banner.footprint}
-                          </div>
-                        )}
-                        {banner.operatingStates && banner.operatingStates.length > 0 && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <MapPin className="w-4 h-4" />
-                            {banner.operatingStates.length} state{banner.operatingStates.length !== 1 ? 's' : ''}
-                          </div>
-                        )}
-                        {banner.allSpiritsOutlets && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Building className="w-4 h-4" />
-                            {banner.allSpiritsOutlets} spirits outlets
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Address */}
-                      {banner.address && (
-                        <div className="flex items-start gap-2 text-sm text-gray-600 mb-3">
-                          <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{banner.address}</span>
-                        </div>
-                      )}
-
-                      {/* Additional Badges */}
-                      <div className="flex flex-wrap gap-2">
-                        {banner.isJBP && (
-                          <Badge variant="outline" className="text-xs">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            JBP Customer
-                          </Badge>
-                        )}
-                        {banner.categoryCaptain && banner.categoryCaptain !== 'none' && (
-                          <Badge variant="outline" className="text-xs">
-                            <Target className="w-3 h-3 mr-1" />
-                            Category Captain: {banner.categoryCaptain}
-                          </Badge>
-                        )}
-                        {banner.hasPlanograms && (
-                          <Badge variant="outline" className="text-xs">
-                            <Package className="w-3 h-3 mr-1" />
-                            Has Planogram
-                          </Badge>
-                        )}
-                        {banner.fulfillmentTypes && banner.fulfillmentTypes.length > 0 && (
-                          <Badge variant="outline" className="text-xs">
-                            <Truck className="w-3 h-3 mr-1" />
-                            {banner.fulfillmentTypes.length} fulfillment type{banner.fulfillmentTypes.length !== 1 ? 's' : ''}
-                          </Badge>
-                        )}
-                        {banner.ecommerceMaturityLevel && banner.ecommerceMaturityLevel !== 'none' && (
-                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                            E-commerce: {banner.ecommerceMaturityLevel.split('—')[0].trim()}
-                          </Badge>
-                        )}
-                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400 ml-4 flex-shrink-0" />
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400 ml-4 flex-shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
       </ScrollArea>
