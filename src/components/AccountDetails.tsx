@@ -177,10 +177,10 @@ export default function AccountDetails({
 
   // Fetch market data when account has a ticker symbol
   useEffect(() => {
-    if (account.publiclyTraded && account.tickerSymbol) {
+    if (account.tickerSymbol) {
       fetchMarketData(account.tickerSymbol);
     }
-  }, [account.publiclyTraded, account.tickerSymbol]);
+  }, [account.tickerSymbol]);
 
   // Helper function to format large numbers
   const formatLargeNumber = (value: string | number) => {
@@ -500,7 +500,7 @@ export default function AccountDetails({
                 <p className="text-gray-600">Part of {account.parentCompany}</p>
               )}
             </div>
-            {account.publiclyTraded && account.tickerSymbol && (
+            {account.tickerSymbol && (
               <Badge variant="outline" className="ml-2">
                 {account.tickerSymbol}
               </Badge>
@@ -677,7 +677,7 @@ export default function AccountDetails({
             </AccordionItem>
 
             {/* Market Snapshot - SEPARATE ACCORDION SECTION */}
-            {account.publiclyTraded && account.tickerSymbol && (
+            {account.tickerSymbol && (
               <AccordionItem value="market-snapshot">
                 <AccordionTrigger className="text-lg font-semibold">
                   <div className="flex items-center gap-2">
