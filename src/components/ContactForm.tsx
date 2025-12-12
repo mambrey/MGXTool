@@ -292,8 +292,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before') => {
     switch (option) {
       case 'same_day': return 'Same Day';
-      case 'day_before': return 'Day Before';
-      case 'week_before': return 'Week Before';
+      case 'day_before': return 'One Day Before';
+      case 'week_before': return 'One Week Before';
     }
   };
 
