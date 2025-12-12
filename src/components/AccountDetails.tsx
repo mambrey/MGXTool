@@ -201,42 +201,8 @@ export default function AccountDetails({
     return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
 
-  // Sample tasks related to this account
-  const [accountTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'Follow up on Q4 proposal',
-      description: 'Schedule meeting to discuss pricing proposal with procurement team',
-      type: 'follow-up',
-      priority: 'high',
-      status: 'pending',
-      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-      assignedTo: primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner,
-      relatedId: account.id,
-      relatedType: 'account',
-      relatedName: account.accountName,
-      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      estimatedHours: 2,
-      tags: ['proposal', 'pricing', 'urgent']
-    },
-    {
-      id: '2',
-      title: 'Prepare contract renewal',
-      description: 'Review current contract terms and prepare renewal documentation',
-      type: 'contract',
-      priority: 'critical',
-      status: 'in-progress',
-      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      assignedTo: primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner,
-      relatedId: account.id,
-      relatedType: 'account',
-      relatedName: account.accountName,
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      estimatedHours: 8,
-      actualHours: 4,
-      tags: ['contract', 'renewal', 'legal']
-    }
-  ]);
+  // Tasks state - empty by default, tasks only appear when user adds them
+  const [accountTasks] = useState<Task[]>([]);
 
   const handleAddEvent = () => {
     if (!newEventTitle.trim() || !newEventDate) {
