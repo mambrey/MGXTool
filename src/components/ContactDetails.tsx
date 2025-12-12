@@ -9,11 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { Contact, Account } from '@/types/crm';
 
 interface ContactDetailsProps {
   contact: Contact;
   account?: Account;
+  accounts?: Account[];
+  allContacts?: Contact[];
   onEdit: (contact: Contact) => void;
   onDelete: (contactId: string) => void;
   onBack: () => void;
@@ -26,7 +29,7 @@ interface ContactEvent {
   title: string;
   date: string;
   alertEnabled?: boolean;
-  alertDays?: number;
+  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
 }
 
 // Helper function to format birthday for display (MM/DD/YYYY)
@@ -65,7 +68,9 @@ const formatBirthday = (birthday: string): string => {
 
 export default function ContactDetails({ 
   contact, 
-  account, 
+  account,
+  accounts = [],
+  allContacts = [],
   onEdit, 
   onDelete, 
   onBack,
@@ -75,8 +80,8 @@ export default function ContactDetails({
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>(
     (contact.contactEvents || []).map(event => ({
       ...event,
-      alertEnabled: false,
-      alertDays: 7
+      alertEnabled: event.alertEnabled || false,
+      alertOptions: event.alertOptions || []
     }))
   );
   const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
@@ -84,6 +89,22 @@ export default function ContactDetails({
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
   const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
+
+  const handleToggleNewEventAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+    setNewEventAlertOptions(prev => {
+      return prev.includes(option)
+        ? prev.filter(o => o !== option)
+        : [...prev, option];
+    });
+  };
+
+  const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before') => {
+    switch (option) {
+      case 'same_day': return 'Same Day';
+      case 'day_before': return 'One Day Before';
+      case 'week_before': return 'One Week Before';
+    }
+  };
 
   const handleAddEvent = () => {
     if (!newEventTitle.trim() || !newEventDate) {
@@ -96,7 +117,7 @@ export default function ContactDetails({
       title: newEventTitle.trim(),
       date: newEventDate,
       alertEnabled: newEventAlertEnabled,
-      alertDays: newEventAlertDays
+      alertOptions: newEventAlertOptions
     };
 
     const updatedEvents = [...contactEvents, newEvent];
@@ -159,12 +180,17 @@ export default function ContactDetails({
     }
   };
 
-  const handleUpdateEventAlertDays = (eventId: string, days: number) => {
-    const updatedEvents = contactEvents.map(event => 
-      event.id === eventId 
-        ? { ...event, alertDays: days }
-        : event
-    );
+  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
+    const updatedEvents = contactEvents.map(event => {
+      if (event.id === eventId) {
+        const currentOptions = event.alertOptions || [];
+        const newOptions = currentOptions.includes(option)
+          ? currentOptions.filter(o => o !== option)
+          : [...currentOptions, option];
+        return { ...event, alertOptions: newOptions };
+      }
+      return event;
+    });
     setContactEvents(updatedEvents);
 
     // Update the contact
@@ -300,6 +326,15 @@ export default function ContactDetails({
     ? `${contact.preferredFirstName} ${contact.lastName}` 
     : `${contact.firstName} ${contact.lastName}`;
 
+  // Get manager information
+  const manager = allContacts.find(c => c.id === contact.managerId);
+  const managerAccount = manager?.accountId ? accounts.find(a => a.id === manager.accountId) : undefined;
+
+  // Get banner/buying office information if applicable
+  const bannerBuyingOffice = contact.bannerBuyingOfficeId && account?.bannerBuyingOffices 
+    ? account.bannerBuyingOffices.find(b => b.id === contact.bannerBuyingOfficeId)
+    : undefined;
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header with Headshot */}
@@ -343,6 +378,12 @@ export default function ContactDetails({
                 <div className="flex items-center gap-2 mt-1">
                   <Building2 className="w-4 h-4 text-blue-600" />
                   <p className="text-blue-600 text-sm font-medium">{account.accountName}</p>
+                </div>
+              )}
+              {bannerBuyingOffice && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Building2 className="w-4 h-4 text-purple-600" />
+                  <p className="text-purple-600 text-sm font-medium">{bannerBuyingOffice.accountName}</p>
                 </div>
               )}
             </div>
@@ -468,6 +509,23 @@ export default function ContactDetails({
                       <p className="text-sm text-gray-700">
                         {contact.currentRoleTenure}
                       </p>
+                    </div>
+                  </div>
+                )}
+                {manager && (
+                  <div className="flex items-start gap-3">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500 mb-1">Reports To</p>
+                      <p className="text-sm text-gray-700 font-medium">
+                        {manager.firstName} {manager.lastName}
+                      </p>
+                      {manager.title && (
+                        <p className="text-xs text-gray-500">{manager.title}</p>
+                      )}
+                      {managerAccount && (
+                        <p className="text-xs text-gray-500">{managerAccount.accountName}</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -597,12 +655,19 @@ export default function ContactDetails({
                 {contact.birthday && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Birthday</p>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <div className="flex flex-col gap-2">
                       <p className="text-sm font-medium">{formatBirthday(contact.birthday)}</p>
                       {contact.birthdayAlert && (
-                        <Badge variant="secondary" className="text-xs">
-                          Alert On
-                        </Badge>
+                        <div className="space-y-1">
+                          <Badge variant="secondary" className="text-xs">
+                            Alert Enabled
+                          </Badge>
+                          {contact.birthdayAlertOptions && contact.birthdayAlertOptions.length > 0 && (
+                            <p className="text-xs text-gray-600">
+                              Alert: {formatAlertOptions(contact.birthdayAlertOptions)}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -688,14 +753,24 @@ export default function ContactDetails({
                       Sales
                     </h4>
                     <div className="space-y-2">
-                      {Object.entries(contact.primaryDiageoRelationshipOwners.sales).map(([role, cadence]) => (
-                        <div key={role} className="flex items-center justify-between p-2 bg-white rounded border border-indigo-100">
-                          <span className="text-sm font-medium text-gray-700">{role}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {cadence || 'Not set'}
-                          </Badge>
-                        </div>
-                      ))}
+                      {Object.entries(contact.primaryDiageoRelationshipOwners.sales).map(([role, cadence]) => {
+                        const lastCheckIn = contact.primaryDiageoRelationshipOwners?.salesLastCheckIn?.[role];
+                        return (
+                          <div key={role} className="p-2 bg-white rounded border border-indigo-100">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium text-gray-700">{role}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {cadence || 'Not set'}
+                              </Badge>
+                            </div>
+                            {lastCheckIn && (
+                              <p className="text-xs text-gray-500">
+                                Last Check In: {new Date(lastCheckIn).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -708,14 +783,24 @@ export default function ContactDetails({
                       Support
                     </h4>
                     <div className="space-y-2">
-                      {Object.entries(contact.primaryDiageoRelationshipOwners.support).map(([role, cadence]) => (
-                        <div key={role} className="flex items-center justify-between p-2 bg-white rounded border border-indigo-100">
-                          <span className="text-sm font-medium text-gray-700">{role}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {cadence || 'Not set'}
-                          </Badge>
-                        </div>
-                      ))}
+                      {Object.entries(contact.primaryDiageoRelationshipOwners.support).map(([role, cadence]) => {
+                        const lastCheckIn = contact.primaryDiageoRelationshipOwners?.supportLastCheckIn?.[role];
+                        return (
+                          <div key={role} className="p-2 bg-white rounded border border-indigo-100">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium text-gray-700">{role}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {cadence || 'Not set'}
+                              </Badge>
+                            </div>
+                            {lastCheckIn && (
+                              <p className="text-xs text-gray-500">
+                                Last Check In: {new Date(lastCheckIn).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -757,9 +842,16 @@ export default function ContactDetails({
                             <div className="flex flex-col gap-2">
                               <p className="text-sm font-medium">{new Date(contact.nextContactDate).toLocaleDateString()}</p>
                               {contact.nextContactAlert && (
-                                <Badge variant="secondary" className="text-xs w-fit">
-                                  Alert On
-                                </Badge>
+                                <div className="space-y-1">
+                                  <Badge variant="secondary" className="text-xs w-fit">
+                                    Alert Enabled
+                                  </Badge>
+                                  {contact.nextContactAlertOptions && contact.nextContactAlertOptions.length > 0 && (
+                                    <p className="text-xs text-gray-600">
+                                      Alert: {formatAlertOptions(contact.nextContactAlertOptions)}
+                                    </p>
+                                  )}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -778,7 +870,12 @@ export default function ContactDetails({
                           <div className="space-y-3">
                             {contactEvents.map((event) => {
                               const daysUntil = getDaysUntilEvent(event.date);
-                              const isUpcoming = daysUntil >= 0 && daysUntil <= (formatAlertOptions(event.alertOptions) || 7);
+                              const isUpcoming = daysUntil >= 0 && (event.alertOptions || []).some(opt => {
+                                if (opt === 'same_day') return daysUntil === 0;
+                                if (opt === 'day_before') return daysUntil <= 1;
+                                if (opt === 'week_before') return daysUntil <= 7;
+                                return false;
+                              });
                               
                               return (
                                 <Card key={event.id} className={`p-4 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
@@ -833,25 +930,31 @@ export default function ContactDetails({
 
                                       {event.alertEnabled && (
                                         <div className="space-y-2 pl-6">
-                                          <Label htmlFor={`alert-days-${event.id}`} className="text-xs text-gray-600">
-                                            Alert me (days before):
+                                          <Label className="text-xs text-gray-600">
+                                            Alert me:
                                           </Label>
-                                          <div className="flex items-center gap-2">
-                                            <Input
-                                              id={`alert-days-${event.id}`}
-                                              type="number"
-                                              min="1"
-                                              max="90"
-                                              value={formatAlertOptions(event.alertOptions) || 7}
-                                              onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
-                                              className="w-20 h-8 text-sm"
-                                            />
-                                            <span className="text-xs text-gray-500">days before event</span>
+                                          <div className="space-y-1.5">
+                                            {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                                              <div key={option} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                  id={`event-${event.id}-${option}`}
+                                                  checked={(event.alertOptions || []).includes(option)}
+                                                  onCheckedChange={() => handleToggleEventAlertOption(event.id, option)}
+                                                  className="h-3 w-3"
+                                                />
+                                                <Label
+                                                  htmlFor={`event-${event.id}-${option}`}
+                                                  className="text-xs font-normal cursor-pointer"
+                                                >
+                                                  {getAlertOptionLabel(option)}
+                                                </Label>
+                                              </div>
+                                            ))}
                                           </div>
-                                          {isUpcoming && (
-                                            <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                          {isUpcoming && (event.alertOptions || []).length > 0 && (
+                                            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
                                               <Bell className="w-3 h-3" />
-                                              <span>Alert active - event is within {formatAlertOptions(event.alertOptions)} days</span>
+                                              <span>Alert active</span>
                                             </div>
                                           )}
                                         </div>
@@ -987,25 +1090,32 @@ export default function ContactDetails({
               </div>
 
               {newEventAlertEnabled && (
-                <div className="space-y-2 pl-6 pt-2">
-                  <Label htmlFor="alert-days" className="text-sm">
-                    Alert me (days before event):
+                <div className="space-y-3 pl-6 pt-2">
+                  <Label className="text-sm">
+                    Alert me:
                   </Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="alert-days"
-                      type="number"
-                      min="1"
-                      max="90"
-                      value={newEventAlertDays}
-                      onChange={(e) => setNewEventAlertDays(parseInt(e.target.value) || 7)}
-                      className="w-24"
-                    />
-                    <span className="text-sm text-gray-500">days before</span>
+                  <div className="space-y-2">
+                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`new-event-${option}`}
+                          checked={newEventAlertOptions.includes(option)}
+                          onCheckedChange={() => handleToggleNewEventAlertOption(option)}
+                        />
+                        <Label
+                          htmlFor={`new-event-${option}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {getAlertOptionLabel(option)}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-xs text-gray-500">
-                    You'll receive an alert {newEventAlertDays} {newEventAlertDays === 1 ? 'day' : 'days'} before this event
-                  </p>
+                  {newEventAlertOptions.length > 0 && (
+                    <p className="text-xs text-gray-500">
+                      You'll receive {newEventAlertOptions.length} alert{newEventAlertOptions.length !== 1 ? 's' : ''} for this event
+                    </p>
+                  )}
                 </div>
               )}
             </div>

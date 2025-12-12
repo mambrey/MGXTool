@@ -164,6 +164,11 @@ export default function CRMTool({ userName }: CRMToolProps) {
     setCurrentView('contacts');
   };
 
+  const handleContactUpdate = (contact: Contact) => {
+    setContacts(prev => (prev || []).map(c => c.id === contact.id ? contact : c));
+    setSelectedContact(contact); // Update the selected contact to reflect changes
+  };
+
   const handleAccountEdit = (account: Account) => {
     setEditingAccount(account);
     setShowAccountForm(true);
@@ -568,9 +573,12 @@ export default function CRMTool({ userName }: CRMToolProps) {
         <ContactDetails
           contact={selectedContact}
           account={(accounts || []).find(a => a.id === selectedContact.accountId)}
+          accounts={accounts || []}
+          allContacts={contacts || []}
           onEdit={handleContactEdit}
           onDelete={handleContactDelete}
           onBack={handleBackToAccount}
+          onUpdateContact={handleContactUpdate}
         />
       );
     }
