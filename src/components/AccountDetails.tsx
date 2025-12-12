@@ -130,8 +130,8 @@ const getPreferredContactInfo = (contact: Contact): {
     return options.map(opt => {
       switch (opt) {
         case 'same_day': return 'Same Day';
-        case 'day_before': return 'Day Before';
-        case 'week_before': return 'Week Before';
+        case 'day_before': return 'One Day Before';
+        case 'week_before': return 'One Week Before';
         default: return opt;
       }
     }).join(', ');
