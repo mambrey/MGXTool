@@ -215,7 +215,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [headshotFileName, setHeadshotFileName] = useState('');
   const [headshotError, setHeadshotError] = useState('');
 
-  // Primary Diageo Relationship Owner(s) state
+  // Primary Diageo Relationship Owner(s) state - Default to empty string (Not Assigned)
   const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
   const [ownerEmail, setOwnerEmail] = useState(contact?.primaryDiageoRelationshipOwners?.ownerEmail || '');
   const [svp, setSvp] = useState(contact?.primaryDiageoRelationshipOwners?.svp || '');
@@ -1751,12 +1751,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white border border-indigo-200 rounded-lg">
               <div>
-                <Label htmlFor="ownerName">Primary Owner</Label>
+                <Label htmlFor="ownerName">Primary Owner *</Label>
                 <Input
                   id="ownerName"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
                   placeholder="Enter owner name"
+                  required
                 />
               </div>
               <div>
