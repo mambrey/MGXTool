@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase, Building } from 'lucide-react';
+import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase, Building, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -463,11 +463,10 @@ export default function CRMTool({ userName }: CRMToolProps) {
       ? `${primaryContact.firstName} ${primaryContact.lastName}` 
       : (account.accountOwner || '');
 
-    // Find relationship owner from contacts - look for any contact with a relationship owner set
-    const relationshipOwnerContact = (contacts || []).find(c => 
-      c.accountId === account.id && c.relationshipOwner?.name
-    );
-    const relationshipOwner = relationshipOwnerContact?.relationshipOwner?.name || 'Unassigned';
+    // Find relationship owner from contacts - look for any contact with primaryDiageoRelationshipOwners set
+    const accountContacts = (contacts || []).filter(c => c.accountId === account.id);
+    const diageoOwnerContact = accountContacts.find(c => c.primaryDiageoRelationshipOwners?.ownerName);
+    const diageoOwner = diageoOwnerContact?.primaryDiageoRelationshipOwners?.ownerName || '';
 
     const searchTerm = accountSearchTerm.toLowerCase();
     
@@ -477,8 +476,9 @@ export default function CRMTool({ userName }: CRMToolProps) {
       (account.accountOwner || '').toLowerCase().includes(searchTerm) ||
       (account.accountStatus || '').toLowerCase().includes(searchTerm) ||
       (account.channel || '').toLowerCase().includes(searchTerm) ||
+      (account.address || '').toLowerCase().includes(searchTerm) ||
       ownerName.toLowerCase().includes(searchTerm) ||
-      relationshipOwner.toLowerCase().includes(searchTerm) ||
+      diageoOwner.toLowerCase().includes(searchTerm) ||
       (account.revenue && account.revenue.toString().includes(searchTerm))
     );
   });
@@ -649,7 +649,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Search accounts by name, industry, owner, relationship owner, channel, status, or revenue..."
+                placeholder="Search accounts by name, industry, owner, relationship owner, address, channel, status, or revenue..."
                 value={accountSearchTerm}
                 onChange={(e) => setAccountSearchTerm(e.target.value)}
                 className="pl-10"
@@ -695,10 +695,9 @@ export default function CRMTool({ userName }: CRMToolProps) {
                     ? (contacts || []).find(c => c.id === account.primaryContactId)
                     : (contacts || []).find(c => c.accountId === account.id && c.isPrimaryContact);
 
-                  // Find relationship owner contact - look for any contact with a relationship owner set
-                  const relationshipOwnerContact = (contacts || []).find(c => 
-                    c.accountId === account.id && c.relationshipOwner?.name
-                  );
+                  // Find Diageo relationship owner from contacts - look for any contact with primaryDiageoRelationshipOwners set
+                  const accountContacts = (contacts || []).filter(c => c.accountId === account.id);
+                  const diageoOwnerContact = accountContacts.find(c => c.primaryDiageoRelationshipOwners?.ownerName);
 
                   return (
                     <Card key={account.id} className="hover:shadow-md transition-shadow cursor-pointer">
@@ -713,6 +712,31 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                 {account.industry && (
                                   <p className="text-gray-600 mt-1">{account.industry}</p>
                                 )}
+                                
+                                {/* Address */}
+                                {account.address && (
+                                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                                    <MapPin className="w-4 h-4" />
+                                    <span>{account.address}</span>
+                                  </div>
+                                )}
+
+                                {/* Primary Contact Name */}
+                                {primaryContact && (
+                                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                                    <User className="w-4 h-4" />
+                                    <span>Primary Contact: {primaryContact.firstName} {primaryContact.lastName}</span>
+                                  </div>
+                                )}
+
+                                {/* Diageo Relationship Owner */}
+                                {diageoOwnerContact?.primaryDiageoRelationshipOwners?.ownerName && (
+                                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                                    <Briefcase className="w-4 h-4" />
+                                    <span>Diageo Owner: {diageoOwnerContact.primaryDiageoRelationshipOwners.ownerName}</span>
+                                  </div>
+                                )}
+
                                 <div className="flex flex-wrap gap-2 mt-3">
                                   {account.accountStatus && (
                                     <Badge variant="outline" className="text-xs">
@@ -724,15 +748,6 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                       Channel: {account.channel}
                                     </Badge>
                                   )}
-                                  <Badge variant="default" className="text-xs">
-                                    Owner: {primaryContact 
-                                      ? `${primaryContact.firstName} ${primaryContact.lastName}` 
-                                      : (account.accountOwner || 'No owner')
-                                    }
-                                  </Badge>
-                                  <Badge variant="outline" className="text-xs">
-                                    Relationship Owner: {relationshipOwnerContact?.relationshipOwner?.name || 'Unassigned'}
-                                  </Badge>
                                   {account.revenue && (
                                     <Badge variant="outline" className="text-xs">
                                       Revenue: ${account.revenue.toLocaleString()}
