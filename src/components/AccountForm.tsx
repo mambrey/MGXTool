@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, RefreshCw, Users, Mail, Phone, Briefcase, Building, TrendingUp, BarChart3, DollarSign, ChevronDown, ChevronUp, Bell, Edit } from 'lucide-react';
+import { Save, X, Building2, MapPin, Calendar, Target, CheckSquare, Square, Globe, Plus, Trash2, Users, Mail, Phone, Briefcase, Building, ChevronDown, ChevronUp, Bell, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import type { Account, Contact } from '@/types/crm';
 import { powerAutomateService, type TickerSymbolData } from '@/services/power-automate';
-import { useAlphaVantage } from '@/hooks/useAlphaVantage';
 import BannerBuyingOfficeCard from '@/components/BannerBuyingOfficeCard';
 import { AddressAutocomplete } from './AddressAutocomplete';
 
@@ -275,9 +273,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   // Track the original ticker symbol to detect when a new one is added
   const [originalTickerSymbol, setOriginalTickerSymbol] = useState<string>(account?.tickerSymbol || '');
 
-  // Use the market data hook
-  const { marketData, loading, error, fetchMarketData, clearMarketData } = useAlphaVantage();
-
   // Filter contacts for this account
   const accountContacts = account ? contacts.filter(contact => contact.accountId === account.id) : [];
 
@@ -305,34 +300,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       setJbpValidationError('');
     }
   }, [formData.isJBP, formData.nextJBPDate]);
-
-  // Auto-fetch market data when account is loaded with a ticker symbol
-  useEffect(() => {
-    if (account?.tickerSymbol && account.tickerSymbol.trim() !== '') {
-      console.log('🚀 Auto-fetching market data for ticker:', account.tickerSymbol);
-      fetchMarketData(account.tickerSymbol);
-    }
-  }, [account?.id]); // Only run when account changes (not on every render)
-
-  // Update form fields when market data is received
-  useEffect(() => {
-    if (marketData) {
-      console.log('📊 Updating form with market data:', marketData);
-      setFormData(prev => ({
-        ...prev,
-        currentPrice: marketData.currentPrice.toString(),
-        percentChange: marketData.percentChange.toString(),
-        marketCap: marketData.marketCap.toString(),
-        highPrice: marketData.highPrice.toString(),
-        lowPrice: marketData.lowPrice.toString(),
-        openPrice: marketData.openPrice.toString(),
-        previousClose: marketData.previousClose.toString(),
-        annualSales: marketData.annualSales.toString(),
-        fiftyTwoWeekLow: marketData.fiftyTwoWeekLow.toString(),
-        fiftyTwoWeekHigh: marketData.fiftyTwoWeekHigh.toString(),
-      }));
-    }
-  }, [marketData]);
 
   // Fix: Handle both string and array types for operatingStates
   const [selectedStates, setSelectedStates] = useState<string[]>(() => {
@@ -430,18 +397,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const [customerEvents, setCustomerEvents] = useState<CustomerEvent[]>(
     formData.customerEvents || []
   );
-
-  /**
-   * Request market data from CSV file
-   */
-  const handleRefreshMarketData = async () => {
-    if (!formData.tickerSymbol || formData.tickerSymbol.trim() === '') {
-      alert('Please enter a ticker symbol first');
-      return;
-    }
-
-    await fetchMarketData(formData.tickerSymbol);
-  };
 
   /**
    * Handle Add Banner/Buying Office button click
@@ -1223,43 +1178,16 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             <Label htmlFor="tickerSymbol" className="text-sm font-medium">
               Ticker Symbol
             </Label>
-            <div className="flex gap-2 mt-1">
-              <Input
-                id="tickerSymbol"
-                value={formData.tickerSymbol}
-                onChange={(e) => updateField('tickerSymbol', e.target.value)}
-                placeholder="e.g., COST"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={handleRefreshMarketData}
-                disabled={loading || !formData.tickerSymbol}
-                title="Fetch market data from Alpha Vantage API"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+            <Input
+              id="tickerSymbol"
+              value={formData.tickerSymbol}
+              onChange={(e) => updateField('tickerSymbol', e.target.value)}
+              placeholder="e.g., COST"
+              className="mt-1"
+            />
             {willSendToPA && (
               <p className="text-xs text-green-600 mt-1">
                 ✓ New ticker symbol will be sent to Power Automate when saved
-              </p>
-            )}
-            {loading && (
-              <p className="text-xs text-blue-600 mt-1">
-                🔄 Fetching market data from Alpha Vantage API...
-              </p>
-            )}
-            {error && (
-              <p className="text-xs text-red-600 mt-1">
-                ⚠️ {error}
-              </p>
-            )}
-            {marketData && (
-              <p className="text-xs text-green-600 mt-1">
-                ✓ Market data auto-loaded: {marketData.name} ({marketData.currency})
               </p>
             )}
           </div>
@@ -1373,127 +1301,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           </div>
-          {/* Market Snapshot Section - NEW */}
-          {marketData && formData.tickerSymbol && (
-            <div className="sm:col-span-2 mt-4 pt-4 border-t">
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-blue-600" />
-                  Market Snapshot - {marketData.name} ({marketData.symbol})
-                </Label>
-                <span className="text-xs text-gray-500">
-                  Last updated: {new Date(marketData.lastUpdated).toLocaleString()}
-                </span>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                {/* Current Price */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
-                    <DollarSign className="w-3 h-3" />
-                    Current Price
-                  </Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${parseFloat(marketData.currentPrice).toFixed(2)}
-                  </p>
-                  <p className={`text-xs font-medium mt-1 ${parseFloat(marketData.percentChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {parseFloat(marketData.percentChange) >= 0 ? '↑' : '↓'} {Math.abs(parseFloat(marketData.percentChange)).toFixed(2)}%
-                  </p>
-                </div>
-
-                {/* Market Cap */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600">Market Cap</Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${(parseFloat(marketData.marketCap) / 1000000000).toFixed(2)}B
-                  </p>
-                </div>
-
-                {/* Day High */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600">Day High</Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${parseFloat(marketData.highPrice).toFixed(2)}
-                  </p>
-                </div>
-
-                {/* Day Low */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600">Day Low</Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${parseFloat(marketData.lowPrice).toFixed(2)}
-                  </p>
-                </div>
-
-                {/* Open Price */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600">Open</Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${parseFloat(marketData.openPrice).toFixed(2)}
-                  </p>
-                </div>
-
-                {/* Previous Close */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600">Prev Close</Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${parseFloat(marketData.previousClose).toFixed(2)}
-                  </p>
-                </div>
-
-                {/* 52 Week High */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600">52W High</Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${parseFloat(marketData.fiftyTwoWeekHigh).toFixed(2)}
-                  </p>
-                </div>
-
-                {/* 52 Week Low */}
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <Label className="text-xs font-medium text-gray-600">52W Low</Label>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    ${parseFloat(marketData.fiftyTwoWeekLow).toFixed(2)}
-                  </p>
-                </div>
-
-                {/* PEG Ratio */}
-                {marketData.pegRatio && parseFloat(marketData.pegRatio) > 0 && (
-                  <div className="bg-white p-3 rounded-lg shadow-sm">
-                    <Label className="text-xs font-medium text-gray-600">PEG Ratio</Label>
-                    <p className="text-lg font-bold text-gray-900 mt-1">
-                      {parseFloat(marketData.pegRatio).toFixed(2)}
-                    </p>
-                  </div>
-                )}
-
-                {/* Annual Sales */}
-                {marketData.annualSales && parseFloat(marketData.annualSales) > 0 && (
-                  <div className="bg-white p-3 rounded-lg shadow-sm">
-                    <Label className="text-xs font-medium text-gray-600">Annual Revenue</Label>
-                    <p className="text-lg font-bold text-gray-900 mt-1">
-                      ${(parseFloat(marketData.annualSales) / 1000000000).toFixed(2)}B
-                    </p>
-                  </div>
-                )}
-
-                {/* Dividend Yield */}
-                {marketData.dividendYield && parseFloat(marketData.dividendYield) > 0 && (
-                  <div className="bg-white p-3 rounded-lg shadow-sm">
-                    <Label className="text-xs font-medium text-gray-600">Div Yield</Label>
-                    <p className="text-lg font-bold text-gray-900 mt-1">
-                      {(parseFloat(marketData.dividendYield) * 100).toFixed(2)}%
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                Data provided by Alpha Vantage API in {marketData.currency}
-              </p>
-            </div>
-          )}
         </CardContent>
 
         <div className="space-y-4 pt-4 border-t px-6 pb-6">
@@ -1578,7 +1385,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           {/* HQ Level of Influence */}
           <div>
             <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
+              <Building2 className="w-4 h-4" />
               HQ Level of Influence
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
