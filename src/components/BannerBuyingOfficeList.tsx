@@ -103,8 +103,14 @@ export default function BannerBuyingOfficeList({ accounts, contacts, onViewBanne
                 c.bannerBuyingOfficeId === banner.id || c.accountId === accountId
               );
               
-              // Find primary contact for this banner/account
-              const primaryContact = bannerContacts.find(c => c.isPrimaryContact);
+              // Find primary contact - check both isPrimaryContact and the parent account's primaryContactId
+              const parentAccount = accounts.find(a => a.id === accountId);
+              let primaryContact = bannerContacts.find(c => c.isPrimaryContact);
+              
+              // If no primary contact found via isPrimaryContact, try using the account's primaryContactId
+              if (!primaryContact && parentAccount?.primaryContactId) {
+                primaryContact = bannerContacts.find(c => c.id === parentAccount.primaryContactId);
+              }
               
               // Find Diageo relationship owner from contacts
               const diageoOwnerContact = bannerContacts.find(c => c.primaryDiageoRelationshipOwners?.ownerName);
