@@ -116,7 +116,11 @@ export default function ContactDetailsView({
             {account && (
               <div className="flex items-center gap-2 mt-1">
                 <Building2 className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600">{account.accountName}</span>
+                <span className="text-sm text-gray-600">
+                  {contact.bannerBuyingOfficeId && account.bannerBuyingOffices
+                    ? account.bannerBuyingOffices.find(b => b.id === contact.bannerBuyingOfficeId)?.accountName || account.accountName
+                    : account.accountName}
+                </span>
               </div>
             )}
           </div>
