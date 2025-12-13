@@ -890,13 +890,11 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                 <div className="space-y-1 mb-3">
                                   <p className="text-gray-600">{contact.title || 'No title specified'}</p>
                                   <p className="text-sm text-gray-500">
-                                  <p className="text-sm text-gray-500">
                                     {account ? (
-                                      contact.bannerBuyingOfficeId 00260026 account.bannerBuyingOffices
+                                      contact.bannerBuyingOfficeId && account.bannerBuyingOffices
                                         ? account.bannerBuyingOffices.find(b => b.id === contact.bannerBuyingOfficeId)?.accountName || account.accountName
                                         : account.accountName
                                     ) : "No account assigned"}
-                                  </p>
                                   </p>
                                   {contact.relationshipStatus && (
                                     <p className="text-sm text-gray-500">
