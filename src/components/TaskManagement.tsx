@@ -33,7 +33,7 @@ export default function TaskManagement({ accounts, contacts = [], onBack }: Task
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
-  // Load tasks from localStorage and initialize with sample data if empty
+  // Load tasks from localStorage - no sample data initialization
   useEffect(() => {
     const savedTasks = loadFromStorage('crm-tasks', []);
     console.log('Loading tasks from localStorage:', savedTasks);
@@ -41,73 +41,16 @@ export default function TaskManagement({ accounts, contacts = [], onBack }: Task
     if (savedTasks && savedTasks.length > 0) {
       setTasks(savedTasks);
     } else {
-      // Initialize with sample data only if no tasks exist
-      const sampleTasks: Task[] = [
-        {
-          id: '1',
-          title: 'Follow up on Walmart proposal',
-          description: 'Schedule meeting to discuss Q4 pricing proposal with procurement team',
-          type: 'follow-up',
-          priority: 'high',
-          status: 'pending',
-          dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-          dueDateAlert: true, // Enable alert for sample task
-          assignedTo: 'Mora Ambrey',
-          relatedId: 'account-1',
-          relatedType: 'account',
-          relatedName: 'Walmart Inc.',
-          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          estimatedHours: 2,
-          tags: ['proposal', 'pricing', 'urgent']
-        },
-        {
-          id: '2',
-          title: 'Prepare Target contract renewal',
-          description: 'Review current contract terms and prepare renewal documentation',
-          type: 'contract',
-          priority: 'critical',
-          status: 'in-progress',
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          dueDateAlert: false, // No alert for this task
-          assignedTo: 'Sarah Johnson',
-          relatedId: 'account-2',
-          relatedType: 'account',
-          relatedName: 'Target Corporation',
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          estimatedHours: 8,
-          actualHours: 4,
-          tags: ['contract', 'renewal', 'legal']
-        },
-        {
-          id: '3',
-          title: 'Research Costco expansion opportunities',
-          description: 'Analyze potential for expanding product placement in western regions',
-          type: 'research',
-          priority: 'medium',
-          status: 'pending',
-          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-          dueDateAlert: false, // No alert for this task
-          assignedTo: 'Michael Chen',
-          relatedId: 'account-3',
-          relatedType: 'account',
-          relatedName: 'Costco Wholesale',
-          createdAt: new Date().toISOString(),
-          estimatedHours: 12,
-          tags: ['research', 'expansion', 'analysis']
-        }
-      ];
-      setTasks(sampleTasks);
-      saveToStorage('crm-tasks', sampleTasks);
-      console.log('Initialized with sample tasks and saved to localStorage');
+      // Start with empty task list
+      setTasks([]);
+      console.log('No saved tasks found, starting with empty list');
     }
   }, []);
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    if (tasks.length > 0) {
-      saveToStorage('crm-tasks', tasks);
-      console.log('Saved tasks to localStorage:', tasks);
-    }
+    saveToStorage('crm-tasks', tasks);
+    console.log('Saved tasks to localStorage:', tasks);
   }, [tasks]);
 
   const getPriorityColor = (priority: Task['priority']) => {
@@ -394,7 +337,7 @@ export default function TaskManagement({ accounts, contacts = [], onBack }: Task
               {filteredTasks.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <CheckSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No tasks match your current filters</p>
+                  <p>No tasks found</p>
                   <p className="text-sm mt-2">Create a new task to get started</p>
                 </div>
               ) : (
