@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { Alert as AlertType, Task } from '@/types/crm-advanced';
 import type { Account, Contact, RelationshipOwner } from '@/types/crm';
 import { loadFromStorage, saveToStorage, saveSentAlert, wasAlertSent, clearOldSentAlerts } from '@/lib/storage';
@@ -21,12 +22,14 @@ interface AlertSystemProps {
   onBack: () => void;
 }
 
+type AlertOption = 'same_day' | 'day_before' | 'week_before';
+
 interface AlertSettings {
-  birthdayLeadDays: number;
-  nextContactLeadDays: number;
-  taskLeadDays: number;
-  jbpLeadDays: number;
-  eventLeadDays: number;
+  birthdayAlertOptions: AlertOption[];
+  nextContactAlertOptions: AlertOption[];
+  taskAlertOptions: AlertOption[];
+  jbpAlertOptions: AlertOption[];
+  eventAlertOptions: AlertOption[];
   reminderFrequency: 'daily' | 'every-3-days' | 'weekly' | 'once';
 }
 
@@ -55,15 +58,33 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
   const [showSettings, setShowSettings] = useState(false);
   const [snoozedAlerts, setSnoozedAlerts] = useState<SnoozedAlert[]>([]);
   
-  // Alert scheduling settings
+  // Alert scheduling settings with checkbox options
   const [alertSettings, setAlertSettings] = useState<AlertSettings>({
-    birthdayLeadDays: 30,
-    nextContactLeadDays: 7,
-    taskLeadDays: 7,
-    jbpLeadDays: 30,
-    eventLeadDays: 7,
+    birthdayAlertOptions: ['week_before'],
+    nextContactAlertOptions: ['week_before'],
+    taskAlertOptions: ['week_before'],
+    jbpAlertOptions: ['week_before'],
+    eventAlertOptions: ['week_before'],
     reminderFrequency: 'once'
   });
+
+  // Helper function to convert alert options to days
+  const getMaxDaysFromOptions = (options: AlertOption[]): number => {
+    if (options.length === 0) return 0;
+    if (options.includes('week_before')) return 7;
+    if (options.includes('day_before')) return 1;
+    if (options.includes('same_day')) return 0;
+    return 7; // default
+  };
+
+  // Helper function to check if alert should be shown based on options
+  const shouldShowAlert = (daysUntil: number, options: AlertOption[]): boolean => {
+    if (options.length === 0) return false;
+    if (options.includes('same_day') && daysUntil === 0) return true;
+    if (options.includes('day_before') && daysUntil === 1) return true;
+    if (options.includes('week_before') && daysUntil === 7) return true;
+    return false;
+  };
 
   // Load settings and snoozed alerts on mount
   useEffect(() => {
@@ -72,11 +93,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     setAutoSendEnabled(savedAutoSend);
     
     const savedSettings = loadFromStorage<AlertSettings>('crm-alert-settings', {
-      birthdayLeadDays: 30,
-      nextContactLeadDays: 7,
-      taskLeadDays: 7,
-      jbpLeadDays: 30,
-      eventLeadDays: 7,
+      birthdayAlertOptions: ['week_before'],
+      nextContactAlertOptions: ['week_before'],
+      taskAlertOptions: ['week_before'],
+      jbpAlertOptions: ['week_before'],
+      eventAlertOptions: ['week_before'],
       reminderFrequency: 'once'
     });
     setAlertSettings(savedSettings);
@@ -105,12 +126,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       for (const alert of alerts) {
         // Auto-send birthday, next contact, task, JBP, and event alerts that haven't been sent yet
         if ((alert.type === 'birthday' || alert.type === 'follow-up' || alert.type === 'task-due' || 
-             alert.type === 'jbp' || alert.type === 'accountEvent' || alert.type === 'contactEvent') && 
-            alert.status === 'pending' && 
-            !sentAlerts.has(alert.id) &&
-            !wasAlertSent(alert.id) &&
-            !isAlertSnoozed(alert.id) &&
-            !alert.isCompleted) {
+             alert.type === 'jbp' || alert.type === 'accountEvent' || alert.type === 'contactEvent') && alert.status === 'pending' && !sentAlerts.has(alert.id) && !wasAlertSent(alert.id) && !isAlertSnoozed(alert.id) && !alert.isCompleted) {
           
           // Check if we should send based on reminder frequency
           if (shouldSendReminder(alert)) {
@@ -132,10 +148,26 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     saveToStorage('crm-pa-auto-send', enabled);
   };
 
-  const handleSettingsChange = (key: keyof AlertSettings, value: number | string) => {
-    const newSettings = { ...alertSettings, [key]: value };
+  const handleToggleAlertOption = (
+    alertType: 'birthdayAlertOptions' | 'nextContactAlertOptions' | 'taskAlertOptions' | 'jbpAlertOptions' | 'eventAlertOptions',
+    option: AlertOption
+  ) => {
+    const currentOptions = alertSettings[alertType];
+    const newOptions = currentOptions.includes(option)
+      ? currentOptions.filter(o => o !== option)
+      : [...currentOptions, option];
+    
+    const newSettings = { ...alertSettings, [alertType]: newOptions };
     setAlertSettings(newSettings);
     saveToStorage('crm-alert-settings', newSettings);
+  };
+
+  const getAlertOptionLabel = (option: AlertOption): string => {
+    switch (option) {
+      case 'same_day': return 'Same Day';
+      case 'day_before': return 'Day Before';
+      case 'week_before': return 'Week Before';
+    }
   };
 
   const isAlertSnoozed = (alertId: string): boolean => {
@@ -372,10 +404,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             
             console.log(`  Birthday Check:`);
             console.log(`    - Days until: ${daysUntilBirthday}`);
-            console.log(`    - Lead days setting: ${alertSettings.birthdayLeadDays}`);
+            console.log(`    - Alert options: ${alertSettings.birthdayAlertOptions.join(', ')}`);
             
-            // Show alerts based on user's lead days setting
-            if (daysUntilBirthday >= 0 && daysUntilBirthday <= alertSettings.birthdayLeadDays) {
+            // Show alerts based on user's checkbox selections
+            const maxDays = getMaxDaysFromOptions(alertSettings.birthdayAlertOptions);
+            if (daysUntilBirthday >= 0 && daysUntilBirthday <= maxDays) {
               console.log(`    ✓ Creating birthday alert (${daysUntilBirthday} days)`);
               
               const alertId = `birthday-${contact.id}`;
@@ -408,7 +441,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 completedAt: savedAlert?.completedAt
               });
             } else {
-              console.log(`    ✗ Birthday alert not created (${daysUntilBirthday} days - outside 0-${alertSettings.birthdayLeadDays} day window)`);
+              console.log(`    ✗ Birthday alert not created (${daysUntilBirthday} days - outside 0-${maxDays} day window)`);
             }
           }
 
@@ -422,9 +455,10 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             const daysUntilContact = Math.round((nextContactDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             
             console.log(`  Next Contact Alert: in ${daysUntilContact} days`);
-            console.log(`    - Lead days setting: ${alertSettings.nextContactLeadDays}`);
+            console.log(`    - Alert options: ${alertSettings.nextContactAlertOptions.join(', ')}`);
             
-            if (daysUntilContact <= alertSettings.nextContactLeadDays || daysUntilContact < 0) {
+            const maxDays = getMaxDaysFromOptions(alertSettings.nextContactAlertOptions);
+            if (daysUntilContact <= maxDays || daysUntilContact < 0) {
               const alertId = `contact-${contact.id}`;
               
               // Skip if snoozed
@@ -471,7 +505,6 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
               console.log(`      - Has date: ${!!event.date}`);
               console.log(`      - Date value: ${event.date}`);
               console.log(`      - alertEnabled: ${event.alertEnabled}`);
-              console.log(`      - alertDays: ${event.alertDays}`);
               
               if (event.date && event.alertEnabled) {
                 const eventDate = new Date(event.date);
@@ -480,13 +513,13 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 eventDate.setHours(0, 0, 0, 0);
                 
                 const daysUntilEvent = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                const alertDays = event.alertDays || alertSettings.eventLeadDays;
+                const maxDays = getMaxDaysFromOptions(alertSettings.eventAlertOptions);
                 
                 console.log(`      - Days until event: ${daysUntilEvent}`);
-                console.log(`      - Alert days setting: ${alertDays}`);
-                console.log(`      - Should create alert: ${daysUntilEvent >= 0 && daysUntilEvent <= alertDays}`);
+                console.log(`      - Alert options: ${alertSettings.eventAlertOptions.join(', ')}`);
+                console.log(`      - Should create alert: ${daysUntilEvent >= 0 && daysUntilEvent <= maxDays}`);
                 
-                if (daysUntilEvent >= 0 && daysUntilEvent <= alertDays) {
+                if (daysUntilEvent >= 0 && daysUntilEvent <= maxDays) {
                   const alertId = `contactEvent-${contact.id}-${event.id || index}`;
                   
                   if (isAlertSnoozed(alertId)) {
@@ -517,7 +550,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                   
                   console.log(`      ✓ Created contact event alert with ID: ${alertId}`);
                 } else {
-                  console.log(`      ✗ Event alert not created (${daysUntilEvent} days - outside 0-${alertDays} day window)`);
+                  console.log(`      ✗ Event alert not created (${daysUntilEvent} days - outside 0-${maxDays} day window)`);
                 }
               } else {
                 if (!event.date) console.log(`      ✗ No date set for event`);
@@ -544,13 +577,13 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             jbpDate.setHours(0, 0, 0, 0);
             
             const daysUntilJBP = Math.round((jbpDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            const alertDays = account.nextJBPAlertDays || alertSettings.jbpLeadDays;
+            const maxDays = getMaxDaysFromOptions(alertSettings.jbpAlertOptions);
             
             console.log(`JBP Check: ${account.accountName}`);
             console.log(`  - Days until: ${daysUntilJBP}`);
-            console.log(`  - Alert days setting: ${alertDays}`);
+            console.log(`  - Alert options: ${alertSettings.jbpAlertOptions.join(', ')}`);
             
-            if (daysUntilJBP >= 0 && daysUntilJBP <= alertDays) {
+            if (daysUntilJBP >= 0 && daysUntilJBP <= maxDays) {
               const alertId = `jbp-${account.id}`;
               
               if (isAlertSnoozed(alertId)) {
@@ -593,13 +626,13 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                 eventDate.setHours(0, 0, 0, 0);
                 
                 const daysUntilEvent = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                const alertDays = event.alertDays || alertSettings.eventLeadDays;
+                const maxDays = getMaxDaysFromOptions(alertSettings.eventAlertOptions);
                 
                 console.log(`Account Event Check: ${event.title || 'Untitled Event'} for ${account.accountName}`);
                 console.log(`  - Days until: ${daysUntilEvent}`);
-                console.log(`  - Alert days setting: ${alertDays}`);
+                console.log(`  - Alert options: ${alertSettings.eventAlertOptions.join(', ')}`);
                 
-                if (daysUntilEvent >= 0 && daysUntilEvent <= alertDays) {
+                if (daysUntilEvent >= 0 && daysUntilEvent <= maxDays) {
                   const alertId = `accountEvent-${account.id}-${event.id || index}`;
                   
                   if (isAlertSnoozed(alertId)) {
@@ -649,8 +682,9 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             
             const daysUntilDue = Math.round((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             
-            // Show task alerts based on user's lead days setting
-            if (daysUntilDue <= alertSettings.taskLeadDays || daysUntilDue < 0) {
+            // Show task alerts based on user's checkbox selections
+            const maxDays = getMaxDaysFromOptions(alertSettings.taskAlertOptions);
+            if (daysUntilDue <= maxDays || daysUntilDue < 0) {
               const relatedAccount = accounts?.find(a => a.id === task.relatedId && task.relatedType === 'account');
               const relatedContact = contacts?.find(c => c.id === task.relatedId && task.relatedType === 'contact');
               
@@ -844,8 +878,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     }
 
     // Now supports birthday, next contact, task, JBP, and event alerts
-    if (alert.type !== 'birthday' && alert.type !== 'follow-up' && alert.type !== 'task-due' && 
-        alert.type !== 'jbp' && alert.type !== 'accountEvent' && alert.type !== 'contactEvent') {
+    if (alert.type !== 'birthday' && alert.type !== 'follow-up' && alert.type !== 'task-due' && alert.type !== 'jbp' && alert.type !== 'accountEvent' && alert.type !== 'contactEvent') {
       const message = 'This alert type is not configured for Power Automate';
       console.warn(message);
       if (!isAutoSend) {
@@ -1154,11 +1187,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
 
   const autoSendEligibleCount = alerts.filter(a => 
     (a.type === 'birthday' || a.type === 'follow-up' || a.type === 'task-due' || 
-     a.type === 'jbp' || a.type === 'accountEvent' || a.type === 'contactEvent') && 
-    a.status === 'pending' && 
-    !a.isCompleted &&
-    !sentAlerts.has(a.id) &&
-    !isAlertSnoozed(a.id)
+     a.type === 'jbp' || a.type === 'accountEvent' || a.type === 'contactEvent') && a.status === 'pending' && !a.isCompleted && !sentAlerts.has(a.id) && !isAlertSnoozed(a.id)
   ).length;
 
   return (
@@ -1218,103 +1247,119 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
               />
             </div>
 
-            {/* Alert Timing Settings */}
+            {/* Alert Timing Settings with Checkboxes */}
             <div className="pt-4 border-t border-blue-200 space-y-4">
               <Label className="text-base font-medium">Alert Timing (Days in Advance)</Label>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="birthday-lead">Birthday Alerts</Label>
-                  <Select 
-                    value={alertSettings.birthdayLeadDays.toString()} 
-                    onValueChange={(v) => handleSettingsChange('birthdayLeadDays', parseInt(v))}
-                  >
-                    <SelectTrigger id="birthday-lead">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">7 days</SelectItem>
-                      <SelectItem value="14">14 days</SelectItem>
-                      <SelectItem value="30">30 days (default)</SelectItem>
-                      <SelectItem value="60">60 days</SelectItem>
-                      <SelectItem value="90">90 days</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Birthday Alerts */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Birthday Alerts</Label>
+                  <div className="space-y-2">
+                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`birthday-${option}`}
+                          checked={alertSettings.birthdayAlertOptions.includes(option)}
+                          onCheckedChange={() => handleToggleAlertOption('birthdayAlertOptions', option)}
+                        />
+                        <Label
+                          htmlFor={`birthday-${option}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {getAlertOptionLabel(option)}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="contact-lead">Next Contact Alerts</Label>
-                  <Select 
-                    value={alertSettings.nextContactLeadDays.toString()} 
-                    onValueChange={(v) => handleSettingsChange('nextContactLeadDays', parseInt(v))}
-                  >
-                    <SelectTrigger id="contact-lead">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 day</SelectItem>
-                      <SelectItem value="3">3 days</SelectItem>
-                      <SelectItem value="7">7 days (default)</SelectItem>
-                      <SelectItem value="14">14 days</SelectItem>
-                      <SelectItem value="30">30 days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Next Contact Alerts */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Next Contact Alerts</Label>
+                  <div className="space-y-2">
+                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`contact-${option}`}
+                          checked={alertSettings.nextContactAlertOptions.includes(option)}
+                          onCheckedChange={() => handleToggleAlertOption('nextContactAlertOptions', option)}
+                        />
+                        <Label
+                          htmlFor={`contact-${option}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {getAlertOptionLabel(option)}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="task-lead">Task Alerts</Label>
-                  <Select 
-                    value={alertSettings.taskLeadDays.toString()} 
-                    onValueChange={(v) => handleSettingsChange('taskLeadDays', parseInt(v))}
-                  >
-                    <SelectTrigger id="task-lead">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 day</SelectItem>
-                      <SelectItem value="3">3 days</SelectItem>
-                      <SelectItem value="7">7 days (default)</SelectItem>
-                      <SelectItem value="14">14 days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Task Alerts */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Task Alerts</Label>
+                  <div className="space-y-2">
+                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`task-${option}`}
+                          checked={alertSettings.taskAlertOptions.includes(option)}
+                          onCheckedChange={() => handleToggleAlertOption('taskAlertOptions', option)}
+                        />
+                        <Label
+                          htmlFor={`task-${option}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {getAlertOptionLabel(option)}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="jbp-lead">JBP Alerts</Label>
-                  <Select 
-                    value={alertSettings.jbpLeadDays.toString()} 
-                    onValueChange={(v) => handleSettingsChange('jbpLeadDays', parseInt(v))}
-                  >
-                    <SelectTrigger id="jbp-lead">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">7 days</SelectItem>
-                      <SelectItem value="14">14 days</SelectItem>
-                      <SelectItem value="30">30 days (default)</SelectItem>
-                      <SelectItem value="60">60 days</SelectItem>
-                      <SelectItem value="90">90 days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* JBP Alerts */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">JBP Alerts</Label>
+                  <div className="space-y-2">
+                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`jbp-${option}`}
+                          checked={alertSettings.jbpAlertOptions.includes(option)}
+                          onCheckedChange={() => handleToggleAlertOption('jbpAlertOptions', option)}
+                        />
+                        <Label
+                          htmlFor={`jbp-${option}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {getAlertOptionLabel(option)}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="event-lead">Event Alerts</Label>
-                  <Select 
-                    value={alertSettings.eventLeadDays.toString()} 
-                    onValueChange={(v) => handleSettingsChange('eventLeadDays', parseInt(v))}
-                  >
-                    <SelectTrigger id="event-lead">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 day</SelectItem>
-                      <SelectItem value="3">3 days</SelectItem>
-                      <SelectItem value="7">7 days (default)</SelectItem>
-                      <SelectItem value="14">14 days</SelectItem>
-                      <SelectItem value="30">30 days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Event Alerts */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Event Alerts</Label>
+                  <div className="space-y-2">
+                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`event-${option}`}
+                          checked={alertSettings.eventAlertOptions.includes(option)}
+                          onCheckedChange={() => handleToggleAlertOption('eventAlertOptions', option)}
+                        />
+                        <Label
+                          htmlFor={`event-${option}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {getAlertOptionLabel(option)}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1327,7 +1372,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
               </p>
               <Select 
                 value={alertSettings.reminderFrequency} 
-                onValueChange={(v: 'daily' | 'every-3-days' | 'weekly' | 'once') => handleSettingsChange('reminderFrequency', v)}
+                onValueChange={(v: 'daily' | 'every-3-days' | 'weekly' | 'once') => {
+                  const newSettings = { ...alertSettings, reminderFrequency: v };
+                  setAlertSettings(newSettings);
+                  saveToStorage('crm-alert-settings', newSettings);
+                }}
               >
                 <SelectTrigger id="reminder-freq">
                   <SelectValue />
@@ -1544,7 +1593,7 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
                     <p>To see alerts here:</p>
                     <p>• Add contacts with birthdays and enable "Birthday Alert"</p>
                     <p>• Set next contact dates and enable "Next Contact Alert"</p>
-                    <p>• Create tasks with due dates within {alertSettings.taskLeadDays} days</p>
+                    <p>• Create tasks with due dates</p>
                     <p>• Set JBP dates for accounts and enable "JBP Alert"</p>
                     <p>• Add customer events to accounts or contacts with alerts enabled</p>
                     {relationshipOwnerFilter !== 'all' && (
