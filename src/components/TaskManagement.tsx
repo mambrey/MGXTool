@@ -33,22 +33,24 @@ export default function TaskManagement({ accounts, contacts = [], onBack }: Task
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
-  // Load tasks from localStorage
+  // Load tasks from localStorage - no sample data initialization
   useEffect(() => {
     const savedTasks = loadFromStorage('crm-tasks', []);
     console.log('Loading tasks from localStorage:', savedTasks);
     
     if (savedTasks && savedTasks.length > 0) {
       setTasks(savedTasks);
+    } else {
+      // Start with empty task list
+      setTasks([]);
+      console.log('No saved tasks found, starting with empty list');
     }
   }, []);
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    if (tasks.length > 0) {
-      saveToStorage('crm-tasks', tasks);
-      console.log('Saved tasks to localStorage:', tasks);
-    }
+    saveToStorage('crm-tasks', tasks);
+    console.log('Saved tasks to localStorage:', tasks);
   }, [tasks]);
 
   const getPriorityColor = (priority: Task['priority']) => {

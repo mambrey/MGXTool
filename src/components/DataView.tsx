@@ -17,8 +17,8 @@ import { cn } from '@/lib/utils';
 
 interface CombinedAccountContact {
   id: string;
-  // Account fields - core information
   accountName: string;
+  bannerBuyingOffice?: string;
   industry?: string;
   accountStatus?: string;
   accountOwner?: string;
@@ -40,7 +40,6 @@ interface CombinedAccountContact {
   tickerSymbol?: string;
   parentCompany?: string;
   totalBuyingOffices?: string;
-  // Market Snapshot fields
   currentPrice?: string;
   percentChange?: string;
   highPrice?: string;
@@ -57,7 +56,6 @@ interface CombinedAccountContact {
   sales52Weeks?: string;
   sales12Weeks?: string;
   sales4Weeks?: string;
-  // Strategy and Capabilities
   categoryCaptain?: string;
   categoryAdvisor?: string;
   pricingStrategy?: boolean;
@@ -72,7 +70,6 @@ interface CombinedAccountContact {
   displayMandates?: boolean;
   fulfillmentTypes?: string;
   spiritsOutlets?: string;
-  // NEW Account fields
   ecommerceSalesPercentage?: string;
   ecommercePartners?: string;
   planogramWrittenBy?: string;
@@ -98,7 +95,6 @@ interface CombinedAccountContact {
   influenceShrinkManagement?: string;
   influenceBuyingPOOwnership?: string;
   ecommerceMaturityLevel?: string;
-  // Reset window fields
   resetWindowQ1?: string;
   resetWindowQ2?: string;
   resetWindowQ3?: string;
@@ -109,7 +105,6 @@ interface CombinedAccountContact {
   resetWindowWinter?: string;
   strategicPriorities?: string;
   keyCompetitors?: string;
-  // Contact fields
   contactName?: string;
   contactTitle?: string;
   contactEmail?: string;
@@ -126,7 +121,6 @@ interface CombinedAccountContact {
   contactSocial?: string;
   contactPreferences?: string;
   contactNotes?: string;
-  // NEW Contact fields
   linkedinProfile?: string;
   preferredFirstName?: string;
   currentRoleTenure?: string;
@@ -142,12 +136,9 @@ interface CombinedAccountContact {
   isPrimaryContact?: boolean;
   birthdayAlertDays?: number;
   nextContactAlertDays?: number;
-  // Secondary contacts summary
   secondaryContactCount: number;
   secondaryContactNames?: string;
-  // Analysis fields
   totalContacts: number;
-  // Timestamp fields
   createdAt?: string;
   lastModified?: string;
 }
@@ -168,8 +159,8 @@ interface DataViewProps {
 }
 
 const defaultColumns: ColumnConfig[] = [
-  // Core visible columns
   { key: 'accountName', label: 'Account Name', visible: true, type: 'text', filterType: 'text' },
+  { key: 'bannerBuyingOffice', label: 'Banner/Buying Office', visible: true, type: 'text', filterType: 'text' },
   { key: 'contactName', label: 'Contact', visible: true, type: 'text', filterType: 'text' },
   { key: 'contactType', label: 'Contact Type', visible: true, type: 'badge', filterType: 'select' },
   { key: 'contactTitle', label: 'Contact Title', visible: true, type: 'text', filterType: 'text' },
@@ -180,8 +171,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'director', label: 'Director', visible: true, type: 'text', filterType: 'select' },
   { key: 'vp', label: 'Vice President', visible: true, type: 'text', filterType: 'select' },
   { key: 'seniorVicePresident', label: 'Senior Vice President', visible: true, type: 'text', filterType: 'select' },
-  
-  // Account information columns (Basic)
   { key: 'industry', label: 'Industry', visible: false, type: 'text', filterType: 'text' },
   { key: 'accountStatus', label: 'Account Status', visible: false, type: 'badge', filterType: 'select' },
   { key: 'accountOwner', label: 'Account Owner', visible: false, type: 'text', filterType: 'select' },
@@ -199,8 +188,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'tickerSymbol', label: 'Ticker Symbol', visible: false, type: 'text', filterType: 'text' },
   { key: 'parentCompany', label: 'Parent Company', visible: false, type: 'text', filterType: 'text' },
   { key: 'totalBuyingOffices', label: 'Total Buying Offices', visible: false, type: 'text', filterType: 'text' },
-  
-  // Market Snapshot fields
   { key: 'currentPrice', label: 'Current Price', visible: false, type: 'currency', filterType: 'text' },
   { key: 'percentChange', label: 'Percent Change', visible: false, type: 'percentage', filterType: 'text' },
   { key: 'highPrice', label: 'High Price (Day)', visible: false, type: 'currency', filterType: 'text' },
@@ -217,8 +204,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'sales52Weeks', label: 'Sales (52 Weeks)', visible: false, type: 'currency', filterType: 'text' },
   { key: 'sales12Weeks', label: 'Sales (12 Weeks)', visible: false, type: 'currency', filterType: 'text' },
   { key: 'sales4Weeks', label: 'Sales (4 Weeks)', visible: false, type: 'currency', filterType: 'text' },
-  
-  // Strategy and Capabilities
   { key: 'categoryCaptain', label: 'Category Captain', visible: false, type: 'text', filterType: 'text' },
   { key: 'categoryAdvisor', label: 'Category Validator', visible: false, type: 'text', filterType: 'text' },
   { key: 'pricingStrategy', label: 'Pricing Strategy', visible: false, type: 'boolean', filterType: 'select' },
@@ -252,8 +237,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'executionReliabilityRationale', label: 'Execution Reliability Rationale', visible: false, type: 'text', filterType: 'text' },
   { key: 'strategicPriorities', label: 'Strategic Priorities', visible: false, type: 'text', filterType: 'text' },
   { key: 'keyCompetitors', label: 'Key Competitors', visible: false, type: 'text', filterType: 'text' },
-  
-  // Level of Influence fields
   { key: 'influenceAssortmentShelf', label: 'Influence: Assortment/Shelf', visible: false, type: 'text', filterType: 'text' },
   { key: 'influencePricePromo', label: 'Influence: Price/Promo', visible: false, type: 'text', filterType: 'text' },
   { key: 'influenceDisplayMerchandising', label: 'Influence: Display/Merchandising', visible: false, type: 'text', filterType: 'text' },
@@ -262,8 +245,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'influenceInStoreEvents', label: 'Influence: In-Store Events', visible: false, type: 'text', filterType: 'text' },
   { key: 'influenceShrinkManagement', label: 'Influence: Shrink Management', visible: false, type: 'text', filterType: 'text' },
   { key: 'influenceBuyingPOOwnership', label: 'Influence: Buying/PO Ownership', visible: false, type: 'text', filterType: 'text' },
-  
-  // Reset Window fields
   { key: 'resetWindowQ1', label: 'Reset Window Q1', visible: false, type: 'text', filterType: 'text' },
   { key: 'resetWindowQ2', label: 'Reset Window Q2', visible: false, type: 'text', filterType: 'text' },
   { key: 'resetWindowQ3', label: 'Reset Window Q3', visible: false, type: 'text', filterType: 'text' },
@@ -272,8 +253,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'resetWindowSummer', label: 'Reset Window Summer', visible: false, type: 'text', filterType: 'text' },
   { key: 'resetWindowFall', label: 'Reset Window Fall', visible: false, type: 'text', filterType: 'text' },
   { key: 'resetWindowWinter', label: 'Reset Window Winter', visible: false, type: 'text', filterType: 'text' },
-  
-  // Contact detailed information (hidden by default)
   { key: 'linkedinProfile', label: 'LinkedIn Profile', visible: false, type: 'text', filterType: 'text' },
   { key: 'preferredFirstName', label: 'Preferred First Name', visible: false, type: 'text', filterType: 'text' },
   { key: 'currentRoleTenure', label: 'Current Role Tenure', visible: false, type: 'text', filterType: 'text' },
@@ -300,8 +279,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'contactPreferences', label: 'Known Preferences', visible: false, type: 'text', filterType: 'text' },
   { key: 'contactNotes', label: 'Notes', visible: false, type: 'text', filterType: 'text' },
   { key: 'contactOwnerEmail', label: 'Relationship Owner Email', visible: false, type: 'text', filterType: 'text' },
-  
-  // Secondary contacts and metadata
   { key: 'secondaryContactCount', label: 'Secondary Contacts', visible: false, type: 'number', filterType: 'number' },
   { key: 'secondaryContactNames', label: 'Secondary Contact Names', visible: false, type: 'text', filterType: 'text' },
   { key: 'createdAt', label: 'Created Date', visible: false, type: 'datetime', filterType: 'text' },
@@ -315,24 +292,18 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
   const [combinedData, setCombinedData] = useState<CombinedAccountContact[]>([]);
   const [isColumnSettingsOpen, setIsColumnSettingsOpen] = useState(false);
   
-  // Popover open states for searchable dropdowns
   const [openColumnSelect, setOpenColumnSelect] = useState(false);
   const [openChannelSelect, setOpenChannelSelect] = useState(false);
   const [openParentCompanySelect, setOpenParentCompanySelect] = useState(false);
+  const [openBannerSelect, setOpenBannerSelect] = useState(false);
   const [openAccountNameSelect, setOpenAccountNameSelect] = useState(false);
-  const [openVPOwnerSelect, setOpenVPOwnerSelect] = useState(false);
+  const [openRelationshipOwnerSelect, setOpenRelationshipOwnerSelect] = useState(false);
   const [openContactSelect, setOpenContactSelect] = useState(false);
-  const [openContactTypeSelect, setOpenContactTypeSelect] = useState(false);
   const [openInfluenceSelect, setOpenInfluenceSelect] = useState(false);
-  const [openPublicPrivateSelect, setOpenPublicPrivateSelect] = useState(false);
-  const [openDirectorSelect, setOpenDirectorSelect] = useState(false);
-  const [openSVPSelect, setOpenSVPSelect] = useState(false);
 
-  // Load column settings from localStorage on mount
   const [columns, setColumns] = useState<ColumnConfig[]>(() => {
     const savedColumns = loadFromStorage<ColumnConfig[]>('crm-dataview-columns', null);
     if (savedColumns && savedColumns.length === defaultColumns.length) {
-      // Merge saved visibility with default column configs to ensure all properties are present
       return defaultColumns.map((defaultCol, index) => ({
         ...defaultCol,
         visible: savedColumns[index]?.visible ?? defaultCol.visible
@@ -341,7 +312,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
     return defaultColumns;
   });
 
-  // Save column settings to localStorage whenever they change
   useEffect(() => {
     saveToStorage('crm-dataview-columns', columns);
   }, [columns]);
@@ -351,193 +321,26 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
 
     accounts.forEach(account => {
       const accountContacts = contacts.filter(c => c.accountId === account.id);
+      const extendedAccount = account as ExtendedAccount;
+      
+      // Get banner/buying offices from account
+      const banners = account.bannerBuyingOffices || [];
       
       if (accountContacts.length === 0) {
-        // Account with no contacts - create one entry
-        const vpFromAccount = account.vp;
-        const extendedAccount = account as ExtendedAccount;
-
-        combined.push({
-          id: account.id,
-          accountName: account.accountName,
-          industry: account.industry,
-          accountStatus: account.accountStatus,
-          accountOwner: account.accountOwner,
-          contactType: undefined,
-          vp: vpFromAccount,
-          director: undefined,
-          seniorVicePresident: undefined,
-          revenue: account.revenue,
-          employees: account.employees,
-          website: account.website,
-          address: account.address,
-          phone: account.phone,
-          email: account.email,
-          description: account.description,
-          channel: account.channel,
-          footprint: account.footprint,
-          operatingStates: Array.isArray(account.operatingStates) 
-            ? account.operatingStates.join(', ') 
-            : account.operatingStates,
-          publiclyTraded: account.publiclyTraded,
-          tickerSymbol: account.tickerSymbol,
-          parentCompany: account.parentCompany,
-          totalBuyingOffices: account.totalBuyingOffices,
-          // Market Snapshot fields
-          currentPrice: extendedAccount.currentPrice,
-          percentChange: extendedAccount.percentChange,
-          highPrice: extendedAccount.highPrice,
-          lowPrice: extendedAccount.lowPrice,
-          openPrice: extendedAccount.openPrice,
-          previousClose: extendedAccount.previousClose,
-          marketCap: extendedAccount.marketCap,
-          pegRatio: extendedAccount.pegRatio,
-          annualSales: extendedAccount.annualSales,
-          dividendYield: extendedAccount.dividendYield,
-          fiftyTwoWeekLow: extendedAccount.fiftyTwoWeekLow,
-          fiftyTwoWeekHigh: extendedAccount.fiftyTwoWeekHigh,
-          percentOfGeneralMarket: extendedAccount.percentOfGeneralMarket,
-          sales52Weeks: extendedAccount.sales52Weeks,
-          sales12Weeks: extendedAccount.sales12Weeks,
-          sales4Weeks: account.sales4Weeks,
-          // Strategy and Capabilities
-          categoryCaptain: account.categoryCaptain,
-          categoryAdvisor: account.categoryAdvisor,
-          pricingStrategy: extendedAccount.pricingStrategy,
-          privateLabel: extendedAccount.privateLabel,
-          innovationAppetite: extendedAccount.innovationAppetite,
-          hasEcommerce: extendedAccount.hasEcommerce,
-          ecommerceMaturityLevel: account.ecommerceMaturityLevel,
-          ecommerceSalesPercentage: account.ecommerceSalesPercentage,
-          ecommercePartners: Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : undefined,
-          isJBP: account.isJBP,
-          lastJBPDate: account.lastJBPDate,
-          nextJBPDate: account.nextJBPDate,
-          nextJBPAlert: account.nextJBPAlert,
-          nextJBPAlertDays: account.nextJBPAlertDays,
-          hasPlanograms: account.hasPlanograms,
-          planogramWrittenBy: account.planogramWrittenBy,
-          resetFrequency: account.resetFrequency,
-          resetWindowLeadTime: account.resetWindowLeadTime,
-          resetWindowMonths: Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : undefined,
-          affectedCategories: Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : undefined,
-          hasDifferentResetWindows: account.hasDifferentResetWindows,
-          hqInfluence: account.hqInfluence,
-          displayMandates: account.displayMandates,
-          fulfillmentTypes: account.fulfillmentTypes,
-          spiritsOutlets: account.spiritsOutlets,
-          allSpiritsOutlets: account.allSpiritsOutlets,
-          spiritsOutletsByState: Array.isArray(account.spiritsOutletsByState) 
-            ? account.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') 
-            : undefined,
-          fullProofOutlets: account.fullProofOutlets,
-          designatedCharities: account.designatedCharities,
-          executionReliabilityScore: account.executionReliabilityScore,
-          executionReliabilityRationale: account.executionReliabilityRationale,
-          influenceAssortmentShelf: account.influenceAssortmentShelf,
-          influencePricePromo: account.influencePricePromo,
-          influenceDisplayMerchandising: account.influenceDisplayMerchandising,
-          influenceDigital: account.influenceDigital,
-          influenceEcommerce: account.influenceEcommerce,
-          influenceInStoreEvents: account.influenceInStoreEvents,
-          influenceShrinkManagement: account.influenceShrinkManagement,
-          influenceBuyingPOOwnership: account.influenceBuyingPOOwnership,
-          // Reset Window fields
-          resetWindowQ1: account.resetWindowQ1,
-          resetWindowQ2: account.resetWindowQ2,
-          resetWindowQ3: account.resetWindowQ3,
-          resetWindowQ4: account.resetWindowQ4,
-          resetWindowSpring: account.resetWindowSpring,
-          resetWindowSummer: account.resetWindowSummer,
-          resetWindowFall: account.resetWindowFall,
-          resetWindowWinter: account.resetWindowWinter,
-          strategicPriorities: extendedAccount.strategicPriorities,
-          keyCompetitors: extendedAccount.keyCompetitors,
-          contactName: undefined,
-          contactTitle: undefined,
-          contactEmail: undefined,
-          contactMobile: undefined,
-          contactOffice: undefined,
-          contactOwner: undefined,
-          contactOwnerEmail: undefined,
-          contactRelationship: undefined,
-          contactInfluence: undefined,
-          contactPreferredMethod: undefined,
-          contactBirthday: undefined,
-          contactLastContact: undefined,
-          contactNextContact: undefined,
-          contactSocial: undefined,
-          contactPreferences: undefined,
-          contactNotes: undefined,
-          linkedinProfile: undefined,
-          preferredFirstName: undefined,
-          currentRoleTenure: undefined,
-          contactActiveStatus: undefined,
-          categorySegmentOwnership: undefined,
-          entertainment: undefined,
-          decisionBiasProfile: undefined,
-          followThrough: undefined,
-          values: undefined,
-          painPoints: undefined,
-          headshot: undefined,
-          managerId: undefined,
-          isPrimaryContact: undefined,
-          birthdayAlertDays: undefined,
-          nextContactAlertDays: undefined,
-          secondaryContactCount: 0,
-          secondaryContactNames: undefined,
-          totalContacts: 0,
-          createdAt: account.createdAt,
-          lastModified: account.lastModified
-        });
-      } else {
-        // Create one row per contact
-        accountContacts.forEach(contact => {
-          // Get VP, Director, and SVP from relationship owner or account fields
-          const vpFromContact = contact.relationshipOwner?.vicePresident;
-          const directorFromContact = contact.relationshipOwner?.director;
-          const svpFromContact = contact.relationshipOwner?.seniorVicePresident;
-          const vp = vpFromContact || account.vp;
-
-          // Count secondary contacts for this account
-          const secondaryContacts = accountContacts.filter(c => c.contactType !== 'Primary');
-          const secondaryContactNames = secondaryContacts
-            .map(c => `${c.firstName} ${c.lastName}`)
-            .join(', ');
-
-          // Safely format operating states array
-          let operatingStatesString: string | undefined;
-          if (account.operatingStates) {
-            if (Array.isArray(account.operatingStates)) {
-              operatingStatesString = account.operatingStates.join(', ');
-            } else if (typeof account.operatingStates === 'string') {
-              operatingStatesString = account.operatingStates;
-            }
-          }
-
-          // Safely format social handles array
-          let socialHandlesString: string | undefined;
-          if (contact.socialHandles) {
-            if (Array.isArray(contact.socialHandles)) {
-              socialHandlesString = contact.socialHandles.join(', ');
-            } else if (typeof contact.socialHandles === 'string') {
-              socialHandlesString = contact.socialHandles;
-            }
-          }
-
-          const extendedAccount = account as ExtendedAccount;
-
+        // Account with no contacts
+        if (banners.length === 0) {
+          // No banners either
           combined.push({
-            id: `${account.id}-${contact.id}`,
-            // Account information
+            id: account.id,
             accountName: account.accountName,
+            bannerBuyingOffice: undefined,
             industry: account.industry,
             accountStatus: account.accountStatus,
             accountOwner: account.accountOwner,
-            contactType: contact.isPrimaryContact ? 'Primary' : 'Secondary',
-            vp: vp,
-            director: directorFromContact,
-            seniorVicePresident: svpFromContact,
+            contactType: undefined,
+            vp: account.vp,
+            director: undefined,
+            seniorVicePresident: undefined,
             revenue: account.revenue,
             employees: account.employees,
             website: account.website,
@@ -547,12 +350,11 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             description: account.description,
             channel: account.channel,
             footprint: account.footprint,
-            operatingStates: operatingStatesString,
+            operatingStates: Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates,
             publiclyTraded: account.publiclyTraded,
             tickerSymbol: account.tickerSymbol,
             parentCompany: account.parentCompany,
             totalBuyingOffices: account.totalBuyingOffices,
-            // Market Snapshot fields
             currentPrice: extendedAccount.currentPrice,
             percentChange: extendedAccount.percentChange,
             highPrice: extendedAccount.highPrice,
@@ -569,7 +371,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             sales52Weeks: extendedAccount.sales52Weeks,
             sales12Weeks: extendedAccount.sales12Weeks,
             sales4Weeks: account.sales4Weeks,
-            // Strategy and Capabilities
             categoryCaptain: account.categoryCaptain,
             categoryAdvisor: account.categoryAdvisor,
             pricingStrategy: extendedAccount.pricingStrategy,
@@ -596,9 +397,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             fulfillmentTypes: account.fulfillmentTypes,
             spiritsOutlets: account.spiritsOutlets,
             allSpiritsOutlets: account.allSpiritsOutlets,
-            spiritsOutletsByState: Array.isArray(account.spiritsOutletsByState) 
-              ? account.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') 
-              : undefined,
+            spiritsOutletsByState: Array.isArray(account.spiritsOutletsByState) ? account.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') : undefined,
             fullProofOutlets: account.fullProofOutlets,
             designatedCharities: account.designatedCharities,
             executionReliabilityScore: account.executionReliabilityScore,
@@ -611,7 +410,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             influenceInStoreEvents: account.influenceInStoreEvents,
             influenceShrinkManagement: account.influenceShrinkManagement,
             influenceBuyingPOOwnership: account.influenceBuyingPOOwnership,
-            // Reset Window fields
             resetWindowQ1: account.resetWindowQ1,
             resetWindowQ2: account.resetWindowQ2,
             resetWindowQ3: account.resetWindowQ3,
@@ -622,7 +420,297 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             resetWindowWinter: account.resetWindowWinter,
             strategicPriorities: extendedAccount.strategicPriorities,
             keyCompetitors: extendedAccount.keyCompetitors,
-            // Contact information
+            contactName: undefined,
+            contactTitle: undefined,
+            contactEmail: undefined,
+            contactMobile: undefined,
+            contactOffice: undefined,
+            contactOwner: undefined,
+            contactOwnerEmail: undefined,
+            contactRelationship: undefined,
+            contactInfluence: undefined,
+            contactPreferredMethod: undefined,
+            contactBirthday: undefined,
+            contactLastContact: undefined,
+            contactNextContact: undefined,
+            contactSocial: undefined,
+            contactPreferences: undefined,
+            contactNotes: undefined,
+            linkedinProfile: undefined,
+            preferredFirstName: undefined,
+            currentRoleTenure: undefined,
+            contactActiveStatus: undefined,
+            categorySegmentOwnership: undefined,
+            entertainment: undefined,
+            decisionBiasProfile: undefined,
+            followThrough: undefined,
+            values: undefined,
+            painPoints: undefined,
+            headshot: undefined,
+            managerId: undefined,
+            isPrimaryContact: undefined,
+            birthdayAlertDays: undefined,
+            nextContactAlertDays: undefined,
+            secondaryContactCount: 0,
+            secondaryContactNames: undefined,
+            totalContacts: 0,
+            createdAt: account.createdAt,
+            lastModified: account.lastModified
+          });
+        } else {
+          // Has banners but no contacts
+          banners.forEach(banner => {
+            combined.push({
+              id: `${account.id}-banner-${banner.id}`,
+              accountName: account.accountName,
+              bannerBuyingOffice: banner.accountName,
+              industry: account.industry,
+              accountStatus: account.accountStatus,
+              accountOwner: account.accountOwner,
+              contactType: undefined,
+              vp: account.vp,
+              director: undefined,
+              seniorVicePresident: undefined,
+              revenue: account.revenue,
+              employees: account.employees,
+              website: account.website,
+              address: account.address,
+              phone: account.phone,
+              email: account.email,
+              description: account.description,
+              channel: banner.channel || account.channel,
+              footprint: banner.footprint || account.footprint,
+              operatingStates: Array.isArray(banner.operatingStates) ? banner.operatingStates.join(', ') : (Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates),
+              publiclyTraded: account.publiclyTraded,
+              tickerSymbol: account.tickerSymbol,
+              parentCompany: account.parentCompany,
+              totalBuyingOffices: account.totalBuyingOffices,
+              currentPrice: extendedAccount.currentPrice,
+              percentChange: extendedAccount.percentChange,
+              highPrice: extendedAccount.highPrice,
+              lowPrice: extendedAccount.lowPrice,
+              openPrice: extendedAccount.openPrice,
+              previousClose: extendedAccount.previousClose,
+              marketCap: extendedAccount.marketCap,
+              pegRatio: extendedAccount.pegRatio,
+              annualSales: extendedAccount.annualSales,
+              dividendYield: extendedAccount.dividendYield,
+              fiftyTwoWeekLow: extendedAccount.fiftyTwoWeekLow,
+              fiftyTwoWeekHigh: extendedAccount.fiftyTwoWeekHigh,
+              percentOfGeneralMarket: extendedAccount.percentOfGeneralMarket,
+              sales52Weeks: extendedAccount.sales52Weeks,
+              sales12Weeks: extendedAccount.sales12Weeks,
+              sales4Weeks: account.sales4Weeks,
+              categoryCaptain: banner.categoryCaptain || account.categoryCaptain,
+              categoryAdvisor: banner.categoryAdvisor || account.categoryAdvisor,
+              pricingStrategy: extendedAccount.pricingStrategy,
+              privateLabel: extendedAccount.privateLabel,
+              innovationAppetite: extendedAccount.innovationAppetite,
+              hasEcommerce: extendedAccount.hasEcommerce,
+              ecommerceMaturityLevel: banner.ecommerceMaturityLevel || account.ecommerceMaturityLevel,
+              ecommerceSalesPercentage: banner.ecommerceSalesPercentage || account.ecommerceSalesPercentage,
+              ecommercePartners: Array.isArray(banner.ecommercePartners) ? banner.ecommercePartners.join(', ') : (Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : undefined),
+              isJBP: banner.isJBP ?? account.isJBP,
+              lastJBPDate: banner.lastJBPDate || account.lastJBPDate,
+              nextJBPDate: banner.nextJBPDate || account.nextJBPDate,
+              nextJBPAlert: banner.nextJBPAlert ?? account.nextJBPAlert,
+              nextJBPAlertDays: account.nextJBPAlertDays,
+              hasPlanograms: banner.hasPlanograms ?? account.hasPlanograms,
+              planogramWrittenBy: banner.planogramWrittenBy || account.planogramWrittenBy,
+              resetFrequency: banner.resetFrequency || account.resetFrequency,
+              resetWindowLeadTime: banner.resetWindowLeadTime || account.resetWindowLeadTime,
+              resetWindowMonths: Array.isArray(banner.resetWindowMonths) ? banner.resetWindowMonths.join(', ') : (Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : undefined),
+              affectedCategories: Array.isArray(banner.affectedCategories) ? banner.affectedCategories.join(', ') : (Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : undefined),
+              hasDifferentResetWindows: banner.hasDifferentResetWindows || account.hasDifferentResetWindows,
+              hqInfluence: account.hqInfluence,
+              displayMandates: account.displayMandates,
+              fulfillmentTypes: Array.isArray(banner.fulfillmentTypes) ? banner.fulfillmentTypes.join(', ') : account.fulfillmentTypes,
+              spiritsOutlets: account.spiritsOutlets,
+              allSpiritsOutlets: banner.allSpiritsOutlets || account.allSpiritsOutlets,
+              spiritsOutletsByState: Array.isArray(banner.spiritsOutletsByState) ? banner.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') : (Array.isArray(account.spiritsOutletsByState) ? account.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') : undefined),
+              fullProofOutlets: banner.fullProofOutlets || account.fullProofOutlets,
+              designatedCharities: banner.designatedCharities || account.designatedCharities,
+              executionReliabilityScore: banner.executionReliabilityScore || account.executionReliabilityScore,
+              executionReliabilityRationale: banner.executionReliabilityRationale || account.executionReliabilityRationale,
+              influenceAssortmentShelf: banner.influenceAssortmentShelf || account.influenceAssortmentShelf,
+              influencePricePromo: banner.influencePricePromo || account.influencePricePromo,
+              influenceDisplayMerchandising: banner.influenceDisplayMerchandising || account.influenceDisplayMerchandising,
+              influenceDigital: banner.influenceDigital || account.influenceDigital,
+              influenceEcommerce: banner.influenceEcommerce || account.influenceEcommerce,
+              influenceInStoreEvents: banner.influenceInStoreEvents || account.influenceInStoreEvents,
+              influenceShrinkManagement: banner.influenceShrinkManagement || account.influenceShrinkManagement,
+              influenceBuyingPOOwnership: banner.influenceBuyingPOOwnership || account.influenceBuyingPOOwnership,
+              resetWindowQ1: account.resetWindowQ1,
+              resetWindowQ2: account.resetWindowQ2,
+              resetWindowQ3: account.resetWindowQ3,
+              resetWindowQ4: account.resetWindowQ4,
+              resetWindowSpring: account.resetWindowSpring,
+              resetWindowSummer: account.resetWindowSummer,
+              resetWindowFall: account.resetWindowFall,
+              resetWindowWinter: account.resetWindowWinter,
+              strategicPriorities: banner.strategicPriorities || extendedAccount.strategicPriorities,
+              keyCompetitors: banner.keyCompetitors || extendedAccount.keyCompetitors,
+              contactName: undefined,
+              contactTitle: undefined,
+              contactEmail: undefined,
+              contactMobile: undefined,
+              contactOffice: undefined,
+              contactOwner: undefined,
+              contactOwnerEmail: undefined,
+              contactRelationship: undefined,
+              contactInfluence: undefined,
+              contactPreferredMethod: undefined,
+              contactBirthday: undefined,
+              contactLastContact: undefined,
+              contactNextContact: undefined,
+              contactSocial: undefined,
+              contactPreferences: undefined,
+              contactNotes: undefined,
+              linkedinProfile: undefined,
+              preferredFirstName: undefined,
+              currentRoleTenure: undefined,
+              contactActiveStatus: undefined,
+              categorySegmentOwnership: undefined,
+              entertainment: undefined,
+              decisionBiasProfile: undefined,
+              followThrough: undefined,
+              values: undefined,
+              painPoints: undefined,
+              headshot: undefined,
+              managerId: undefined,
+              isPrimaryContact: undefined,
+              birthdayAlertDays: undefined,
+              nextContactAlertDays: undefined,
+              secondaryContactCount: 0,
+              secondaryContactNames: undefined,
+              totalContacts: 0,
+              createdAt: account.createdAt,
+              lastModified: account.lastModified
+            });
+          });
+        }
+      } else {
+        // Has contacts
+        accountContacts.forEach(contact => {
+          const vpFromContact = contact.relationshipOwner?.vicePresident;
+          const directorFromContact = contact.relationshipOwner?.director;
+          const svpFromContact = contact.relationshipOwner?.seniorVicePresident;
+          const vp = vpFromContact || account.vp;
+
+          const secondaryContacts = accountContacts.filter(c => !c.isPrimaryContact);
+          const secondaryContactNames = secondaryContacts.map(c => `${c.firstName} ${c.lastName}`).join(', ');
+
+          let operatingStatesString: string | undefined;
+          if (account.operatingStates) {
+            if (Array.isArray(account.operatingStates)) {
+              operatingStatesString = account.operatingStates.join(', ');
+            } else if (typeof account.operatingStates === 'string') {
+              operatingStatesString = account.operatingStates;
+            }
+          }
+
+          let socialHandlesString: string | undefined;
+          if (contact.socialHandles) {
+            if (Array.isArray(contact.socialHandles)) {
+              socialHandlesString = contact.socialHandles.join(', ');
+            } else if (typeof contact.socialHandles === 'string') {
+              socialHandlesString = contact.socialHandles;
+            }
+          }
+
+          // Get banner for this contact if exists
+          const contactBanner = contact.bannerBuyingOfficeId ? banners.find(b => b.id === contact.bannerBuyingOfficeId) : undefined;
+
+          combined.push({
+            id: `${account.id}-${contact.id}`,
+            accountName: account.accountName,
+            bannerBuyingOffice: contactBanner?.accountName,
+            industry: account.industry,
+            accountStatus: account.accountStatus,
+            accountOwner: account.accountOwner,
+            contactType: contact.isPrimaryContact ? 'Primary' : 'Secondary',
+            vp: vp,
+            director: directorFromContact,
+            seniorVicePresident: svpFromContact,
+            revenue: account.revenue,
+            employees: account.employees,
+            website: account.website,
+            address: account.address,
+            phone: account.phone,
+            email: account.email,
+            description: account.description,
+            channel: contactBanner?.channel || account.channel,
+            footprint: contactBanner?.footprint || account.footprint,
+            operatingStates: operatingStatesString,
+            publiclyTraded: account.publiclyTraded,
+            tickerSymbol: account.tickerSymbol,
+            parentCompany: account.parentCompany,
+            totalBuyingOffices: account.totalBuyingOffices,
+            currentPrice: extendedAccount.currentPrice,
+            percentChange: extendedAccount.percentChange,
+            highPrice: extendedAccount.highPrice,
+            lowPrice: extendedAccount.lowPrice,
+            openPrice: extendedAccount.openPrice,
+            previousClose: extendedAccount.previousClose,
+            marketCap: extendedAccount.marketCap,
+            pegRatio: extendedAccount.pegRatio,
+            annualSales: extendedAccount.annualSales,
+            dividendYield: extendedAccount.dividendYield,
+            fiftyTwoWeekLow: extendedAccount.fiftyTwoWeekLow,
+            fiftyTwoWeekHigh: extendedAccount.fiftyTwoWeekHigh,
+            percentOfGeneralMarket: extendedAccount.percentOfGeneralMarket,
+            sales52Weeks: extendedAccount.sales52Weeks,
+            sales12Weeks: extendedAccount.sales12Weeks,
+            sales4Weeks: account.sales4Weeks,
+            categoryCaptain: contactBanner?.categoryCaptain || account.categoryCaptain,
+            categoryAdvisor: contactBanner?.categoryAdvisor || account.categoryAdvisor,
+            pricingStrategy: extendedAccount.pricingStrategy,
+            privateLabel: extendedAccount.privateLabel,
+            innovationAppetite: extendedAccount.innovationAppetite,
+            hasEcommerce: extendedAccount.hasEcommerce,
+            ecommerceMaturityLevel: contactBanner?.ecommerceMaturityLevel || account.ecommerceMaturityLevel,
+            ecommerceSalesPercentage: contactBanner?.ecommerceSalesPercentage || account.ecommerceSalesPercentage,
+            ecommercePartners: contactBanner && Array.isArray(contactBanner.ecommercePartners) ? contactBanner.ecommercePartners.join(', ') : (Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : undefined),
+            isJBP: contactBanner?.isJBP ?? account.isJBP,
+            lastJBPDate: contactBanner?.lastJBPDate || account.lastJBPDate,
+            nextJBPDate: contactBanner?.nextJBPDate || account.nextJBPDate,
+            nextJBPAlert: contactBanner?.nextJBPAlert ?? account.nextJBPAlert,
+            nextJBPAlertDays: account.nextJBPAlertDays,
+            hasPlanograms: contactBanner?.hasPlanograms ?? account.hasPlanograms,
+            planogramWrittenBy: contactBanner?.planogramWrittenBy || account.planogramWrittenBy,
+            resetFrequency: contactBanner?.resetFrequency || account.resetFrequency,
+            resetWindowLeadTime: contactBanner?.resetWindowLeadTime || account.resetWindowLeadTime,
+            resetWindowMonths: contactBanner && Array.isArray(contactBanner.resetWindowMonths) ? contactBanner.resetWindowMonths.join(', ') : (Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : undefined),
+            affectedCategories: contactBanner && Array.isArray(contactBanner.affectedCategories) ? contactBanner.affectedCategories.join(', ') : (Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : undefined),
+            hasDifferentResetWindows: contactBanner?.hasDifferentResetWindows || account.hasDifferentResetWindows,
+            hqInfluence: account.hqInfluence,
+            displayMandates: account.displayMandates,
+            fulfillmentTypes: contactBanner && Array.isArray(contactBanner.fulfillmentTypes) ? contactBanner.fulfillmentTypes.join(', ') : account.fulfillmentTypes,
+            spiritsOutlets: account.spiritsOutlets,
+            allSpiritsOutlets: contactBanner?.allSpiritsOutlets || account.allSpiritsOutlets,
+            spiritsOutletsByState: contactBanner && Array.isArray(contactBanner.spiritsOutletsByState) ? contactBanner.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') : (Array.isArray(account.spiritsOutletsByState) ? account.spiritsOutletsByState.map(s => `${s.state}: ${s.outletCount}`).join(', ') : undefined),
+            fullProofOutlets: contactBanner?.fullProofOutlets || account.fullProofOutlets,
+            designatedCharities: contactBanner?.designatedCharities || account.designatedCharities,
+            executionReliabilityScore: contactBanner?.executionReliabilityScore || account.executionReliabilityScore,
+            executionReliabilityRationale: contactBanner?.executionReliabilityRationale || account.executionReliabilityRationale,
+            influenceAssortmentShelf: contactBanner?.influenceAssortmentShelf || account.influenceAssortmentShelf,
+            influencePricePromo: contactBanner?.influencePricePromo || account.influencePricePromo,
+            influenceDisplayMerchandising: contactBanner?.influenceDisplayMerchandising || account.influenceDisplayMerchandising,
+            influenceDigital: contactBanner?.influenceDigital || account.influenceDigital,
+            influenceEcommerce: contactBanner?.influenceEcommerce || account.influenceEcommerce,
+            influenceInStoreEvents: contactBanner?.influenceInStoreEvents || account.influenceInStoreEvents,
+            influenceShrinkManagement: contactBanner?.influenceShrinkManagement || account.influenceShrinkManagement,
+            influenceBuyingPOOwnership: contactBanner?.influenceBuyingPOOwnership || account.influenceBuyingPOOwnership,
+            resetWindowQ1: account.resetWindowQ1,
+            resetWindowQ2: account.resetWindowQ2,
+            resetWindowQ3: account.resetWindowQ3,
+            resetWindowQ4: account.resetWindowQ4,
+            resetWindowSpring: account.resetWindowSpring,
+            resetWindowSummer: account.resetWindowSummer,
+            resetWindowFall: account.resetWindowFall,
+            resetWindowWinter: account.resetWindowWinter,
+            strategicPriorities: contactBanner?.strategicPriorities || extendedAccount.strategicPriorities,
+            keyCompetitors: contactBanner?.keyCompetitors || extendedAccount.keyCompetitors,
             contactName: `${contact.firstName} ${contact.lastName}`,
             contactTitle: contact.title,
             contactEmail: contact.email,
@@ -631,7 +719,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             contactOwner: contact.relationshipOwner?.name || undefined,
             contactOwnerEmail: contact.relationshipOwner?.email,
             contactRelationship: contact.relationshipStatus,
-            contactInfluence: contact.influence,
+            contactInfluence: contact.responsibilityLevels?.influenceLevelResponsibility,
             contactPreferredMethod: contact.preferredContactMethod,
             contactBirthday: contact.birthday,
             contactLastContact: contact.lastContactDate,
@@ -639,14 +727,11 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             contactSocial: socialHandlesString,
             contactPreferences: contact.knownPreferences,
             contactNotes: contact.notes,
-            // NEW Contact fields
             linkedinProfile: contact.linkedinProfile,
             preferredFirstName: contact.preferredFirstName,
             currentRoleTenure: contact.currentRoleTenure,
             contactActiveStatus: contact.contactActiveStatus,
-            categorySegmentOwnership: Array.isArray(contact.categorySegmentOwnership) 
-              ? contact.categorySegmentOwnership.join(', ') 
-              : undefined,
+            categorySegmentOwnership: Array.isArray(contact.categorySegmentOwnership) ? contact.categorySegmentOwnership.join(', ') : undefined,
             entertainment: contact.entertainment,
             decisionBiasProfile: contact.decisionBiasProfile,
             followThrough: contact.followThrough,
@@ -657,11 +742,9 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             isPrimaryContact: contact.isPrimaryContact,
             birthdayAlertDays: contact.birthdayAlertDays,
             nextContactAlertDays: contact.nextContactAlertDays,
-            // Secondary contacts summary (same for all contacts of this account)
             secondaryContactCount: secondaryContacts.length,
             secondaryContactNames: secondaryContactNames || undefined,
             totalContacts: accountContacts.length,
-            // Timestamps
             createdAt: account.createdAt,
             lastModified: account.lastModified
           });
@@ -679,99 +762,33 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
     return Array.from(new Set(values as string[])).sort();
   };
 
-  // Get unique account names
-  const getUniqueAccountNames = () => {
-    return getUniqueValues('accountName');
-  };
-
-  // Get unique parent companies
-  const getUniqueParentCompanies = () => {
-    return getUniqueValues('parentCompany');
-  };
-
-  // Get unique contact names for the Contacts filter
+  const getUniqueAccountNames = () => getUniqueValues('accountName');
+  const getUniqueParentCompanies = () => getUniqueValues('parentCompany');
+  const getUniqueBanners = () => getUniqueValues('bannerBuyingOffice');
   const getUniqueContactNames = () => {
     const contactNames = contacts.map(contact => `${contact.firstName} ${contact.lastName}`);
     return Array.from(new Set(contactNames)).sort();
   };
-
-  // Get unique Directors
-  const getUniqueDirectors = () => {
-    return getUniqueValues('director');
-  };
-
-  // Get unique Senior Vice Presidents
-  const getUniqueSVPs = () => {
-    return getUniqueValues('seniorVicePresident');
-  };
-
-  // Get unique VP names and their associated owners for nested filtering
-  const getVPHierarchy = () => {
-    const vpMap = new Map<string, Set<string>>();
-    
-    // Get VPs from accounts and their owners
-    accounts.forEach(account => {
-      if (account.vp) {
-        if (!vpMap.has(account.vp)) {
-          vpMap.set(account.vp, new Set());
-        }
-        if (account.accountOwner) {
-          vpMap.get(account.vp)?.add(account.accountOwner);
-        }
-      }
-    });
-    
-    // Get VPs from contact relationship owners
-    contacts.forEach(contact => {
-      if (contact.relationshipOwner?.vicePresident) {
-        const vp = contact.relationshipOwner.vicePresident;
-        if (!vpMap.has(vp)) {
-          vpMap.set(vp, new Set());
-        }
-        if (contact.relationshipOwner.name) {
-          vpMap.get(vp)?.add(contact.relationshipOwner.name);
-        }
-      }
-    });
-    
-    return vpMap;
-  };
-
-  // Get unique influence levels for the Influence Level filter
+  const getUniqueRelationshipOwners = () => getUniqueValues('contactOwner');
   const getUniqueInfluenceLevels = () => {
-    const influences = contacts.map(contact => contact.influence).filter(Boolean);
+    const influences = contacts.map(contact => contact.responsibilityLevels?.influenceLevelResponsibility).filter(Boolean);
     return Array.from(new Set(influences as string[])).sort();
   };
 
-  // Get unique contact types
-  const getUniqueContactTypes = () => {
-    return ['Primary', 'Secondary'];
-  };
-
   const filteredData = combinedData.filter(item => {
-    // Column-specific search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       
       if (searchColumn === 'all') {
-        // Search across all fields
         const searchableFields = [
-          item.accountName, item.contactName, item.contactTitle,
-          item.contactEmail, item.contactOwner,
-          item.vp, item.director, item.seniorVicePresident,
-          item.channel, item.secondaryContactNames, item.website,
-          item.address, item.description, item.parentCompany,
-          item.tickerSymbol, item.contactPreferences, item.contactNotes,
-          item.contactInfluence, item.contactType,
-          item.strategicPriorities, item.keyCompetitors, item.industry,
-          item.accountStatus, item.accountOwner, item.footprint,
-          item.linkedinProfile, item.preferredFirstName
+          item.accountName, item.bannerBuyingOffice, item.contactName, item.contactTitle,
+          item.contactEmail, item.contactOwner, item.vp, item.director, item.seniorVicePresident,
+          item.channel, item.parentCompany, item.contactInfluence
         ];
         if (!searchableFields.some(field => field?.toLowerCase().includes(searchLower))) {
           return false;
         }
       } else {
-        // Search in specific column
         const columnValue = item[searchColumn];
         if (!columnValue) return false;
         
@@ -782,7 +799,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
       }
     }
 
-    // Column filters
     for (const [key, value] of Object.entries(activeFilters)) {
       if (value && item[key as keyof CombinedAccountContact] !== value) {
         return false;
@@ -846,18 +862,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
         if (column.key === 'channel') {
           return (
             <Badge variant="secondary" className="text-xs">
-              Channel: {value}
-            </Badge>
-          );
-        }
-        if (column.key === 'contactRelationship') {
-          return (
-            <Badge variant={
-              value === 'Excellent' ? 'default' :
-              value === 'Good' ? 'secondary' :
-              value === 'Neutral' ? 'outline' :
-              'destructive'
-            }>
               {value}
             </Badge>
           );
@@ -867,16 +871,8 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
             <Badge variant={
               value === 'Decision Maker' ? 'default' :
               value === 'Influencer' ? 'secondary' :
-              value === 'User' ? 'outline' :
-              'destructive'
+              'outline'
             }>
-              {value}
-            </Badge>
-          );
-        }
-        if (column.key === 'contactActiveStatus') {
-          return (
-            <Badge variant={value === 'Active' ? 'default' : 'outline'}>
               {value}
             </Badge>
           );
@@ -933,16 +929,12 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
     }
   };
 
-  const vpHierarchy = getVPHierarchy();
-
-  // Get searchable columns (text-based fields)
   const searchableColumns = columns.filter(col => 
     col.type === 'text' || col.type === 'array'
   );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <Button variant="ghost" onClick={onBack} className="mb-2">
@@ -973,154 +965,25 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
               </SheetHeader>
               <div className="mt-6">
                 <p className="text-sm text-gray-600 mb-4">Show or hide columns in the data table</p>
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm text-gray-900">Core Columns</h4>
-                      {columns.slice(0, 11).map(column => (
-                        <div key={column.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={column.key}
-                            checked={column.visible}
-                            onCheckedChange={() => toggleColumn(column.key)}
-                          />
-                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
-                            {column.label}
-                          </Label>
-                          {column.visible ? (
-                            <Eye className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="space-y-2 pt-4 border-t">
-                      <h4 className="font-medium text-sm text-gray-900">Account Information</h4>
-                      {columns.slice(11, 27).map(column => (
-                        <div key={column.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={column.key}
-                            checked={column.visible}
-                            onCheckedChange={() => toggleColumn(column.key)}
-                          />
-                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
-                            {column.label}
-                          </Label>
-                          {column.visible ? (
-                            <Eye className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 pt-4 border-t">
-                      <h4 className="font-medium text-sm text-gray-900">Market Snapshot</h4>
-                      {columns.slice(27, 43).map(column => (
-                        <div key={column.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={column.key}
-                            checked={column.visible}
-                            onCheckedChange={() => toggleColumn(column.key)}
-                          />
-                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
-                            {column.label}
-                          </Label>
-                          {column.visible ? (
-                            <Eye className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 pt-4 border-t">
-                      <h4 className="font-medium text-sm text-gray-900">Strategy and Capabilities</h4>
-                      {columns.slice(43, 78).map(column => (
-                        <div key={column.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={column.key}
-                            checked={column.visible}
-                            onCheckedChange={() => toggleColumn(column.key)}
-                          />
-                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
-                            {column.label}
-                          </Label>
-                          {column.visible ? (
-                            <Eye className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 pt-4 border-t">
-                      <h4 className="font-medium text-sm text-gray-900">Level of Influence</h4>
-                      {columns.slice(78, 86).map(column => (
-                        <div key={column.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={column.key}
-                            checked={column.visible}
-                            onCheckedChange={() => toggleColumn(column.key)}
-                          />
-                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
-                            {column.label}
-                          </Label>
-                          {column.visible ? (
-                            <Eye className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 pt-4 border-t">
-                      <h4 className="font-medium text-sm text-gray-900">Reset Windows</h4>
-                      {columns.slice(86, 94).map(column => (
-                        <div key={column.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={column.key}
-                            checked={column.visible}
-                            onCheckedChange={() => toggleColumn(column.key)}
-                          />
-                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
-                            {column.label}
-                          </Label>
-                          {column.visible ? (
-                            <Eye className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 pt-4 border-t">
-                      <h4 className="font-medium text-sm text-gray-900">Contact Information</h4>
-                      {columns.slice(94).map(column => (
-                        <div key={column.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={column.key}
-                            checked={column.visible}
-                            onCheckedChange={() => toggleColumn(column.key)}
-                          />
-                          <Label htmlFor={column.key} className="text-sm font-medium flex-1">
-                            {column.label}
-                          </Label>
-                          {column.visible ? (
-                            <Eye className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                <ScrollArea className="h-[600px] pr-4">
+                  <div className="space-y-2">
+                    {columns.map(column => (
+                      <div key={column.key} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={column.key}
+                          checked={column.visible}
+                          onCheckedChange={() => toggleColumn(column.key)}
+                        />
+                        <Label htmlFor={column.key} className="text-sm font-medium flex-1">
+                          {column.label}
+                        </Label>
+                        {column.visible ? (
+                          <Eye className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <EyeOff className="w-4 h-4 text-gray-400" />
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </ScrollArea>
               </div>
@@ -1129,7 +992,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
         </div>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -1139,7 +1001,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Search Row - Full Width */}
             <div>
               <Label className="text-sm font-medium mb-2">Search</Label>
               <div className="flex gap-2">
@@ -1212,9 +1073,8 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
               </div>
             </div>
 
-            {/* Filter Dropdowns Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {/* Channel Filter - Searchable */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Channel Filter */}
               <div>
                 <Label className="text-sm font-medium mb-2">Channel</Label>
                 <Popover open={openChannelSelect} onOpenChange={setOpenChannelSelect}>
@@ -1276,7 +1136,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
                 </Popover>
               </div>
 
-              {/* Parent Company Filter - Searchable */}
+              {/* Parent Company Filter */}
               <div>
                 <Label className="text-sm font-medium mb-2">Parent Company</Label>
                 <Popover open={openParentCompanySelect} onOpenChange={setOpenParentCompanySelect}>
@@ -1338,7 +1198,69 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
                 </Popover>
               </div>
 
-              {/* Account Name Filter - Searchable */}
+              {/* Banner/Buying Office Filter */}
+              <div>
+                <Label className="text-sm font-medium mb-2">Banner/Buying Office</Label>
+                <Popover open={openBannerSelect} onOpenChange={setOpenBannerSelect}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openBannerSelect}
+                      className="w-full justify-between cursor-pointer hover:bg-accent"
+                      type="button"
+                    >
+                      {activeFilters.bannerBuyingOffice || 'All Banners'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search banners..." />
+                      <CommandList>
+                        <CommandEmpty>No banner found.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="all_banners"
+                            onSelect={() => {
+                              setActiveFilters(prev => ({ ...prev, bannerBuyingOffice: '' }));
+                              setOpenBannerSelect(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                !activeFilters.bannerBuyingOffice ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            All Banners
+                          </CommandItem>
+                          {getUniqueBanners().map(banner => (
+                            <CommandItem
+                              key={banner}
+                              value={banner}
+                              onSelect={() => {
+                                setActiveFilters(prev => ({ ...prev, bannerBuyingOffice: banner }));
+                                setOpenBannerSelect(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  activeFilters.bannerBuyingOffice === banner ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {banner}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Account Name Filter */}
               <div>
                 <Label className="text-sm font-medium mb-2">Account Name</Label>
                 <Popover open={openAccountNameSelect} onOpenChange={setOpenAccountNameSelect}>
@@ -1400,142 +1322,59 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
                 </Popover>
               </div>
 
-              {/* VP & Relationship Owner - Searchable */}
+              {/* Relationship Owner Filter */}
               <div>
-                <Label className="text-sm font-medium mb-2">VP & Relationship Owner</Label>
-                <Popover open={openVPOwnerSelect} onOpenChange={setOpenVPOwnerSelect}>
+                <Label className="text-sm font-medium mb-2">Relationship Owner</Label>
+                <Popover open={openRelationshipOwnerSelect} onOpenChange={setOpenRelationshipOwnerSelect}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
-                      aria-expanded={openVPOwnerSelect}
+                      aria-expanded={openRelationshipOwnerSelect}
                       className="w-full justify-between cursor-pointer hover:bg-accent"
                       type="button"
                     >
-                      {activeFilters.contactOwner || activeFilters.vp || 'All VPs & Owners'}
+                      {activeFilters.contactOwner || 'All Owners'}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0">
                     <Command>
-                      <CommandInput placeholder="Search VP or owner..." />
+                      <CommandInput placeholder="Search owners..." />
                       <CommandList>
-                        <CommandEmpty>No VP or owner found.</CommandEmpty>
+                        <CommandEmpty>No owner found.</CommandEmpty>
                         <CommandGroup>
                           <CommandItem
-                            value="all_vp_owners"
+                            value="all_owners"
                             onSelect={() => {
-                              setActiveFilters(prev => ({ ...prev, contactOwner: '', vp: '' }));
-                              setOpenVPOwnerSelect(false);
+                              setActiveFilters(prev => ({ ...prev, contactOwner: '' }));
+                              setOpenRelationshipOwnerSelect(false);
                             }}
                           >
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                !activeFilters.contactOwner && !activeFilters.vp ? "opacity-100" : "opacity-0"
+                                !activeFilters.contactOwner ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            All VPs & Owners
+                            All Owners
                           </CommandItem>
-                          {Array.from(vpHierarchy.entries()).map(([vp, owners]) => (
-                            <React.Fragment key={vp}>
-                              <CommandItem
-                                value={vp}
-                                onSelect={() => {
-                                  setActiveFilters(prev => ({ ...prev, vp, contactOwner: '' }));
-                                  setOpenVPOwnerSelect(false);
-                                }}
-                                className="font-semibold text-blue-700"
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    activeFilters.vp === vp ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                📊 {vp} (Vice President)
-                              </CommandItem>
-                              {Array.from(owners).map(owner => (
-                                <CommandItem
-                                  key={`${vp}-${owner}`}
-                                  value={owner}
-                                  onSelect={() => {
-                                    setActiveFilters(prev => ({ ...prev, contactOwner: owner, vp: '' }));
-                                    setOpenVPOwnerSelect(false);
-                                  }}
-                                  className="pl-6 text-gray-600"
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      activeFilters.contactOwner === owner ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                  👤 {owner}
-                                </CommandItem>
-                              ))}
-                            </React.Fragment>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {/* Director Filter - Searchable */}
-              <div>
-                <Label className="text-sm font-medium mb-2">Director</Label>
-                <Popover open={openDirectorSelect} onOpenChange={setOpenDirectorSelect}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openDirectorSelect}
-                      className="w-full justify-between cursor-pointer hover:bg-accent"
-                      type="button"
-                    >
-                      {activeFilters.director || 'All Directors'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search director..." />
-                      <CommandList>
-                        <CommandEmpty>No director found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value="all_directors"
-                            onSelect={() => {
-                              setActiveFilters(prev => ({ ...prev, director: '' }));
-                              setOpenDirectorSelect(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                !activeFilters.director ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            All Directors
-                          </CommandItem>
-                          {getUniqueDirectors().map(director => (
+                          {getUniqueRelationshipOwners().map(owner => (
                             <CommandItem
-                              key={director}
-                              value={director}
+                              key={owner}
+                              value={owner}
                               onSelect={() => {
-                                setActiveFilters(prev => ({ ...prev, director }));
-                                setOpenDirectorSelect(false);
+                                setActiveFilters(prev => ({ ...prev, contactOwner: owner }));
+                                setOpenRelationshipOwnerSelect(false);
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  activeFilters.director === director ? "opacity-100" : "opacity-0"
+                                  activeFilters.contactOwner === owner ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              {director}
+                              {owner}
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -1545,71 +1384,9 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
                 </Popover>
               </div>
 
-              {/* Senior Vice President Filter - Searchable */}
+              {/* Contact Filter */}
               <div>
-                <Label className="text-sm font-medium mb-2">Senior Vice President</Label>
-                <Popover open={openSVPSelect} onOpenChange={setOpenSVPSelect}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openSVPSelect}
-                      className="w-full justify-between cursor-pointer hover:bg-accent"
-                      type="button"
-                    >
-                      {activeFilters.seniorVicePresident || 'All SVPs'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search SVP..." />
-                      <CommandList>
-                        <CommandEmpty>No SVP found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value="all_svps"
-                            onSelect={() => {
-                              setActiveFilters(prev => ({ ...prev, seniorVicePresident: '' }));
-                              setOpenSVPSelect(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                !activeFilters.seniorVicePresident ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            All SVPs
-                          </CommandItem>
-                          {getUniqueSVPs().map(svp => (
-                            <CommandItem
-                              key={svp}
-                              value={svp}
-                              onSelect={() => {
-                                setActiveFilters(prev => ({ ...prev, seniorVicePresident: svp }));
-                                setOpenSVPSelect(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  activeFilters.seniorVicePresident === svp ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {svp}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {/* Contacts - Searchable */}
-              <div>
-                <Label className="text-sm font-medium mb-2">Contacts</Label>
+                <Label className="text-sm font-medium mb-2">Contact</Label>
                 <Popover open={openContactSelect} onOpenChange={setOpenContactSelect}>
                   <PopoverTrigger asChild>
                     <Button
@@ -1669,69 +1446,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
                 </Popover>
               </div>
 
-              {/* Contact Type - Searchable */}
-              <div>
-                <Label className="text-sm font-medium mb-2">Contact Type</Label>
-                <Popover open={openContactTypeSelect} onOpenChange={setOpenContactTypeSelect}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openContactTypeSelect}
-                      className="w-full justify-between cursor-pointer hover:bg-accent"
-                      type="button"
-                    >
-                      {activeFilters.contactType || 'All Types'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search type..." />
-                      <CommandList>
-                        <CommandEmpty>No type found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value="all_types"
-                            onSelect={() => {
-                              setActiveFilters(prev => ({ ...prev, contactType: '' }));
-                              setOpenContactTypeSelect(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                !activeFilters.contactType ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            All Types
-                          </CommandItem>
-                          {getUniqueContactTypes().map(type => (
-                            <CommandItem
-                              key={type}
-                              value={type}
-                              onSelect={() => {
-                                setActiveFilters(prev => ({ ...prev, contactType: type }));
-                                setOpenContactTypeSelect(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  activeFilters.contactType === type ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {type}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {/* Influence Level - Searchable */}
+              {/* Influence Level Filter */}
               <div>
                 <Label className="text-sm font-medium mb-2">Influence Level</Label>
                 <Popover open={openInfluenceSelect} onOpenChange={setOpenInfluenceSelect}>
@@ -1792,86 +1507,9 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
                   </PopoverContent>
                 </Popover>
               </div>
-
-              {/* Public/Private - Searchable */}
-              <div>
-                <Label className="text-sm font-medium mb-2">Public/Private</Label>
-                <Popover open={openPublicPrivateSelect} onOpenChange={setOpenPublicPrivateSelect}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openPublicPrivateSelect}
-                      className="w-full justify-between cursor-pointer hover:bg-accent"
-                      type="button"
-                    >
-                      {activeFilters.publiclyTraded === 'true' ? 'Public Companies' : 
-                       activeFilters.publiclyTraded === 'false' ? 'Private Companies' : 
-                       'All Types'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search type..." />
-                      <CommandList>
-                        <CommandEmpty>No type found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value="all_company_types"
-                            onSelect={() => {
-                              setActiveFilters(prev => ({ ...prev, publiclyTraded: '' }));
-                              setOpenPublicPrivateSelect(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                !activeFilters.publiclyTraded ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            All Types
-                          </CommandItem>
-                          <CommandItem
-                            value="true"
-                            onSelect={() => {
-                              setActiveFilters(prev => ({ ...prev, publiclyTraded: 'true' }));
-                              setOpenPublicPrivateSelect(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                activeFilters.publiclyTraded === 'true' ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            Public Companies
-                          </CommandItem>
-                          <CommandItem
-                            value="false"
-                            onSelect={() => {
-                              setActiveFilters(prev => ({ ...prev, publiclyTraded: 'false' }));
-                              setOpenPublicPrivateSelect(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                activeFilters.publiclyTraded === 'false' ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            Private Companies
-                          </CommandItem>
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
             </div>
           </div>
 
-          {/* Active Filters */}
           {(searchTerm || Object.values(activeFilters).some(v => v)) && (
             <div className="flex flex-wrap items-center gap-2 pt-4 border-t mt-4">
               <span className="text-sm font-medium text-gray-600">Active filters:</span>
@@ -1886,7 +1524,7 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
               )}
               {Object.entries(activeFilters).map(([key, value]) => value && (
                 <Badge key={key} variant="secondary" className="flex items-center gap-1">
-                  {columns.find(c => c.key === key)?.label}: {value === 'true' ? 'Yes' : value === 'false' ? 'No' : value}
+                  {columns.find(c => c.key === key)?.label}: {value}
                   <X 
                     className="w-3 h-3 cursor-pointer" 
                     onClick={() => setActiveFilters(prev => ({ ...prev, [key]: '' }))}
@@ -1915,7 +1553,6 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
         </CardContent>
       </Card>
 
-      {/* Data Table */}
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
