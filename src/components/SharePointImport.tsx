@@ -15,14 +15,12 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
   const [importResult, setImportResult] = useState<{ success: boolean; message: string; count?: number } | null>(null);
 
   const downloadTemplate = () => {
-    // Generate CSV with current account data - removed Industry and Account Status
+    // Generate CSV with current account data - removed Industry, Account Status, and Market Snapshot fields
     const headers = [
       'Account Name', 'Account Owner', 'VP', 'Revenue', 'Employees',
       'Website', 'Address', 'Phone', 'Email', 'Description', 'Channel', 'Footprint',
       'Operating States', 'Publicly Traded', 'Ticker Symbol', 'Parent Company', 'Primary Contact ID',
-      'Total Buying Offices', 'Current Price', 'Percent Change', 'High Price', 'Low Price',
-      'Open Price', 'Previous Close', 'Market Cap', 'PEG Ratio', 'Annual Sales', 'Dividend Yield',
-      '52 Week Low', '52 Week High', 'Percent of General Market', 'Sales 52 Weeks', 'Sales 12 Weeks',
+      'Total Buying Offices', 'Percent of General Market', 'Sales 52 Weeks', 'Sales 12 Weeks',
       'Sales 4 Weeks', 'Category Captain', 'Category Validator', 'Pricing Strategy', 'Private Label',
       'Innovation Appetite', 'Has Ecommerce', 'Is JBP', 'Last JBP Date', 'Next JBP Date',
       'Has Planograms', 'HQ Influence', 'Display Mandates', 'Fulfillment Types', 'Spirits Outlets',
@@ -73,18 +71,6 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
         escapeCSV(account.parentCompany),
         escapeCSV(account.primaryContactId),
         escapeCSV(account.totalBuyingOffices),
-        escapeCSV(account.currentPrice),
-        escapeCSV(account.percentChange),
-        escapeCSV(account.highPrice),
-        escapeCSV(account.lowPrice),
-        escapeCSV(account.openPrice),
-        escapeCSV(account.previousClose),
-        escapeCSV(account.marketCap),
-        escapeCSV(account.pegRatio),
-        escapeCSV(account.annualSales),
-        escapeCSV(account.dividendYield),
-        escapeCSV(account.fiftyTwoWeekLow),
-        escapeCSV(account.fiftyTwoWeekHigh),
         escapeCSV(account.percentOfGeneralMarket),
         escapeCSV(account.sales52Weeks),
         escapeCSV(account.sales12Weeks),
@@ -261,19 +247,6 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
           parentCompany: getCell('Parent Company') || undefined,
           primaryContactId: getCell('Primary Contact ID') || undefined,
           totalBuyingOffices: getCell('Total Buying Offices') || undefined,
-          // Market Snapshot
-          currentPrice: getCell('Current Price') || undefined,
-          percentChange: getCell('Percent Change') || undefined,
-          highPrice: getCell('High Price') || undefined,
-          lowPrice: getCell('Low Price') || undefined,
-          openPrice: getCell('Open Price') || undefined,
-          previousClose: getCell('Previous Close') || undefined,
-          marketCap: getCell('Market Cap') || undefined,
-          pegRatio: getCell('PEG Ratio') || undefined,
-          annualSales: getCell('Annual Sales') || undefined,
-          dividendYield: getCell('Dividend Yield') || undefined,
-          fiftyTwoWeekLow: getCell('52 Week Low') || undefined,
-          fiftyTwoWeekHigh: getCell('52 Week High') || undefined,
           // Sales Data
           percentOfGeneralMarket: getCell('Percent of General Market') || undefined,
           sales52Weeks: getCell('Sales 52 Weeks') || undefined,
@@ -418,12 +391,11 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
           <div className="text-xs text-gray-600 space-y-1">
             <p><strong>Required:</strong> Account Name, Account Owner</p>
             <p><strong>Optional:</strong> VP, Revenue, Employees, Website, Address, Phone, Email, Description, Channel, Footprint, Operating States, Publicly Traded, Ticker Symbol, Parent Company, Total Buying Offices</p>
-            <p><strong>Market Data:</strong> Current Price, Percent Change, High Price, Low Price, Open Price, Previous Close, Market Cap, PEG Ratio, Annual Sales, Dividend Yield, 52 Week Low, 52 Week High</p>
             <p><strong>Sales Data:</strong> Percent of General Market, Sales 52 Weeks, Sales 12 Weeks, Sales 4 Weeks</p>
             <p><strong>Strategy:</strong> Category Captain, Category Validator, Pricing Strategy, Private Label, Innovation Appetite, Has Ecommerce, Is JBP, Last JBP Date, Next JBP Date, Has Planograms, HQ Influence, Display Mandates, Fulfillment Types, Spirits Outlets</p>
             <p><strong>Reset Windows:</strong> Q1, Q2, Q3, Q4, Spring, Summer, Fall, Winter</p>
             <p><strong>Strategic Info:</strong> Strategic Priorities, Key Competitors</p>
-            <p><strong>Note:</strong> Industry and Account Status columns have been removed. Imported accounts will default to "Not Specified" for Industry and "Prospect" for Account Status.</p>
+            <p><strong>Note:</strong> Industry, Account Status, and Market Snapshot fields have been removed. Imported accounts will default to "Not Specified" for Industry and "Prospect" for Account Status.</p>
           </div>
         </div>
       </CardContent>
