@@ -1,0 +1,40 @@
+{
+  "hash": "6bdb89a2",
+  "configHash": "b33920b9",
+  "lockfileHash": "c2716363",
+  "browserHash": "9f83de49",
+  "optimized": {
+    "react-dom/client": {
+      "src": "../../node_modules/.pnpm/react-dom@19.2.0_react@19.2.0/node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "420d3fec",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/.pnpm/react@19.2.0/node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "523fbc35",
+      "needsInterop": true
+    },
+    "lucide-react": {
+      "src": "../../node_modules/.pnpm/lucide-react@0.462.0_react@19.2.0/node_modules/lucide-react/dist/esm/lucide-react.js",
+      "file": "lucide-react.js",
+      "fileHash": "45e7bd0a",
+      "needsInterop": false
+    },
+    "@react-google-maps/api": {
+      "src": "../../node_modules/.pnpm/@react-google-maps+api@2.20.7_react-dom@19.2.0_react@19.2.0/node_modules/@react-google-maps/api/dist/esm.js",
+      "file": "@react-google-maps_api.js",
+      "fileHash": "64a1c7db",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-AS46QCJR": {
+      "file": "chunk-AS46QCJR.js"
+    },
+    "chunk-SBWQ5KBM": {
+      "file": "chunk-SBWQ5KBM.js"
+    }
+  }
+}
