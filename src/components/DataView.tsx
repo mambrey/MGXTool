@@ -167,10 +167,6 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'contactEmail', label: 'Contact Email', visible: true, type: 'text', filterType: 'text' },
   { key: 'contactOwner', label: 'Relationship Owner', visible: true, type: 'text', filterType: 'select' },
   { key: 'contactInfluence', label: 'Influence Level', visible: true, type: 'badge', filterType: 'select' },
-  { key: 'totalContacts', label: 'Total Contacts', visible: false, type: 'number', filterType: 'number' },
-  { key: 'director', label: 'Director', visible: false, type: 'text', filterType: 'select' },
-  { key: 'vp', label: 'Vice President', visible: false, type: 'text', filterType: 'select' },
-  { key: 'seniorVicePresident', label: 'Senior Vice President', visible: false, type: 'text', filterType: 'select' },
   { key: 'industry', label: 'Industry', visible: false, type: 'text', filterType: 'text' },
   { key: 'accountStatus', label: 'Account Status', visible: false, type: 'badge', filterType: 'select' },
   { key: 'accountOwner', label: 'Account Owner', visible: false, type: 'text', filterType: 'select' },
@@ -302,7 +298,8 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
   const [openInfluenceSelect, setOpenInfluenceSelect] = useState(false);
 
   const [columns, setColumns] = useState<ColumnConfig[]>(() => {
-    const savedColumns = loadFromStorage<ColumnConfig[]>('crm-dataview-columns', null);
+    // Changed storage key to force reset of cached column settings
+    const savedColumns = loadFromStorage<ColumnConfig[]>('crm-dataview-columns-v2', null);
     if (savedColumns && savedColumns.length === defaultColumns.length) {
       return defaultColumns.map((defaultCol, index) => ({
         ...defaultCol,
@@ -313,7 +310,8 @@ export default function DataView({ accounts, contacts, onBack }: DataViewProps) 
   });
 
   useEffect(() => {
-    saveToStorage('crm-dataview-columns', columns);
+    // Changed storage key to force reset of cached column settings
+    saveToStorage('crm-dataview-columns-v2', columns);
   }, [columns]);
 
   useEffect(() => {
