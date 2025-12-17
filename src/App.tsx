@@ -11,7 +11,7 @@ function App() {
 
   return (
     <div className="App">
-      <CRMTool />
+      <CRMTool userName="User" />
     </div>
   );
 }
