@@ -682,6 +682,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setFormData(prev => ({
       ...prev,
       uploadedNotes: prev.uploadedNotes.filter(note => note.id !== noteId)
+    }));
+  };
 
   const handleFileUpload = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -745,8 +747,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
-  };
-    }));
   };
 
   return (
@@ -1945,33 +1945,15 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           <SelectTrigger className={cn("h-9 text-xs", !(role in supportRoles) && "opacity-50")}>
                             <SelectValue placeholder="Cadence..." />
                           </SelectTrigger>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              onChange={handleFileInputChange}
-              className="hidden"
-              accept="*/*"
-            />
-            <div 
-              className={cn(
-                "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
-                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
-              )}
-              onDragEnter={handleDragEnter}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={handleUploadClick}
-            >
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">
-                Drag and drop files here or click to upload
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Supports documents, images, and other files
-              </p>
-            </div>
+                          <SelectContent>
+                            <SelectItem value="clear" className="text-gray-500 italic text-xs">Clear</SelectItem>
+                            {CADENCE_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option} className="text-xs">
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="col-span-4">
                         <Input
@@ -2029,7 +2011,26 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </div>
               ))}
             </div>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileInputChange}
+              className="hidden"
+              accept="*/*"
+            />
+            <div 
+              className={cn(
+                "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
+                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+              )}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleUploadClick}
+            >
               <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm text-gray-600">
                 Drag and drop files here or click to upload
