@@ -1214,7 +1214,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="relationshipStatus">Support Style</Label>
+              <Label htmlFor="relationshipStatus">Advocacy Style</Label>
               <Select 
                 value={formData.relationshipStatus} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value === 'clear' ? '' : value }))}
@@ -1224,34 +1224,34 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                  <SelectItem value="Promoter — Champions our partnership">
+                  <SelectItem value="Promoter | Champions our partnership">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#166534'}}></div>
-                      <span>Promoter — Champions our partnership</span>
+                      <span>Promoter | Champions our partnership</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Supporter — Leans in consistently">
+                  <SelectItem value="Supporter | Leans in consistently">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#16a34a'}}></div>
-                      <span>Supporter — Leans in consistently</span>
+                      <span>Supporter | Leans in consistently</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Neutral — Transactional, low engagement">
+                  <SelectItem value="Neutral | Transactional, low engagement">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#6b7280'}}></div>
-                      <span>Neutral — Transactional, low engagement</span>
+                      <span>Neutral | Transactional, low engagement</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Detractor — Resists our efforts">
+                  <SelectItem value="Detractor | Resists our efforts">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ef4444'}}></div>
-                      <span>Detractor — Resists our efforts</span>
+                      <span>Detractor | Resists our efforts</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Adversarial — Actively works against">
+                  <SelectItem value="Adversarial | Actively works against">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#991b1b'}}></div>
-                      <span>Adversarial — Actively works against</span>
+                      <span>Adversarial | Actively works against</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
