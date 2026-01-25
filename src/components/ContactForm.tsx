@@ -212,6 +212,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [headshotFileName, setHeadshotFileName] = useState('');
   const [headshotError, setHeadshotError] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Primary Diageo Relationship Owner(s) state - Default to empty string (Not Assigned)
   const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
@@ -680,6 +682,70 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setFormData(prev => ({
       ...prev,
       uploadedNotes: prev.uploadedNotes.filter(note => note.id !== noteId)
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const note = {
+          id: Date.now().toString() + Math.random(),
+          content: `Uploaded file: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`,
+          timestamp: new Date().toISOString(),
+          type: 'file' as const,
+          fileName: file.name,
+          fileData: e.target?.result as string,
+          fileType: file.type
+        };
+        setFormData(prev => ({
+          ...prev,
+          uploadedNotes: [...prev.uploadedNotes, note]
+        }));
+      };
+      reader.onerror = () => {
+        alert(`Failed to read file: ${file.name}`);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    handleFileUpload(files);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileUpload(e.target.files);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
     }));
   };
 
@@ -1879,15 +1945,33 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           <SelectTrigger className={cn("h-9 text-xs", !(role in supportRoles) && "opacity-50")}>
                             <SelectValue placeholder="Cadence..." />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="clear" className="text-gray-500 italic text-xs">Clear</SelectItem>
-                            {CADENCE_OPTIONS.map((option) => (
-                              <SelectItem key={option} value={option} className="text-xs">
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileInputChange}
+              className="hidden"
+              accept="*/*"
+            />
+            <div 
+              className={cn(
+                "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
+                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+              )}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleUploadClick}
+            >
+              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">
+                Drag and drop files here or click to upload
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Supports documents, images, and other files
+              </p>
+            </div>
                       </div>
                       <div className="col-span-4">
                         <Input
