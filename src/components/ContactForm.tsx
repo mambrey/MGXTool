@@ -1220,7 +1220,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value === 'clear' ? '' : value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select support style..." />
+                  <SelectValue placeholder="Select advocacy style..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
