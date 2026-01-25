@@ -1216,16 +1216,16 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             </Select>
           </div>
           <div>
-            <Label htmlFor="footprint" className="text-sm font-medium">Channel Mapping</Label>
+            <Label htmlFor="footprint" className="text-sm font-medium">Geographic Scope</Label>
             <Select value={formData.footprint || ''} onValueChange={(value) => updateField('footprint', value === 'clear' ? '' : value)}>
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select channel mapping" />
+                <SelectValue placeholder="Select geographic scope" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                <SelectItem value="National Retailer">National Retailer</SelectItem>
-                <SelectItem value="Regional Retailer">Regional Retailer</SelectItem>
-                <SelectItem value="Single State Retailer">Single State Retailer</SelectItem>
+                <SelectItem value="National">National Retailer</SelectItem>
+                <SelectItem value="Regional">Regional Retailer</SelectItem>
+                <SelectItem value="Single State">Single State Retailer</SelectItem>
               </SelectContent>
             </Select>
           </div>

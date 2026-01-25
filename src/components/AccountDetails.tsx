@@ -551,7 +551,7 @@ export default function AccountDetails({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <InfoItem label="Channel" value={account.channel} />
                           <InfoItem label="Sub-Channel" value={account.subChannel} />
-                          <InfoItem label="Channel Mapping" value={account.footprint} />
+                          <InfoItem label="Geographic Scope" value={account.footprint} />
                           <InfoItem label="Operating States" value={Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates} />
                           {renderSpiritsOutletsByState()}
                           <InfoItem label="Full Proof Outlets" value={account.fullProofOutlets} />

@@ -104,7 +104,7 @@ export default function BannerBuyingOfficeDetails({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <InfoItem label="Banner/Buying Office Name" value={banner.accountName} icon={Building} />
                       <InfoItem label="Channel" value={banner.channel} />
-                      <InfoItem label="Channel Mapping" value={banner.footprint} />
+                      <InfoItem label="Geographic Scope" value={banner.footprint} />
                       <InfoItem label="Operating States" value={Array.isArray(banner.operatingStates) ? `${banner.operatingStates.join(', ')} (${banner.operatingStates.length} states)` : banner.operatingStates} />
                       <InfoItem label="All Spirits Outlets" value={banner.allSpiritsOutlets} />
                       <InfoItem label="Full Proof Outlets" value={banner.fullProofOutlets} />
@@ -511,7 +511,7 @@ export default function BannerBuyingOfficeDetails({
 
                   {banner.footprint && (
                     <div>
-                      <label className="font-medium text-gray-600">Channel Mapping</label>
+                      <label className="font-medium text-gray-600">Geographic Scope</label>
                       <p className="text-gray-900 mt-1">{banner.footprint}</p>
                     </div>
                   )}
