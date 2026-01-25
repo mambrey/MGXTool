@@ -1670,6 +1670,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <SelectContent>
                   <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="Yes with Restrictions">Yes with Restrictions</SelectItem>
                   <SelectItem value="No">No</SelectItem>
                 </SelectContent>
               </Select>
