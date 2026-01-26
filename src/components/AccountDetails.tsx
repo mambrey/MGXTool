@@ -580,7 +580,7 @@ export default function AccountDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Collapsible Sections */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'jbp', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'jbp', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
+          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
             
             {/* Customer Overview */}
             <AccordionItem value="overview">
@@ -891,7 +891,64 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* JBP Information - NEW SEPARATE SECTION */}
+            {/* Planogram Information - NEW SEPARATE SECTION */}
+            <AccordionItem value="planogram">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Planogram Information
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InfoItem label="Has Planogram" value={account.hasPlanograms ? 'Yes' : 'No'} />
+                        <InfoItem label="Planogram Written By" value={account.planogramWrittenBy} />
+                      </div>
+
+                      {account.hasPlanograms && (
+                        <>
+                          <Separator />
+                          <div>
+                            <h4 className="font-semibold mb-3 text-sm text-gray-700">Reset Information</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <InfoItem label="Affected Categories" value={Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : account.affectedCategories} />
+                              <InfoItem label="Reset Frequency" value={account.resetFrequency} />
+                              <InfoItem label="Reset Window Lead Time" value={account.resetWindowLeadTime} />
+                              <InfoItem label="Different Reset Windows per Category" value={account.hasDifferentResetWindows} />
+                              {account.hasDifferentResetWindows !== 'Yes' && (
+                                <InfoItem label="Reset Window Months" value={Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : account.resetWindowMonths} />
+                              )}
+                            </div>
+
+                            {/* Category-Specific Reset Windows */}
+                            {account.hasDifferentResetWindows === 'Yes' && account.categoryResetWindows && account.categoryResetWindows.length > 0 && (
+                              <div className="mt-4">
+                                <label className="text-sm font-medium text-gray-600 mb-2 block">Category-Specific Reset Windows</label>
+                                <div className="space-y-2">
+                                  {account.categoryResetWindows.map((crw, idx) => (
+                                    <div key={idx} className="p-3 bg-gray-50 rounded-lg border">
+                                      <p className="text-sm font-medium">{crw.category}</p>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        {Array.isArray(crw.months) ? crw.months.join(', ') : 'No months specified'}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* JBP Information - SEPARATE SECTION */}
             <AccordionItem value="jbp">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -974,63 +1031,6 @@ export default function AccountDetails({
                           <InfoItem label="E-commerce Partners" value={Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : account.ecommercePartners} />
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Planogram Information */}
-            <AccordionItem value="planogram">
-              <AccordionTrigger className="text-lg font-semibold">
-                <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  Planogram Information
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <InfoItem label="Has Planogram" value={account.hasPlanograms ? 'Yes' : 'No'} />
-                        <InfoItem label="Planogram Written By" value={account.planogramWrittenBy} />
-                      </div>
-
-                      {account.hasPlanograms && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h4 className="font-semibold mb-3 text-sm text-gray-700">Reset Information</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <InfoItem label="Affected Categories" value={Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : account.affectedCategories} />
-                              <InfoItem label="Reset Frequency" value={account.resetFrequency} />
-                              <InfoItem label="Reset Window Lead Time" value={account.resetWindowLeadTime} />
-                              <InfoItem label="Different Reset Windows per Category" value={account.hasDifferentResetWindows} />
-                              {account.hasDifferentResetWindows !== 'Yes' && (
-                                <InfoItem label="Reset Window Months" value={Array.isArray(account.resetWindowMonths) ? account.resetWindowMonths.join(', ') : account.resetWindowMonths} />
-                              )}
-                            </div>
-
-                            {/* Category-Specific Reset Windows */}
-                            {account.hasDifferentResetWindows === 'Yes' && account.categoryResetWindows && account.categoryResetWindows.length > 0 && (
-                              <div className="mt-4">
-                                <label className="text-sm font-medium text-gray-600 mb-2 block">Category-Specific Reset Windows</label>
-                                <div className="space-y-2">
-                                  {account.categoryResetWindows.map((crw, idx) => (
-                                    <div key={idx} className="p-3 bg-gray-50 rounded-lg border">
-                                      <p className="text-sm font-medium">{crw.category}</p>
-                                      <p className="text-sm text-gray-600 mt-1">
-                                        {Array.isArray(crw.months) ? crw.months.join(', ') : 'No months specified'}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
