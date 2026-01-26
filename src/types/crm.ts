@@ -58,6 +58,8 @@ export interface BannerBuyingOffice {
   affectedCategories: string[];
   hasDifferentResetWindows: string;
   categoryResetWindows: CategoryResetWindow[];
+  allowsWetSampling?: string; // NEW: Allows Wet Sampling dropdown
+  innovationLeadTime?: string; // NEW: Innovation Lead Time dropdown
   // Additional Information fields
   strategicPriorities: string;
   keyCompetitors: string;
@@ -137,6 +139,8 @@ export interface Account {
   fulfillmentTypes?: string[]; // UPDATED: Changed to array for multi-select dropdown
   allSpiritsOutlets?: string; // UPDATED: Changed from spiritsOutlets to allSpiritsOutlets
   fullProofOutlets?: string; // NEW: Full proof outlets field
+  allowsWetSampling?: string; // NEW: Allows Wet Sampling dropdown
+  innovationLeadTime?: string; // NEW: Innovation Lead Time dropdown
   // Reset window fields
   resetWindowQ1?: string;
   resetWindowQ2?: string;

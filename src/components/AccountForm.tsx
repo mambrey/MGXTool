@@ -81,6 +81,8 @@ interface BannerBuyingOffice {
   affectedCategories: string[];
   hasDifferentResetWindows: string;
   categoryResetWindows: CategoryResetWindow[];
+  allowsWetSampling?: string;
+  innovationLeadTime?: string;
   // Additional Information fields
   strategicPriorities: string;
   keyCompetitors: string;
@@ -229,6 +231,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     designatedCharities: '',
     keyEvents: '',
     customerEvents: [],
+    allowsWetSampling: '',
+    innovationLeadTime: '',
     // HQ Level of Influence fields - default to 'none'
     influenceAssortmentShelf: 'none',
     influencePricePromo: 'none',
@@ -444,6 +448,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       affectedCategories: [],
       hasDifferentResetWindows: '',
       categoryResetWindows: [],
+      allowsWetSampling: '',
+      innovationLeadTime: '',
       // Additional Information defaults
       strategicPriorities: '',
       keyCompetitors: '',
@@ -1868,6 +1874,46 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               onCheckedChange={(checked) => updateField('hasPlanograms', checked as boolean)}
             />
             <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram</Label>
+          </div>
+
+          {/* NEW: Allows Wet Sampling Dropdown */}
+          <div>
+            <Label className="text-xs font-medium">Allows Wet Sampling</Label>
+            <Select 
+              value={formData.allowsWetSampling || ''} 
+              onValueChange={(value) => updateField('allowsWetSampling', value === 'clear' ? '' : value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select wet sampling policy" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                <SelectItem value="No">No</SelectItem>
+                <SelectItem value="Yes Everywhere">Yes Everywhere</SelectItem>
+                <SelectItem value="Yes State Dependent">Yes State Dependent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* NEW: Innovation Lead Time Dropdown */}
+          <div>
+            <Label className="text-xs font-medium">Innovation Lead Time</Label>
+            <Select 
+              value={formData.innovationLeadTime || ''} 
+              onValueChange={(value) => updateField('innovationLeadTime', value === 'clear' ? '' : value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select innovation lead time" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                <SelectItem value="In-Market Ready">In-Market Ready</SelectItem>
+                <SelectItem value="<3 Months">&lt;3 Months</SelectItem>
+                <SelectItem value="3–6 Months">3–6 Months</SelectItem>
+                <SelectItem value="6–12 Months">6–12 Months</SelectItem>
+                <SelectItem value="12+ Months">12+ Months</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {formData.hasPlanograms && (
