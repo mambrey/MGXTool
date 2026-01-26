@@ -1948,7 +1948,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                               {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), 'MMM d, yyyy') : 'Pick date'}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent className="w-[280px] p-0" align="start">
                             <Calendar
                               mode="single"
                               selected={salesLastCheckIn[role] ? new Date(salesLastCheckIn[role]) : undefined}
@@ -2035,7 +2035,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                               {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), 'MMM d, yyyy') : 'Pick date'}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent className="w-[280px] p-0" align="start">
                             <Calendar
                               mode="single"
                               selected={supportLastCheckIn[role] ? new Date(supportLastCheckIn[role]) : undefined}
