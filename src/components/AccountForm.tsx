@@ -45,6 +45,7 @@ interface BannerBuyingOffice {
   address: string;
   website: string;
   channel: string;
+  subChannel: string; // UPDATED: Added subChannel field
   footprint: string;
   operatingStates: string[];
   allSpiritsOutlets: string;
@@ -412,6 +413,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       address: '',
       website: '',
       channel: '',
+      subChannel: '', // UPDATED: Added subChannel field
       footprint: '',
       operatingStates: [],
       allSpiritsOutlets: '',
@@ -1202,6 +1204,21 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             <Select value={formData.channel || ''} onValueChange={(value) => updateField('channel', value === 'clear' ? '' : value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select channel" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                <SelectItem value="Off">Off</SelectItem>
+                <SelectItem value="On">On</SelectItem>
+                <SelectItem value="Ecommerce">Ecommerce</SelectItem>
+                <SelectItem value="Third Party platform">Third Party platform</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="subChannel" className="text-sm font-medium">Sub Channel</Label>
+            <Select value={formData.subChannel || ''} onValueChange={(value) => updateField('subChannel', value === 'clear' ? '' : value)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select sub channel" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
@@ -2359,8 +2376,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                               <p className="font-semibold text-gray-900">
                                 {banner.accountName || `Banner/Buying Office #${index + 1}`}
                               </p>
-                              {banner.channel && (
-                                <p className="text-sm text-gray-600">{banner.channel}</p>
+                              {banner.subChannel && (
+                                <p className="text-sm text-gray-600">{banner.subChannel}</p>
                               )}
                             </div>
                           </div>

@@ -19,6 +19,7 @@ export interface BannerBuyingOffice {
   address: string;
   website: string;
   channel: string;
+  subChannel: string; // UPDATED: Renamed from channel
   footprint: string;
   operatingStates: string[];
   spiritsOutletsByState?: { state: string; outletCount: string }[];
@@ -82,7 +83,8 @@ export interface Account {
   phone?: string;
   email?: string;
   description?: string;
-  channel?: string;
+  channel?: string; // NEW: Channel field (Off, On, Ecommerce, Third Party platform)
+  subChannel?: string; // UPDATED: Renamed from channel
   footprint?: string;
   operatingStates?: string[]; // Change to array
   spiritsOutletsByState?: { state: string; outletCount: string }[]; // NEW: State-specific outlet counts
