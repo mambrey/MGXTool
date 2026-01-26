@@ -30,7 +30,7 @@ interface AccountDetailsProps {
 // Extended CustomerEvent interface with alert functionality
 interface CustomerEventWithAlert extends CustomerEvent {
   alertEnabled?: boolean;
-  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  alertOptions?: (string)[];
 }
 
 // Helper function to get Support Style color matching ContactForm
@@ -144,18 +144,40 @@ const getPreferredContactInfo = (contact: Contact): {
   }
 };
 
+// Helper function to format JBP alert options
+const formatJBPAlertOptions = (options?: string[]) => {
+  if (!options || options.length === 0) return 'None';
+  return options.map(opt => {
+    if (opt === '30_days_before') return '30 Days Before';
+    if (opt === '7_days_before') return '7 Days Before';
+    if (opt === '1_day_before') return '1 Day Before';
+    if (opt.startsWith('custom_')) {
+      const days = opt.replace('custom_', '');
+      return `${days} Days Before`;
+    }
+    return opt;
+  }).join(', ');
+};
 
-  const formatAlertOptions = (options?: ('same_day' | 'day_before' | 'week_before')[]) => {
-    if (!options || options.length === 0) return 'None';
-    return options.map(opt => {
-      switch (opt) {
-        case 'same_day': return 'Same Day';
-        case 'day_before': return 'One Day Before';
-        case 'week_before': return 'One Week Before';
-        default: return opt;
-      }
-    }).join(', ');
-  };
+const formatAlertOptions = (options?: string[]) => {
+  if (!options || options.length === 0) return 'None';
+  return options.map(opt => {
+    if (opt === '30_days_before') return '30 Days Before';
+    if (opt === '7_days_before') return '7 Days Before';
+    if (opt === '1_day_before') return '1 Day Before';
+    if (opt.startsWith('custom_')) {
+      const days = opt.replace('custom_', '');
+      return `${days} Days Before`;
+    }
+    // Legacy format support
+    switch (opt) {
+      case 'same_day': return 'Same Day';
+      case 'day_before': return 'One Day Before';
+      case 'week_before': return 'One Week Before';
+      default: return opt;
+    }
+  }).join(', ');
+};
 
 export default function AccountDetails({ 
   account, 
@@ -191,7 +213,7 @@ export default function AccountDetails({
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
-  const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
+  const [newEventAlertOptions, setNewEventAlertOptions] = useState<string[]>([]);
   const [expandAll, setExpandAll] = useState(false);
   const [newEventAlertDays, setNewEventAlertDays] = useState(7);
 
@@ -230,6 +252,17 @@ export default function AccountDetails({
     const num = parseFloat(value);
     if (isNaN(num)) return 'N/A';
     return `$${num.toFixed(2)}`;
+  };
+
+  // Helper function to format date for display
+  const formatDateForDisplay = (dateString: string | undefined) => {
+    if (!dateString) return 'Not set';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return dateString;
+    }
   };
 
   // Tasks state - empty by default, tasks only appear when user adds them
@@ -405,7 +438,7 @@ export default function AccountDetails({
       bannerName?: string;
       alertEnabled?: boolean;
       alertDays?: number;
-      alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+      alertOptions?: string[];
     }> = [];
 
     // Add account-level JBP dates
@@ -427,7 +460,7 @@ export default function AccountDetails({
           date: account.nextJBPDate,
           source: 'account',
           alertEnabled: account.nextJBPAlert || false,
-          alertDays: account.nextJBPAlertDays || 7
+          alertOptions: account.nextJBPAlertOptions || []
         });
       }
     }
@@ -455,7 +488,7 @@ export default function AccountDetails({
               source: 'banner',
               bannerName: banner.accountName || `Banner/Buying Office #${index + 1}`,
               alertEnabled: banner.nextJBPAlert || false,
-              alertDays: banner.nextJBPAlertDays || 7
+              alertOptions: banner.nextJBPAlertOptions || []
             });
           }
         }
@@ -870,15 +903,38 @@ export default function AccountDetails({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      {/* JBP Information */}
+                      {/* JBP Information - UPDATED SECTION */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <InfoItem label="JBP Customer" value={account.isJBP ? 'Yes' : 'No'} />
                           {account.isJBP && (
                             <>
-                              <InfoItem label="Last JBP" value={account.lastJBPDate} />
-                              <InfoItem label="Next JBP" value={account.nextJBPDate} />
+                              <InfoItem label="Last JBP" value={formatDateForDisplay(account.lastJBPDate)} />
+                              <InfoItem label="Next JBP" value={formatDateForDisplay(account.nextJBPDate)} />
+                              {account.nextJBPDate && (
+                                <>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                      <Bell className="w-4 h-4" />
+                                      Alert Status
+                                    </label>
+                                    <p className="text-base mt-1">
+                                      {account.nextJBPAlert ? (
+                                        <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                                      ) : (
+                                        <Badge variant="outline" className="text-gray-600">Disabled</Badge>
+                                      )}
+                                    </p>
+                                  </div>
+                                  {account.nextJBPAlert && account.nextJBPAlertOptions && account.nextJBPAlertOptions.length > 0 && (
+                                    <div>
+                                      <label className="text-sm font-medium text-gray-600">Alert Options</label>
+                                      <p className="text-base mt-1">{formatJBPAlertOptions(account.nextJBPAlertOptions)}</p>
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </>
                           )}
                         </div>
