@@ -30,7 +30,7 @@ interface ContactFormProps {
 // Extended event interface with alert functionality
 interface ContactEventWithAlert extends CustomerEvent {
   alertEnabled?: boolean;
-  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  alertOptions?: string[];
 }
 
 // Category options for segment ownership - REORDERED Non-Alc below Whiskey Other
@@ -203,7 +203,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
-  const [newEventAlertOptions, setNewEventAlertOptions] = useState<('same_day' | 'day_before' | 'week_before')[]>([]);
+  const [newEventAlertOptions, setNewEventAlertOptions] = useState<string[]>([]);
+
+  // State for custom alert days
+  const [birthdayCustomDays, setBirthdayCustomDays] = useState<string>('');
+  const [nextContactCustomDays, setNextContactCustomDays] = useState<string>('');
+  const [newEventCustomDays, setNewEventCustomDays] = useState<string>('');
+  const [eventCustomDays, setEventCustomDays] = useState<{[key: string]: string}>({});
 
   const [newNote, setNewNote] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -269,8 +275,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     }
   };
 
-  // Helper function to toggle alert options
-  const handleToggleBirthdayAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+  // Helper function to toggle alert options - UPDATED FOR NEW ALERT SYSTEM
+  const handleToggleBirthdayAlertOption = (option: string) => {
     setFormData(prev => {
       const currentOptions = prev.birthdayAlertOptions || [];
       const newOptions = currentOptions.includes(option)
@@ -280,7 +286,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     });
   };
 
-  const handleToggleNextContactAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+  const handleToggleNextContactAlertOption = (option: string) => {
     setFormData(prev => {
       const currentOptions = prev.nextContactAlertOptions || [];
       const newOptions = currentOptions.includes(option)
@@ -290,7 +296,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     });
   };
 
-  const handleToggleNewEventAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+  const handleToggleNewEventAlertOption = (option: string) => {
     setNewEventAlertOptions(prev => {
       return prev.includes(option)
         ? prev.filter(o => o !== option)
@@ -298,12 +304,80 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     });
   };
 
-  const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before') => {
-    switch (option) {
-      case 'same_day': return 'Same Day';
-      case 'day_before': return 'One Day Before';
-      case 'week_before': return 'One Week Before';
+  // Custom days handlers
+  const handleBirthdayCustomDaysChange = (value: string) => {
+    setBirthdayCustomDays(value);
+    const currentOptions = formData.birthdayAlertOptions || [];
+    const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      setFormData(prev => ({ ...prev, birthdayAlertOptions: [...filteredOptions, customOption] }));
+    } else {
+      setFormData(prev => ({ ...prev, birthdayAlertOptions: filteredOptions }));
     }
+  };
+
+  const handleNextContactCustomDaysChange = (value: string) => {
+    setNextContactCustomDays(value);
+    const currentOptions = formData.nextContactAlertOptions || [];
+    const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      setFormData(prev => ({ ...prev, nextContactAlertOptions: [...filteredOptions, customOption] }));
+    } else {
+      setFormData(prev => ({ ...prev, nextContactAlertOptions: filteredOptions }));
+    }
+  };
+
+  const handleNewEventCustomDaysChange = (value: string) => {
+    setNewEventCustomDays(value);
+    const filteredOptions = newEventAlertOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      setNewEventAlertOptions([...filteredOptions, customOption]);
+    } else {
+      setNewEventAlertOptions(filteredOptions);
+    }
+  };
+
+  const handleEventCustomDaysChange = (eventId: string, value: string) => {
+    setEventCustomDays(prev => ({ ...prev, [eventId]: value }));
+    
+    setContactEvents(contactEvents.map(event => {
+      if (event.id === eventId) {
+        const currentOptions = event.alertOptions || [];
+        const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+        
+        if (value && parseInt(value) > 0) {
+          const customOption = `custom_${value}`;
+          return { ...event, alertOptions: [...filteredOptions, customOption] };
+        }
+        return { ...event, alertOptions: filteredOptions };
+      }
+      return event;
+    }));
+  };
+
+  const getAlertOptionLabel = (option: string): string => {
+    if (option === '30_days_before') return '30 Days Before';
+    if (option === '7_days_before') return '7 Days Before';
+    if (option === '1_day_before') return '1 Day Before';
+    if (option.startsWith('custom_')) {
+      const days = option.replace('custom_', '');
+      return `${days} Days Before`;
+    }
+    return option;
+  };
+
+  const isBirthdayCustomChecked = (formData.birthdayAlertOptions || []).some(opt => opt.startsWith('custom_'));
+  const isNextContactCustomChecked = (formData.nextContactAlertOptions || []).some(opt => opt.startsWith('custom_'));
+  const isNewEventCustomChecked = newEventAlertOptions.some(opt => opt.startsWith('custom_'));
+  
+  const getEventCustomChecked = (event: ContactEventWithAlert) => {
+    return (event.alertOptions || []).some(opt => opt.startsWith('custom_'));
   };
 
   useEffect(() => {
@@ -547,6 +621,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setNewEventDate('');
     setNewEventAlertEnabled(false);
     setNewEventAlertOptions([]);
+    setNewEventCustomDays('');
     setIsAddEventDialogOpen(false);
   };
 
@@ -564,15 +639,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     ));
   };
 
-  const handleUpdateEventAlertOptions = (eventId: string, options: ('same_day' | 'day_before' | 'week_before')[]) => {
-    setContactEvents(contactEvents.map(event => 
-      event.id === eventId 
-        ? { ...event, alertOptions: options }
-        : event
-    ));
-  };
-  
-  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
+  const handleToggleEventAlertOption = (eventId: string, option: string) => {
     setContactEvents(contactEvents.map(event => {
       if (event.id === eventId) {
         const currentOptions = event.alertOptions || [];
@@ -1421,26 +1488,67 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </div>
                   
                   {formData.birthdayAlert && (
-                    <div className="space-y-3 pl-6">
+                    <div className="space-y-2 pl-6">
                       <Label className="text-sm text-gray-600">
                         Alert me:
                       </Label>
                       <div className="space-y-2">
-                        {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`birthday-${option}`}
-                              checked={(formData.birthdayAlertOptions || []).includes(option)}
-                              onCheckedChange={() => handleToggleBirthdayAlertOption(option)}
-                            />
-                            <Label
-                              htmlFor={`birthday-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {getAlertOptionLabel(option)}
-                            </Label>
-                          </div>
-                        ))}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-30-days"
+                            checked={(formData.birthdayAlertOptions || []).includes('30_days_before')}
+                            onCheckedChange={() => handleToggleBirthdayAlertOption('30_days_before')}
+                          />
+                          <Label htmlFor="birthday-30-days" className="text-sm font-normal cursor-pointer">
+                            30 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-7-days"
+                            checked={(formData.birthdayAlertOptions || []).includes('7_days_before')}
+                            onCheckedChange={() => handleToggleBirthdayAlertOption('7_days_before')}
+                          />
+                          <Label htmlFor="birthday-7-days" className="text-sm font-normal cursor-pointer">
+                            7 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-1-day"
+                            checked={(formData.birthdayAlertOptions || []).includes('1_day_before')}
+                            onCheckedChange={() => handleToggleBirthdayAlertOption('1_day_before')}
+                          />
+                          <Label htmlFor="birthday-1-day" className="text-sm font-normal cursor-pointer">
+                            1 Day Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-custom"
+                            checked={isBirthdayCustomChecked}
+                            onCheckedChange={(checked) => {
+                              if (!checked) {
+                                setBirthdayCustomDays('');
+                                const filteredOptions = (formData.birthdayAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                setFormData(prev => ({ ...prev, birthdayAlertOptions: filteredOptions }));
+                              }
+                            }}
+                          />
+                          <Label htmlFor="birthday-custom" className="text-sm font-normal cursor-pointer">
+                            Custom:
+                          </Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="days"
+                            value={birthdayCustomDays}
+                            onChange={(e) => handleBirthdayCustomDaysChange(e.target.value)}
+                            className="w-20 h-7 text-xs"
+                            disabled={!isBirthdayCustomChecked}
+                          />
+                          <span className="text-sm text-gray-600">days before</span>
+                        </div>
                       </div>
                       {(formData.birthdayAlertOptions || []).length > 0 && (
                         <p className="text-xs text-gray-500">
@@ -1477,26 +1585,67 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </div>
                   
                   {formData.nextContactAlert && (
-                    <div className="space-y-3 pl-6">
+                    <div className="space-y-2 pl-6">
                       <Label className="text-sm text-gray-600">
                         Alert me:
                       </Label>
                       <div className="space-y-2">
-                        {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`next-contact-${option}`}
-                              checked={(formData.nextContactAlertOptions || []).includes(option)}
-                              onCheckedChange={() => handleToggleNextContactAlertOption(option)}
-                            />
-                            <Label
-                              htmlFor={`next-contact-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {getAlertOptionLabel(option)}
-                            </Label>
-                          </div>
-                        ))}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-30-days"
+                            checked={(formData.nextContactAlertOptions || []).includes('30_days_before')}
+                            onCheckedChange={() => handleToggleNextContactAlertOption('30_days_before')}
+                          />
+                          <Label htmlFor="next-contact-30-days" className="text-sm font-normal cursor-pointer">
+                            30 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-7-days"
+                            checked={(formData.nextContactAlertOptions || []).includes('7_days_before')}
+                            onCheckedChange={() => handleToggleNextContactAlertOption('7_days_before')}
+                          />
+                          <Label htmlFor="next-contact-7-days" className="text-sm font-normal cursor-pointer">
+                            7 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-1-day"
+                            checked={(formData.nextContactAlertOptions || []).includes('1_day_before')}
+                            onCheckedChange={() => handleToggleNextContactAlertOption('1_day_before')}
+                          />
+                          <Label htmlFor="next-contact-1-day" className="text-sm font-normal cursor-pointer">
+                            1 Day Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-custom"
+                            checked={isNextContactCustomChecked}
+                            onCheckedChange={(checked) => {
+                              if (!checked) {
+                                setNextContactCustomDays('');
+                                const filteredOptions = (formData.nextContactAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                setFormData(prev => ({ ...prev, nextContactAlertOptions: filteredOptions }));
+                              }
+                            }}
+                          />
+                          <Label htmlFor="next-contact-custom" className="text-sm font-normal cursor-pointer">
+                            Custom:
+                          </Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="days"
+                            value={nextContactCustomDays}
+                            onChange={(e) => handleNextContactCustomDaysChange(e.target.value)}
+                            className="w-20 h-7 text-xs"
+                            disabled={!isNextContactCustomChecked}
+                          />
+                          <span className="text-sm text-gray-600">days before</span>
+                        </div>
                       </div>
                       {(formData.nextContactAlertOptions || []).length > 0 && (
                         <p className="text-xs text-gray-500">
@@ -1529,9 +1678,13 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       {contactEvents.map((event) => {
                         const daysUntil = getDaysUntilEvent(event.date);
                         const isUpcoming = daysUntil >= 0 && (event.alertOptions || []).some(opt => {
-                          if (opt === 'same_day') return daysUntil === 0;
-                          if (opt === 'day_before') return daysUntil <= 1;
-                          if (opt === 'week_before') return daysUntil <= 7;
+                          if (opt === '30_days_before') return daysUntil <= 30;
+                          if (opt === '7_days_before') return daysUntil <= 7;
+                          if (opt === '1_day_before') return daysUntil <= 1;
+                          if (opt.startsWith('custom_')) {
+                            const customDays = parseInt(opt.replace('custom_', ''));
+                            return daysUntil <= customDays;
+                          }
                           return false;
                         });
                         
@@ -1592,22 +1745,81 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                       Alert me:
                                     </Label>
                                     <div className="space-y-1.5">
-                                      {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                                        <div key={option} className="flex items-center space-x-2">
-                                          <Checkbox
-                                            id={`event-${event.id}-${option}`}
-                                            checked={(event.alertOptions || []).includes(option)}
-                                            onCheckedChange={() => handleToggleEventAlertOption(event.id, option)}
-                                            className="h-3 w-3"
-                                          />
-                                          <Label
-                                            htmlFor={`event-${event.id}-${option}`}
-                                            className="text-xs font-normal cursor-pointer"
-                                          >
-                                            {getAlertOptionLabel(option)}
-                                          </Label>
-                                        </div>
-                                      ))}
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-30-days`}
+                                          checked={(event.alertOptions || []).includes('30_days_before')}
+                                          onCheckedChange={() => handleToggleEventAlertOption(event.id, '30_days_before')}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label
+                                          htmlFor={`event-${event.id}-30-days`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          30 Days Before
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-7-days`}
+                                          checked={(event.alertOptions || []).includes('7_days_before')}
+                                          onCheckedChange={() => handleToggleEventAlertOption(event.id, '7_days_before')}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label
+                                          htmlFor={`event-${event.id}-7-days`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          7 Days Before
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-1-day`}
+                                          checked={(event.alertOptions || []).includes('1_day_before')}
+                                          onCheckedChange={() => handleToggleEventAlertOption(event.id, '1_day_before')}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label
+                                          htmlFor={`event-${event.id}-1-day`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          1 Day Before
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-custom`}
+                                          checked={getEventCustomChecked(event)}
+                                          onCheckedChange={(checked) => {
+                                            if (!checked) {
+                                              setEventCustomDays(prev => {
+                                                const newState = { ...prev };
+                                                delete newState[event.id];
+                                                return newState;
+                                              });
+                                              const filteredOptions = (event.alertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                              setContactEvents(contactEvents.map(e => 
+                                                e.id === event.id ? { ...e, alertOptions: filteredOptions } : e
+                                              ));
+                                            }
+                                          }}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label htmlFor={`event-${event.id}-custom`} className="text-xs font-normal cursor-pointer">
+                                          Custom:
+                                        </Label>
+                                        <Input
+                                          type="number"
+                                          min="1"
+                                          placeholder="days"
+                                          value={eventCustomDays[event.id] || ''}
+                                          onChange={(e) => handleEventCustomDaysChange(event.id, e.target.value)}
+                                          className="w-16 h-6 text-xs"
+                                          disabled={!getEventCustomChecked(event)}
+                                        />
+                                        <span className="text-xs text-gray-600">days before</span>
+                                      </div>
                                     </div>
                                     {isUpcoming && (event.alertOptions || []).length > 0 && (
                                       <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
@@ -2132,26 +2344,67 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               </div>
 
               {newEventAlertEnabled && (
-                <div className="space-y-3 pl-6 pt-2">
+                <div className="space-y-2 pl-6 pt-2">
                   <Label className="text-sm">
                     Alert me:
                   </Label>
                   <div className="space-y-2">
-                    {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                      <div key={option} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`new-event-${option}`}
-                          checked={newEventAlertOptions.includes(option)}
-                          onCheckedChange={() => handleToggleNewEventAlertOption(option)}
-                        />
-                        <Label
-                          htmlFor={`new-event-${option}`}
-                          className="text-sm font-normal cursor-pointer"
-                        >
-                          {getAlertOptionLabel(option)}
-                        </Label>
-                      </div>
-                    ))}
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-30-days"
+                        checked={newEventAlertOptions.includes('30_days_before')}
+                        onCheckedChange={() => handleToggleNewEventAlertOption('30_days_before')}
+                      />
+                      <Label htmlFor="new-event-30-days" className="text-sm font-normal cursor-pointer">
+                        30 Days Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-7-days"
+                        checked={newEventAlertOptions.includes('7_days_before')}
+                        onCheckedChange={() => handleToggleNewEventAlertOption('7_days_before')}
+                      />
+                      <Label htmlFor="new-event-7-days" className="text-sm font-normal cursor-pointer">
+                        7 Days Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-1-day"
+                        checked={newEventAlertOptions.includes('1_day_before')}
+                        onCheckedChange={() => handleToggleNewEventAlertOption('1_day_before')}
+                      />
+                      <Label htmlFor="new-event-1-day" className="text-sm font-normal cursor-pointer">
+                        1 Day Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-custom"
+                        checked={isNewEventCustomChecked}
+                        onCheckedChange={(checked) => {
+                          if (!checked) {
+                            setNewEventCustomDays('');
+                            const filteredOptions = newEventAlertOptions.filter(opt => !opt.startsWith('custom_'));
+                            setNewEventAlertOptions(filteredOptions);
+                          }
+                        }}
+                      />
+                      <Label htmlFor="new-event-custom" className="text-sm font-normal cursor-pointer">
+                        Custom:
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="days"
+                        value={newEventCustomDays}
+                        onChange={(e) => handleNewEventCustomDaysChange(e.target.value)}
+                        className="w-20 h-7 text-xs"
+                        disabled={!isNewEventCustomChecked}
+                      />
+                      <span className="text-sm text-gray-600">days before</span>
+                    </div>
                   </div>
                   {newEventAlertOptions.length > 0 && (
                     <p className="text-xs text-gray-500">
@@ -2169,6 +2422,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               setNewEventDate('');
               setNewEventAlertEnabled(false);
               setNewEventAlertOptions([]);
+              setNewEventCustomDays('');
             }}>
               Cancel
             </Button>
