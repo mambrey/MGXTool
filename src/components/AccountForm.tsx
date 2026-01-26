@@ -1647,16 +1647,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 />
                 <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram</Label>
               </div>
-
-              {/* JBP Customer */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isJBP"
-                  checked={formData.isJBP}
-                  onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
-                />
-                <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
-              </div>
             </div>
           </div>
 
@@ -1986,15 +1976,27 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* NEW JBP SECTION - Between Strategy and Additional Information */}
-      {formData.isJBP && (
-        <Card>
-          <CardHeader>
+      {/* JBP SECTION - Now with checkbox in header */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
               JBP (Joint Business Plan)
             </CardTitle>
-          </CardHeader>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isJBP"
+                checked={formData.isJBP}
+                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
+              />
+              <Label htmlFor="isJBP" className="text-sm font-medium cursor-pointer">
+                JBP Customer
+              </Label>
+            </div>
+          </div>
+        </CardHeader>
+        {formData.isJBP && (
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -2192,8 +2194,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           </CardContent>
-        </Card>
-      )}
+        )}
+      </Card>
 
       <Card>
         <CardHeader>
