@@ -1,14 +1,14 @@
-import { useState, useCallback } from 'react';
-import { fetchMarketDataFromCSV, type MarketData } from '@/services/csv-market-data';
+import { useState } from 'react';
+import { marketDataService, type MarketSnapshot } from '@/services/market-data';
 
 export function useMarketData() {
-  const [marketData, setMarketData] = useState<MarketData | null>(null);
+  const [marketData, setMarketData] = useState<MarketSnapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMarketData = useCallback(async (tickerSymbol: string) => {
-    if (!tickerSymbol || tickerSymbol.trim() === '') {
-      setError('Please enter a ticker symbol');
+  const fetchMarketData = async (symbol: string) => {
+    if (!symbol || symbol.trim() === '') {
+      setError('Please provide a valid ticker symbol');
       return;
     }
 
@@ -16,28 +16,29 @@ export function useMarketData() {
     setError(null);
 
     try {
-      const data = await fetchMarketDataFromCSV(tickerSymbol);
+      const data = await marketDataService.getMarketSnapshot(symbol.trim().toUpperCase());
       
       if (data) {
         setMarketData(data);
         setError(null);
       } else {
+        setError(`No market data found for symbol: ${symbol}`);
         setMarketData(null);
-        setError(`No market data found for ticker symbol: ${tickerSymbol}`);
       }
     } catch (err) {
-      console.error('Error fetching market data:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch market data';
+      setError(errorMessage);
       setMarketData(null);
-      setError(err instanceof Error ? err.message : 'Failed to fetch market data');
+      console.error('Error in useMarketData:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const clearMarketData = useCallback(() => {
+  const clearMarketData = () => {
     setMarketData(null);
     setError(null);
-  }, []);
+  };
 
   return {
     marketData,
