@@ -48,6 +48,26 @@ const getSupportStyleLabel = (status: string) => {
   return status.split(' ')[0]; // Get first word only (Promoter, Supporter, Neutral, Detractor, Adversarial)
 };
 
+// Helper function to get Execution Reliability Score description
+const getExecutionReliabilityDescription = (score: string | undefined): string => {
+  if (!score) return '';
+  
+  switch (score) {
+    case '5':
+      return '5 – Highly Reliable: Nearly all agreed programs, displays, and resets are executed on time and in full';
+    case '4':
+      return '4 – Generally Reliable: Most programs land well with occasional gaps that are usually fixed quickly';
+    case '3':
+      return '3 – Mixed Reliability: Some things execute and some do not; performance often varies by store';
+    case '2':
+      return '2 – Low Reliability: Many commitments do not materialize or are partial with limited follow through';
+    case '1':
+      return '1 – Very Low Reliability: Execution rarely matches agreements; plans often stall or disappear';
+    default:
+      return score;
+  }
+};
+
 // Helper function to get preferred contact info based on preferredContactMethod
 const getPreferredContactInfo = (contact: Contact): { 
   value: string | undefined; 
@@ -565,7 +585,12 @@ export default function AccountDetails({
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">Execution Reliability</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="Execution Reliability Score" value={account.executionReliabilityScore} />
+                          {account.executionReliabilityScore && (
+                            <div className="md:col-span-2">
+                              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">Execution Reliability Score</label>
+                              <p className="text-base mt-1">{getExecutionReliabilityDescription(account.executionReliabilityScore)}</p>
+                            </div>
+                          )}
                           {account.executionReliabilityRationale && (
                             <div className="md:col-span-2">
                               <label className="text-sm font-medium text-gray-600">Rationale/Notes</label>
