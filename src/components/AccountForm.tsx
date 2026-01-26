@@ -198,7 +198,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     resetFrequency: '',
     resetWindowLeadTime: '',
     resetWindowMonths: [],
-    affectedCategories: [],
+    affectedCategories: [...AFFECTED_CATEGORIES],
     hasDifferentResetWindows: '',
     categoryResetWindows: [],
     spiritsOutletsByState: [],
@@ -338,9 +338,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   });
 
   const [selectedAffectedCategories, setSelectedAffectedCategories] = useState<string[]>(() => {
-    if (!formData.affectedCategories) return [];
-    if (Array.isArray(formData.affectedCategories)) return formData.affectedCategories;
-    return [];
+    if (!formData.affectedCategories) return [...AFFECTED_CATEGORIES];
+    if (Array.isArray(formData.affectedCategories)) {
+      // If editing existing account and it has categories, use those; otherwise default to all
+      return formData.affectedCategories.length > 0 ? formData.affectedCategories : [...AFFECTED_CATEGORIES];
+    }
+    return [...AFFECTED_CATEGORIES];
   });
 
   const [categoryResetWindows, setCategoryResetWindows] = useState<CategoryResetWindow[]>(() => {
@@ -394,7 +397,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       resetFrequency: '',
       resetWindowLeadTime: '',
       resetWindowMonths: [],
-      affectedCategories: [],
+      affectedCategories: [...AFFECTED_CATEGORIES],
       hasDifferentResetWindows: '',
       categoryResetWindows: [],
       allowsWetSampling: '',
