@@ -2066,7 +2066,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Label htmlFor="event-title">Event Title *</Label>
               <Input
                 id="event-title"
-                placeholder="e.g., Birthday, Anniversary, Meeting"
+                placeholder="e.g., Anniversary, Meeting, Milestone, etc."
                 value={newEventTitle}
                 onChange={(e) => setNewEventTitle(e.target.value)}
               />
