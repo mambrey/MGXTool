@@ -14,7 +14,7 @@ import { AddressMap } from '@/components/AddressMap';
 import type { Account, Contact, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
 import type { Task } from '@/types/crm-advanced';
 import { formatBirthday } from '@/lib/dateUtils';
-import { useMarketData } from '@/hooks/useMarketData';
+import { useAlphaVantage } from '@/hooks/useAlphaVantage';
 
 interface AccountDetailsProps {
   account: Account;
@@ -195,8 +195,8 @@ export default function AccountDetails({
   const [expandAll, setExpandAll] = useState(false);
   const [newEventAlertDays, setNewEventAlertDays] = useState(7);
 
-  // Market data state using IEX Cloud hook
-  const { marketData, loading: marketLoading, error: marketError, fetchMarketData } = useMarketData();
+  // Market data state using Alpha Vantage hook
+  const { marketData, loading: marketLoading, error: marketError, fetchMarketData } = useAlphaVantage();
 
   // Fetch market data when account has a ticker symbol
   useEffect(() => {
@@ -230,18 +230,6 @@ export default function AccountDetails({
     const num = parseFloat(value);
     if (isNaN(num)) return 'N/A';
     return `$${num.toFixed(2)}`;
-  };
-
-  // Helper function to format volume
-  const formatVolume = (value: string) => {
-    if (value === 'N/A') return 'N/A';
-    const num = parseFloat(value);
-    if (isNaN(num)) return 'N/A';
-    
-    if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B`;
-    if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M`;
-    if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`;
-    return num.toLocaleString();
   };
 
   // Tasks state - empty by default, tasks only appear when user adds them
@@ -696,7 +684,7 @@ export default function AccountDetails({
                 <AccordionTrigger className="text-lg font-semibold">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
-                    Market Snapshot (IEX Cloud)
+                    Market Snapshot
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
@@ -768,18 +756,6 @@ export default function AccountDetails({
                               </p>
                             </div>
                             <div>
-                              <label className="text-xs font-medium text-gray-600">Volume</label>
-                              <p className="text-sm font-semibold text-gray-900 mt-1">
-                                {formatVolume(marketData.volume)}
-                              </p>
-                            </div>
-                            <div>
-                              <label className="text-xs font-medium text-gray-600">PE Ratio</label>
-                              <p className="text-sm font-semibold text-gray-900 mt-1">
-                                {marketData.peRatio !== 'N/A' ? parseFloat(marketData.peRatio).toFixed(2) : 'N/A'}
-                              </p>
-                            </div>
-                            <div>
                               <label className="text-xs font-medium text-gray-600">Open</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
                                 {formatPrice(marketData.openPrice)}
@@ -809,11 +785,27 @@ export default function AccountDetails({
                                 {formatPrice(marketData.fiftyTwoWeekLow)} - {formatPrice(marketData.fiftyTwoWeekHigh)}
                               </p>
                             </div>
+                            {marketData.annualSales !== '0' && marketData.annualSales !== 'N/A' && (
+                              <div>
+                                <label className="text-xs font-medium text-gray-600">Annual Sales</label>
+                                <p className="text-sm font-semibold text-gray-900 mt-1">
+                                  {formatLargeNumber(marketData.annualSales)}
+                                </p>
+                              </div>
+                            )}
                             {marketData.dividendYield !== '0' && marketData.dividendYield !== 'N/A' && (
                               <div>
                                 <label className="text-xs font-medium text-gray-600">Dividend Yield</label>
                                 <p className="text-sm font-semibold text-gray-900 mt-1">
                                   {(parseFloat(marketData.dividendYield) * 100).toFixed(2)}%
+                                </p>
+                              </div>
+                            )}
+                            {marketData.pegRatio !== '0' && marketData.pegRatio !== 'N/A' && (
+                              <div>
+                                <label className="text-xs font-medium text-gray-600">PEG Ratio</label>
+                                <p className="text-sm font-semibold text-gray-900 mt-1">
+                                  {parseFloat(marketData.pegRatio).toFixed(2)}
                                 </p>
                               </div>
                             )}
