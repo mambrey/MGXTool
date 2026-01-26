@@ -709,13 +709,15 @@ export default function AccountDetails({
                         </div>
                       )}
 
+                      {/* Show error as warning banner if there's an error BUT still show data if available */}
                       {marketError && !marketLoading && (
-                        <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                          <p className="text-sm text-red-600">{marketError}</p>
+                        <div className="p-3 mb-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <p className="text-xs text-yellow-800">{marketError}</p>
                         </div>
                       )}
 
-                      {marketData && !marketLoading && !marketError && (
+                      {/* Show data if available, regardless of error state */}
+                      {marketData && !marketLoading && (
                         <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                           {/* Company Name and Symbol */}
                           <div className="mb-4">
@@ -739,7 +741,7 @@ export default function AccountDetails({
                                 <TrendingUp className="w-3 h-3" />
                                 Change
                               </label>
-                              <p className={`text-2xl font-bold mt-1 ${parseFloat(marketData.percentChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              <p className={`text-2xl font-bold mt-1 ${marketData.percentChange === 'N/A' ? 'text-gray-600' : parseFloat(marketData.percentChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {formatPercentage(marketData.percentChange)}
                               </p>
                             </div>
@@ -756,34 +758,34 @@ export default function AccountDetails({
                             <div>
                               <label className="text-xs font-medium text-gray-600">Open</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                ${parseFloat(marketData.openPrice).toFixed(2)}
+                                {formatPrice(marketData.openPrice)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">Previous Close</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                ${parseFloat(marketData.previousClose).toFixed(2)}
+                                {formatPrice(marketData.previousClose)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">Day High</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                ${parseFloat(marketData.highPrice).toFixed(2)}
+                                {formatPrice(marketData.highPrice)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">Day Low</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                ${parseFloat(marketData.lowPrice).toFixed(2)}
+                                {formatPrice(marketData.lowPrice)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">52W Range</label>
                               <p className="text-xs font-semibold text-gray-900 mt-1">
-                                ${parseFloat(marketData.fiftyTwoWeekLow).toFixed(2)} - ${parseFloat(marketData.fiftyTwoWeekHigh).toFixed(2)}
+                                {formatPrice(marketData.fiftyTwoWeekLow)} - {formatPrice(marketData.fiftyTwoWeekHigh)}
                               </p>
                             </div>
-                            {marketData.annualSales !== '0' && (
+                            {marketData.annualSales !== '0' && marketData.annualSales !== 'N/A' && (
                               <div>
                                 <label className="text-xs font-medium text-gray-600">Annual Sales</label>
                                 <p className="text-sm font-semibold text-gray-900 mt-1">
@@ -791,7 +793,7 @@ export default function AccountDetails({
                                 </p>
                               </div>
                             )}
-                            {marketData.dividendYield !== '0' && (
+                            {marketData.dividendYield !== '0' && marketData.dividendYield !== 'N/A' && (
                               <div>
                                 <label className="text-xs font-medium text-gray-600">Dividend Yield</label>
                                 <p className="text-sm font-semibold text-gray-900 mt-1">
@@ -799,7 +801,7 @@ export default function AccountDetails({
                                 </p>
                               </div>
                             )}
-                            {marketData.pegRatio !== '0' && (
+                            {marketData.pegRatio !== '0' && marketData.pegRatio !== 'N/A' && (
                               <div>
                                 <label className="text-xs font-medium text-gray-600">PEG Ratio</label>
                                 <p className="text-sm font-semibold text-gray-900 mt-1">
