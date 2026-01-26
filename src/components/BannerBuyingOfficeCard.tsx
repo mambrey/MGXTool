@@ -64,6 +64,8 @@ interface BannerBuyingOffice {
   fulfillmentTypes: string[];
   ecommercePartners: string[];
   innovationAppetite: string;
+  allowsWetSampling?: string;
+  innovationLeadTime?: string;
   fullProofOutlets: string;
   categoryCaptain: string;
   categoryAdvisor: string;
@@ -75,7 +77,6 @@ interface BannerBuyingOffice {
   affectedCategories: string[];
   hasDifferentResetWindows: string;
   categoryResetWindows: CategoryResetWindow[];
-  // Additional Information fields
   strategicPriorities: string;
   keyCompetitors: string;
   designatedCharities: string;
@@ -481,13 +482,14 @@ export default function BannerBuyingOfficeCard({
           </Label>
           
           <div className="space-y-4">
-            {/* Level of Influence */}
+            {/* Level of Influence - UPDATED TO MATCH HQ ORDER */}
             <div>
               <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
                 Level of Influence
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 1. Assortment / Shelf */}
                 <div>
                   <Label className="text-xs font-medium">Assortment / Shelf</Label>
                   <Select 
@@ -506,6 +508,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* 2. Display / Merchandising */}
                 <div>
                   <Label className="text-xs font-medium">Display / Merchandising</Label>
                   <Select 
@@ -524,6 +527,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* 3. Price / Promo */}
                 <div>
                   <Label className="text-xs font-medium">Price / Promo</Label>
                   <Select 
@@ -542,6 +546,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* 4. Ecommerce */}
                 <div>
                   <Label className="text-xs font-medium">Ecommerce</Label>
                   <Select 
@@ -560,6 +565,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* 5. Digital / Social */}
                 <div>
                   <Label className="text-xs font-medium">Digital / Social</Label>
                   <Select 
@@ -578,6 +584,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* 6. Buying / PO Ownership */}
                 <div>
                   <Label className="text-xs font-medium">Buying / PO Ownership</Label>
                   <Select 
@@ -596,6 +603,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* 7. Shrink Management */}
                 <div>
                   <Label className="text-xs font-medium">Shrink Management</Label>
                   <Select 
@@ -614,6 +622,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* 8. In Store Events */}
                 <div>
                   <Label className="text-xs font-medium">In Store Events</Label>
                   <Select 
@@ -631,73 +640,174 @@ export default function BannerBuyingOfficeCard({
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* 9. Private Label - MOVED INTO GRID */}
+                <div>
+                  <Label className="text-xs font-medium">Private Label</Label>
+                  <Select 
+                    value={banner.privateLabel || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'privateLabel', value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select private label level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 10. Are Displays Mandated - MOVED INTO GRID AND UPDATED */}
+                <div>
+                  <Label className="text-xs font-medium">Are Displays Mandated</Label>
+                  <Select 
+                    value={banner.displayMandates || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'displayMandates', value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select display mandate level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Fully Mandated">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Fully Mandated</span>
+                          <span className="text-xs text-gray-500">Chainwide requirement with strict enforcement and formal compliance</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Partially Mandated">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Partially Mandated</span>
+                          <span className="text-xs text-gray-500">Required only in certain areas or periods with light enforcement</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Encouraged but Optional">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Encouraged but Optional</span>
+                          <span className="text-xs text-gray-500">Corporate supports displays, but execution depends on local teams</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Store-Level Discretion">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Store-Level Discretion</span>
+                          <span className="text-xs text-gray-500">No corporate direction- individual stores decide if displays happen</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Not Mandated">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Not Mandated</span>
+                          <span className="text-xs text-gray-500">No expectation for displays- execution is purely opportunistic</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Pricing Strategy - MOVED INTO GRID */}
+                <div>
+                  <Label className="text-xs font-medium">Pricing Strategy</Label>
+                  <Select 
+                    value={banner.pricingStrategy || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'pricingStrategy', value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select pricing strategy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="EDLP (Everyday Low Pricing)">EDLP (Everyday Low Pricing)</SelectItem>
+                      <SelectItem value="High-Low">High-Low</SelectItem>
+                      <SelectItem value="Margin Focused">Margin Focused</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Allows Wet Sampling - ADDED AFTER GRID */}
+                <div>
+                  <Label className="text-xs font-medium">Allows Wet Sampling</Label>
+                  <Select 
+                    value={banner.allowsWetSampling || ''} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'allowsWetSampling', value === 'clear' ? '' : value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select wet sampling policy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
+                      <SelectItem value="Yes Everywhere">Yes Everywhere</SelectItem>
+                      <SelectItem value="Yes State Dependent">Yes State Dependent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Innovation Appetite */}
+                <div>
+                  <Label className="text-xs font-medium">Innovation Appetite</Label>
+                  <Select 
+                    value={banner.innovationAppetite?.toString() || ''} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'innovationAppetite', value === 'clear' ? '' : value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select innovation appetite" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                      <SelectItem value="Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities">Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities</SelectItem>
+                      <SelectItem value="Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge">Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge</SelectItem>
+                      <SelectItem value="Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy">Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy</SelectItem>
+                      <SelectItem value="Cautious Adopter - Moves slowly on new items and prefers proven success before committing">Cautious Adopter - Moves slowly on new items and prefers proven success before committing</SelectItem>
+                      <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Innovation Lead Time - ADDED AFTER INNOVATION APPETITE */}
+                <div>
+                  <Label className="text-xs font-medium">Innovation Lead Time</Label>
+                  <Select 
+                    value={banner.innovationLeadTime || ''} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'innovationLeadTime', value === 'clear' ? '' : value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select innovation lead time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                      <SelectItem value="In-Market Ready">In-Market Ready</SelectItem>
+                      <SelectItem value="<3 Months">&lt;3 Months</SelectItem>
+                      <SelectItem value="3–6 Months">3–6 Months</SelectItem>
+                      <SelectItem value="6–12 Months">6–12 Months</SelectItem>
+                      <SelectItem value="12+ Months">12+ Months</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Has Planogram */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`banner-${banner.id}-hasPlanograms`}
+                    checked={banner.hasPlanograms}
+                    onCheckedChange={(checked) => onUpdateField(banner.id, 'hasPlanograms', checked as boolean)}
+                  />
+                  <Label htmlFor={`banner-${banner.id}-hasPlanograms`} className="text-sm font-medium">Has Planogram</Label>
+                </div>
+
+                {/* JBP Customer */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`banner-${banner.id}-isJBP`}
+                    checked={banner.isJBP}
+                    onCheckedChange={(checked) => onUpdateField(banner.id, 'isJBP', checked as boolean)}
+                  />
+                  <Label htmlFor={`banner-${banner.id}-isJBP`} className="text-sm font-medium">JBP Customer</Label>
+                </div>
               </div>
             </div>
 
             <div className="border-t pt-4"></div>
-
-            {/* Other Strategy Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`banner-${banner.id}-isJBP`}
-                  checked={banner.isJBP}
-                  onCheckedChange={(checked) => onUpdateField(banner.id, 'isJBP', checked as boolean)}
-                />
-                <Label htmlFor={`banner-${banner.id}-isJBP`} className="text-sm font-medium">JBP Customer</Label>
-              </div>
-              <div>
-                <Label className="text-xs font-medium">Pricing Strategy</Label>
-                <Select 
-                  value={banner.pricingStrategy || 'none'} 
-                  onValueChange={(value) => onUpdateField(banner.id, 'pricingStrategy', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select pricing strategy" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="EDLP (Everyday Low Pricing)">EDLP (Everyday Low Pricing)</SelectItem>
-                    <SelectItem value="High-Low">High-Low</SelectItem>
-                    <SelectItem value="Margin Focused">Margin Focused</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs font-medium">Private Label</Label>
-                <Select 
-                  value={banner.privateLabel || 'none'} 
-                  onValueChange={(value) => onUpdateField(banner.id, 'privateLabel', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select private label level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs font-medium">Are all displays mandated</Label>
-                <Select 
-                  value={banner.displayMandates || 'none'} 
-                  onValueChange={(value) => onUpdateField(banner.id, 'displayMandates', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select display mandate level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Some">Some</SelectItem>
-                    <SelectItem value="None">None</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
             {banner.isJBP && (
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
@@ -893,26 +1003,6 @@ export default function BannerBuyingOfficeCard({
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium">Innovation Appetite</Label>
-              <Select 
-                value={banner.innovationAppetite?.toString() || ''} 
-                onValueChange={(value) => onUpdateField(banner.id, 'innovationAppetite', value === 'clear' ? '' : value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select innovation appetite" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                  <SelectItem value="Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities">Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities</SelectItem>
-                  <SelectItem value="Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge">Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge</SelectItem>
-                  <SelectItem value="Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy">Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy</SelectItem>
-                  <SelectItem value="Cautious Adopter - Moves slowly on new items and prefers proven success before committing">Cautious Adopter - Moves slowly on new items and prefers proven success before committing</SelectItem>
-                  <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs font-medium">Category Captain</Label>
@@ -975,15 +1065,6 @@ export default function BannerBuyingOfficeCard({
             </div>
 
             {/* Planogram Section */}
-            <div className="flex items-center space-x-2 pt-4 border-t">
-              <Checkbox
-                id={`banner-${banner.id}-hasPlanograms`}
-                checked={banner.hasPlanograms}
-                onCheckedChange={(checked) => onUpdateField(banner.id, 'hasPlanograms', checked as boolean)}
-              />
-              <Label htmlFor={`banner-${banner.id}-hasPlanograms`} className="text-sm font-medium">Has Planogram</Label>
-            </div>
-
             {banner.hasPlanograms && (
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
                 <Label className="text-sm font-medium block flex items-center gap-2">
