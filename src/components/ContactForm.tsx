@@ -217,7 +217,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
   // Primary Diageo Relationship Owner(s) state - Default to empty string (Not Assigned)
   const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
-  const [ownerTitle, setOwnerTitle] = useState(contact?.primaryDiageoRelationshipOwners?.ownerTitle || ');
+  const [ownerTitle, setOwnerTitle] = useState(contact?.primaryDiageoRelationshipOwners?.ownerTitle || '');
   const [ownerEmail, setOwnerEmail] = useState(contact?.primaryDiageoRelationshipOwners?.ownerEmail || '');
   const [svp, setSvp] = useState(contact?.primaryDiageoRelationshipOwners?.svp || '');
   const [salesRoles, setSalesRoles] = useState<{[role: string]: string}>(
@@ -238,8 +238,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   // Sync relationship owner state with contact prop changes
   useEffect(() => {
     if (contact?.primaryDiageoRelationshipOwners) {
-      setOwnerTitle(contact.primaryDiageoRelationshipOwners.ownerTitle || ');
-      setOwnerName(contact.primaryDiageoRelationshipOwners.ownerName || ');
+      setOwnerTitle(contact.primaryDiageoRelationshipOwners.ownerTitle || '');
+      setOwnerName(contact.primaryDiageoRelationshipOwners.ownerName || '');
       setOwnerEmail(contact.primaryDiageoRelationshipOwners.ownerEmail || '');
       setSvp(contact.primaryDiageoRelationshipOwners.svp || '');
       setSalesRoles(contact.primaryDiageoRelationshipOwners.sales || {});
@@ -611,9 +611,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     
     const contactData: Contact = {
       id: contact?.id || Date.now().toString(),
-        ownerTitle,
-        ownerName,
+      ...formData,
       primaryDiageoRelationshipOwners: {
+        ownerTitle,
         ownerName,
         ownerEmail,
         svp,
@@ -1821,6 +1821,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   id="ownerName"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
+                  placeholder="Enter owner name"
+                />
               </div>
               <div>
                 <Label htmlFor="ownerTitle">Primary Owner Title</Label>
@@ -1829,8 +1831,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   value={ownerTitle}
                   onChange={(e) => setOwnerTitle(e.target.value)}
                   placeholder="Enter owner title"
-                />
-                  placeholder="Enter owner name"
                 />
               </div>
               <div>
