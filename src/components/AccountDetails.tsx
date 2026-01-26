@@ -580,7 +580,7 @@ export default function AccountDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Collapsible Sections */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
+          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'jbp', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'jbp', 'strategy', 'planogram', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
             
             {/* Customer Overview */}
             <AccordionItem value="overview">
@@ -891,6 +891,52 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
+            {/* JBP Information - NEW SEPARATE SECTION */}
+            <AccordionItem value="jbp">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  JBP Information
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <InfoItem label="JBP Customer" value={account.isJBP ? 'Yes' : 'No'} />
+                      {account.isJBP && (
+                        <>
+                          <InfoItem label="Last JBP" value={formatDateForDisplay(account.lastJBPDate)} />
+                          <InfoItem label="Next JBP" value={formatDateForDisplay(account.nextJBPDate)} />
+                          {account.nextJBPDate && (
+                            <>
+                              <div>
+                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                  <Bell className="w-4 h-4" />
+                                  Alert Status
+                                </label>
+                                <div className="mt-1">
+                                  <Badge variant={account.nextJBPAlert ? "default" : "secondary"}>
+                                    {account.nextJBPAlert ? "Enabled" : "Disabled"}
+                                  </Badge>
+                                </div>
+                              </div>
+                              {account.nextJBPAlert && account.nextJBPAlertOptions && account.nextJBPAlertOptions.length > 0 && (
+                                <div className="md:col-span-2">
+                                  <label className="text-sm font-medium text-gray-600">Alert Options</label>
+                                  <p className="text-sm mt-1">{formatJBPAlertOptions(account.nextJBPAlertOptions)}</p>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
             {/* Strategy and Capabilities */}
             <AccordionItem value="strategy">
               <AccordionTrigger className="text-lg font-semibold">
@@ -903,45 +949,6 @@ export default function AccountDetails({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      {/* JBP Information - UPDATED SECTION */}
-                      <div>
-                        <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="JBP Customer" value={account.isJBP ? 'Yes' : 'No'} />
-                          {account.isJBP && (
-                            <>
-                              <InfoItem label="Last JBP" value={formatDateForDisplay(account.lastJBPDate)} />
-                              <InfoItem label="Next JBP" value={formatDateForDisplay(account.nextJBPDate)} />
-                              {account.nextJBPDate && (
-                                <>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                      <Bell className="w-4 h-4" />
-                                      Alert Status
-                                    </label>
-                                    <p className="text-base mt-1">
-                                      {account.nextJBPAlert ? (
-                                        <Badge className="bg-green-100 text-green-800">Enabled</Badge>
-                                      ) : (
-                                        <Badge variant="outline" className="text-gray-600">Disabled</Badge>
-                                      )}
-                                    </p>
-                                  </div>
-                                  {account.nextJBPAlert && account.nextJBPAlertOptions && account.nextJBPAlertOptions.length > 0 && (
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-600">Alert Options</label>
-                                      <p className="text-base mt-1">{formatJBPAlertOptions(account.nextJBPAlertOptions)}</p>
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      <Separator />
-
                       {/* Business Strategy */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">Business Strategy</h4>
