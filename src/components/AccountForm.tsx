@@ -1340,7 +1340,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               HQ Level of Influence
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* 1. Assortment/Shelf */}
+              {/* Row 1: Assortment/Shelf + Private Label */}
               <div>
                 <Label className="text-xs font-medium">Assortment / Shelf</Label>
                 <Select 
@@ -1359,140 +1359,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* 2. Display/Merchandising */}
-              <div>
-                <Label className="text-xs font-medium">Display / Merchandising</Label>
-                <Select 
-                  value={formData.influenceDisplayMerchandising || 'none'} 
-                  onValueChange={(value) => updateField('influenceDisplayMerchandising', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 3. Price/Promo */}
-              <div>
-                <Label className="text-xs font-medium">Price / Promo</Label>
-                <Select 
-                  value={formData.influencePricePromo || 'none'} 
-                  onValueChange={(value) => updateField('influencePricePromo', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 4. Ecommerce */}
-              <div>
-                <Label className="text-xs font-medium">Ecommerce</Label>
-                <Select 
-                  value={formData.influenceEcommerce || 'none'} 
-                  onValueChange={(value) => updateField('influenceEcommerce', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 5. Digital/Social (relabeled from Digital) */}
-              <div>
-                <Label className="text-xs font-medium">Digital / Social</Label>
-                <Select 
-                  value={formData.influenceDigital || 'none'} 
-                  onValueChange={(value) => updateField('influenceDigital', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 6. Buying/PO Ownership */}
-              <div>
-                <Label className="text-xs font-medium">Buying / PO Ownership</Label>
-                <Select 
-                  value={formData.influenceBuyingPOOwnership || 'none'} 
-                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 7. Shrink Management (relabeled from Shrink) */}
-              <div>
-                <Label className="text-xs font-medium">Shrink Management</Label>
-                <Select 
-                  value={formData.influenceShrinkManagement || 'none'} 
-                  onValueChange={(value) => updateField('influenceShrinkManagement', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 8. In Store Events */}
-              <div>
-                <Label className="text-xs font-medium">In Store Events</Label>
-                <Select 
-                  value={formData.influenceInStoreEvents || 'none'} 
-                  onValueChange={(value) => updateField('influenceInStoreEvents', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Private Label */}
               <div>
                 <Label className="text-xs font-medium">Private Label</Label>
                 <Select 
@@ -1511,7 +1377,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Are Displays Mandated */}
+              {/* Row 2: Display/Merchandising + Are Displays Mandated */}
+              <div>
+                <Label className="text-xs font-medium">Display / Merchandising</Label>
+                <Select 
+                  value={formData.influenceDisplayMerchandising || 'none'} 
+                  onValueChange={(value) => updateField('influenceDisplayMerchandising', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div>
                 <Label className="text-xs font-medium">Are Displays Mandated</Label>
                 <Select 
@@ -1556,7 +1440,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Pricing Strategy */}
+              {/* Row 3: Price/Promo + Pricing Strategy */}
+              <div>
+                <Label className="text-xs font-medium">Price / Promo</Label>
+                <Select 
+                  value={formData.influencePricePromo || 'none'} 
+                  onValueChange={(value) => updateField('influencePricePromo', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div>
                 <Label className="text-xs font-medium">Pricing Strategy</Label>
                 <Select 
@@ -1575,7 +1477,99 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Allows Wet Sampling */}
+              {/* Row 4: Ecommerce + Digital/Social */}
+              <div>
+                <Label className="text-xs font-medium">Ecommerce</Label>
+                <Select 
+                  value={formData.influenceEcommerce || 'none'} 
+                  onValueChange={(value) => updateField('influenceEcommerce', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium">Digital / Social</Label>
+                <Select 
+                  value={formData.influenceDigital || 'none'} 
+                  onValueChange={(value) => updateField('influenceDigital', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 5: Buying/PO Ownership + Shrink Management */}
+              <div>
+                <Label className="text-xs font-medium">Buying / PO Ownership</Label>
+                <Select 
+                  value={formData.influenceBuyingPOOwnership || 'none'} 
+                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium">Shrink Management</Label>
+                <Select 
+                  value={formData.influenceShrinkManagement || 'none'} 
+                  onValueChange={(value) => updateField('influenceShrinkManagement', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 6: In Store Events + Allows Wet Sampling */}
+              <div>
+                <Label className="text-xs font-medium">In Store Events</Label>
+                <Select 
+                  value={formData.influenceInStoreEvents || 'none'} 
+                  onValueChange={(value) => updateField('influenceInStoreEvents', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div>
                 <Label className="text-xs font-medium">Allows Wet Sampling</Label>
                 <Select 
@@ -1594,7 +1588,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Innovation Appetite */}
+              {/* Row 7: Innovation Appetite + Innovation Lead Time */}
               <div>
                 <Label className="text-xs font-medium">Innovation Appetite</Label>
                 <Select 
@@ -1615,7 +1609,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Innovation Lead Time */}
               <div>
                 <Label className="text-xs font-medium">Innovation Lead Time</Label>
                 <Select 
