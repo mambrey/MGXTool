@@ -15,7 +15,7 @@ interface CustomerEvent {
   title: string;
   date: string;
   alertEnabled?: boolean;
-  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  alertOptions?: string[];
 }
 
 interface CategoryResetWindow {
@@ -55,7 +55,7 @@ interface BannerBuyingOffice {
   lastJBPDate: string;
   nextJBPDate: string;
   nextJBPAlert?: boolean;
-  nextJBPAlertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  nextJBPAlertOptions?: string[];
   pricingStrategy: string;
   privateLabel: string;
   displayMandates: string;
@@ -112,15 +112,15 @@ interface BannerBuyingOfficeCardProps {
 }
 
 // Helper function to get alert option label
-const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before'): string => {
-  switch (option) {
-    case 'same_day':
-      return 'Same Day (0 days before)';
-    case 'day_before':
-      return 'Day Before (1 day before)';
-    case 'week_before':
-      return 'Week Before (7 days before)';
+const getAlertOptionLabel = (option: string): string => {
+  if (option === '30_days_before') return '30 Days Before';
+  if (option === '7_days_before') return '7 Days Before';
+  if (option === '1_day_before') return '1 Day Before';
+  if (option.startsWith('custom_')) {
+    const days = option.replace('custom_', '');
+    return `${days} Days Before`;
   }
+  return option;
 };
 
 export default function BannerBuyingOfficeCard({
@@ -153,6 +153,10 @@ export default function BannerBuyingOfficeCard({
 }: BannerBuyingOfficeCardProps) {
   // JBP validation error state
   const [jbpValidationError, setJbpValidationError] = useState<string>('');
+
+  // State for custom alert days
+  const [jbpCustomDays, setJbpCustomDays] = useState<string>('');
+  const [eventCustomDays, setEventCustomDays] = useState<{[key: string]: string}>({});
 
   // State outlets by state for multiple states
   const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
@@ -213,7 +217,7 @@ export default function BannerBuyingOfficeCard({
     onUpdateField(banner.id, 'customerEvents', updatedEvents);
   };
 
-  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
+  const handleToggleEventAlertOption = (eventId: string, option: string) => {
     const updatedEvents = banner.customerEvents.map(event => {
       if (event.id === eventId) {
         const currentOptions = event.alertOptions || [];
@@ -227,12 +231,52 @@ export default function BannerBuyingOfficeCard({
     onUpdateField(banner.id, 'customerEvents', updatedEvents);
   };
 
-  const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+  const handleToggleJBPAlertOption = (option: string) => {
     const currentOptions = banner.nextJBPAlertOptions || [];
     const newOptions = currentOptions.includes(option)
       ? currentOptions.filter(o => o !== option)
       : [...currentOptions, option];
     onUpdateField(banner.id, 'nextJBPAlertOptions', newOptions);
+  };
+
+  const handleJBPCustomDaysChange = (value: string) => {
+    setJbpCustomDays(value);
+    const currentOptions = banner.nextJBPAlertOptions || [];
+    // Remove any existing custom options
+    const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      onUpdateField(banner.id, 'nextJBPAlertOptions', [...filteredOptions, customOption]);
+    } else {
+      onUpdateField(banner.id, 'nextJBPAlertOptions', filteredOptions);
+    }
+  };
+
+  const handleEventCustomDaysChange = (eventId: string, value: string) => {
+    setEventCustomDays(prev => ({ ...prev, [eventId]: value }));
+    
+    const updatedEvents = banner.customerEvents.map(event => {
+      if (event.id === eventId) {
+        const currentOptions = event.alertOptions || [];
+        // Remove any existing custom options
+        const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+        
+        if (value && parseInt(value) > 0) {
+          const customOption = `custom_${value}`;
+          return { ...event, alertOptions: [...filteredOptions, customOption] };
+        }
+        return { ...event, alertOptions: filteredOptions };
+      }
+      return event;
+    });
+    onUpdateField(banner.id, 'customerEvents', updatedEvents);
+  };
+
+  const isJBPCustomChecked = (banner.nextJBPAlertOptions || []).some(opt => opt.startsWith('custom_'));
+  
+  const getEventCustomChecked = (event: CustomerEvent) => {
+    return (event.alertOptions || []).some(opt => opt.startsWith('custom_'));
   };
 
   return (
@@ -463,24 +507,6 @@ export default function BannerBuyingOfficeCard({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium">Price / Promo</Label>
-                  <Select 
-                    value={banner.influencePricePromo || 'none'} 
-                    onValueChange={(value) => onUpdateField(banner.id, 'influencePricePromo', value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="Low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label className="text-xs font-medium">Display / Merchandising</Label>
                   <Select 
                     value={banner.influenceDisplayMerchandising || 'none'} 
@@ -499,10 +525,10 @@ export default function BannerBuyingOfficeCard({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium">Digital</Label>
+                  <Label className="text-xs font-medium">Price / Promo</Label>
                   <Select 
-                    value={banner.influenceDigital || 'none'} 
-                    onValueChange={(value) => onUpdateField(banner.id, 'influenceDigital', value)}
+                    value={banner.influencePricePromo || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'influencePricePromo', value)}
                   >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select level" />
@@ -517,7 +543,7 @@ export default function BannerBuyingOfficeCard({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium">eCommerce</Label>
+                  <Label className="text-xs font-medium">Ecommerce</Label>
                   <Select 
                     value={banner.influenceEcommerce || 'none'} 
                     onValueChange={(value) => onUpdateField(banner.id, 'influenceEcommerce', value)}
@@ -535,10 +561,28 @@ export default function BannerBuyingOfficeCard({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium">In Store Events</Label>
+                  <Label className="text-xs font-medium">Digital / Social</Label>
                   <Select 
-                    value={banner.influenceInStoreEvents || 'none'} 
-                    onValueChange={(value) => onUpdateField(banner.id, 'influenceInStoreEvents', value)}
+                    value={banner.influenceDigital || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'influenceDigital', value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium">Buying / PO Ownership</Label>
+                  <Select 
+                    value={banner.influenceBuyingPOOwnership || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'influenceBuyingPOOwnership', value)}
                   >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select level" />
@@ -571,10 +615,10 @@ export default function BannerBuyingOfficeCard({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium">Buying / PO Ownership</Label>
+                  <Label className="text-xs font-medium">In Store Events</Label>
                   <Select 
-                    value={banner.influenceBuyingPOOwnership || 'none'} 
-                    onValueChange={(value) => onUpdateField(banner.id, 'influenceBuyingPOOwnership', value)}
+                    value={banner.influenceInStoreEvents || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'influenceInStoreEvents', value)}
                   >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select level" />
@@ -681,7 +725,7 @@ export default function BannerBuyingOfficeCard({
                   </div>
                 </div>
                 
-                {/* Alert Section - UPDATED WITH MULTI-SELECT */}
+                {/* Alert Section - UPDATED WITH NEW OPTIONS */}
                 <div className="space-y-3 pt-2 border-t border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -703,21 +747,62 @@ export default function BannerBuyingOfficeCard({
                         Alert me:
                       </Label>
                       <div className="space-y-2">
-                        {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`banner-${banner.id}-jbp-${option}`}
-                              checked={(banner.nextJBPAlertOptions || []).includes(option)}
-                              onCheckedChange={() => handleToggleJBPAlertOption(option)}
-                            />
-                            <Label
-                              htmlFor={`banner-${banner.id}-jbp-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {getAlertOptionLabel(option)}
-                            </Label>
-                          </div>
-                        ))}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`banner-${banner.id}-jbp-30-days`}
+                            checked={(banner.nextJBPAlertOptions || []).includes('30_days_before')}
+                            onCheckedChange={() => handleToggleJBPAlertOption('30_days_before')}
+                          />
+                          <Label htmlFor={`banner-${banner.id}-jbp-30-days`} className="text-sm font-normal cursor-pointer">
+                            30 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`banner-${banner.id}-jbp-7-days`}
+                            checked={(banner.nextJBPAlertOptions || []).includes('7_days_before')}
+                            onCheckedChange={() => handleToggleJBPAlertOption('7_days_before')}
+                          />
+                          <Label htmlFor={`banner-${banner.id}-jbp-7-days`} className="text-sm font-normal cursor-pointer">
+                            7 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`banner-${banner.id}-jbp-1-day`}
+                            checked={(banner.nextJBPAlertOptions || []).includes('1_day_before')}
+                            onCheckedChange={() => handleToggleJBPAlertOption('1_day_before')}
+                          />
+                          <Label htmlFor={`banner-${banner.id}-jbp-1-day`} className="text-sm font-normal cursor-pointer">
+                            1 Day Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`banner-${banner.id}-jbp-custom`}
+                            checked={isJBPCustomChecked}
+                            onCheckedChange={(checked) => {
+                              if (!checked) {
+                                setJbpCustomDays('');
+                                const filteredOptions = (banner.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                onUpdateField(banner.id, 'nextJBPAlertOptions', filteredOptions);
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`banner-${banner.id}-jbp-custom`} className="text-sm font-normal cursor-pointer">
+                            Custom:
+                          </Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="days"
+                            value={jbpCustomDays}
+                            onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
+                            className="w-20 h-7 text-xs"
+                            disabled={!isJBPCustomChecked}
+                          />
+                          <span className="text-sm text-gray-600">days before</span>
+                        </div>
                       </div>
                       {(banner.nextJBPAlertOptions || []).length > 0 && (
                         <p className="text-xs text-gray-500">
@@ -1187,7 +1272,7 @@ export default function BannerBuyingOfficeCard({
                         </div>
                       </div>
                       
-                      {/* Alert Section for Customer Events - UPDATED WITH MULTI-SELECT */}
+                      {/* Alert Section for Customer Events - UPDATED WITH NEW OPTIONS */}
                       <div className="mt-3 pt-3 border-t border-gray-200">
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
@@ -1210,21 +1295,69 @@ export default function BannerBuyingOfficeCard({
                                 Alert me:
                               </Label>
                               <div className="space-y-2">
-                                {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                                  <div key={option} className="flex items-center space-x-2">
-                                    <Checkbox
-                                      id={`banner-${banner.id}-event-${event.id}-${option}`}
-                                      checked={(event.alertOptions || []).includes(option)}
-                                      onCheckedChange={() => handleToggleEventAlertOption(event.id, option)}
-                                    />
-                                    <Label
-                                      htmlFor={`banner-${banner.id}-event-${event.id}-${option}`}
-                                      className="text-sm font-normal cursor-pointer"
-                                    >
-                                      {getAlertOptionLabel(option)}
-                                    </Label>
-                                  </div>
-                                ))}
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`banner-${banner.id}-event-${event.id}-30-days`}
+                                    checked={(event.alertOptions || []).includes('30_days_before')}
+                                    onCheckedChange={() => handleToggleEventAlertOption(event.id, '30_days_before')}
+                                  />
+                                  <Label htmlFor={`banner-${banner.id}-event-${event.id}-30-days`} className="text-sm font-normal cursor-pointer">
+                                    30 Days Before
+                                  </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`banner-${banner.id}-event-${event.id}-7-days`}
+                                    checked={(event.alertOptions || []).includes('7_days_before')}
+                                    onCheckedChange={() => handleToggleEventAlertOption(event.id, '7_days_before')}
+                                  />
+                                  <Label htmlFor={`banner-${banner.id}-event-${event.id}-7-days`} className="text-sm font-normal cursor-pointer">
+                                    7 Days Before
+                                  </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`banner-${banner.id}-event-${event.id}-1-day`}
+                                    checked={(event.alertOptions || []).includes('1_day_before')}
+                                    onCheckedChange={() => handleToggleEventAlertOption(event.id, '1_day_before')}
+                                  />
+                                  <Label htmlFor={`banner-${banner.id}-event-${event.id}-1-day`} className="text-sm font-normal cursor-pointer">
+                                    1 Day Before
+                                  </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`banner-${banner.id}-event-${event.id}-custom`}
+                                    checked={getEventCustomChecked(event)}
+                                    onCheckedChange={(checked) => {
+                                      if (!checked) {
+                                        setEventCustomDays(prev => {
+                                          const newState = { ...prev };
+                                          delete newState[event.id];
+                                          return newState;
+                                        });
+                                        const filteredOptions = (event.alertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                        const updatedEvents = banner.customerEvents.map(e => 
+                                          e.id === event.id ? { ...e, alertOptions: filteredOptions } : e
+                                        );
+                                        onUpdateField(banner.id, 'customerEvents', updatedEvents);
+                                      }
+                                    }}
+                                  />
+                                  <Label htmlFor={`banner-${banner.id}-event-${event.id}-custom`} className="text-sm font-normal cursor-pointer">
+                                    Custom:
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    placeholder="days"
+                                    value={eventCustomDays[event.id] || ''}
+                                    onChange={(e) => handleEventCustomDaysChange(event.id, e.target.value)}
+                                    className="w-20 h-7 text-xs"
+                                    disabled={!getEventCustomChecked(event)}
+                                  />
+                                  <span className="text-sm text-gray-600">days before</span>
+                                </div>
                               </div>
                               {(event.alertOptions || []).length > 0 && (
                                 <p className="text-xs text-gray-500">

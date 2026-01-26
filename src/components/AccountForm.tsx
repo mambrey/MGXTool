@@ -25,7 +25,7 @@ interface CustomerEvent {
   title: string;
   date: string;
   alertEnabled?: boolean;
-  alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  alertOptions?: string[];
 }
 
 interface CategoryResetWindow {
@@ -61,7 +61,7 @@ interface BannerBuyingOffice {
   lastJBPDate: string;
   nextJBPDate: string;
   nextJBPAlert?: boolean;
-  nextJBPAlertOptions?: ('same_day' | 'day_before' | 'week_before')[];
+  nextJBPAlertOptions?: string[];
   pricingStrategy: string;
   privateLabel: string;
   displayMandates: string;
@@ -146,15 +146,15 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-const getAlertOptionLabel = (option: 'same_day' | 'day_before' | 'week_before'): string => {
-  switch (option) {
-    case 'same_day':
-      return 'Same Day (0 days before)';
-    case 'day_before':
-      return 'Day Before (1 day before)';
-    case 'week_before':
-      return 'Week Before (7 days before)';
+const getAlertOptionLabel = (option: string): string => {
+  if (option === '30_days_before') return '30 Days Before';
+  if (option === '7_days_before') return '7 Days Before';
+  if (option === '1_day_before') return '1 Day Before';
+  if (option.startsWith('custom_')) {
+    const days = option.replace('custom_', '');
+    return `${days} Days Before`;
   }
+  return option;
 };
 
 export default function AccountForm({ account, contacts = [], onSave, onCancel }: AccountFormProps) {
@@ -263,6 +263,10 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const [originalTickerSymbol, setOriginalTickerSymbol] = useState<string>(account?.tickerSymbol || '');
   const accountContacts = account ? contacts.filter(contact => contact.accountId === account.id) : [];
   const [jbpValidationError, setJbpValidationError] = useState<string>('');
+
+  // State for custom alert days
+  const [jbpCustomDays, setJbpCustomDays] = useState<string>('');
+  const [eventCustomDays, setEventCustomDays] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
     if (formData.isJBP) {
@@ -764,7 +768,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     onSave(updatedFormData);
   };
 
-  const updateField = (field: keyof Account, value: string | number | boolean) => {
+  const updateField = (field: keyof Account, value: string | number | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -942,7 +946,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     );
   };
 
-  const handleToggleEventAlertOption = (eventId: string, option: 'same_day' | 'day_before' | 'week_before') => {
+  const handleToggleEventAlertOption = (eventId: string, option: string) => {
     setCustomerEvents(prev =>
       prev.map(event => {
         if (event.id === eventId) {
@@ -957,12 +961,55 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     );
   };
 
-  const handleToggleJBPAlertOption = (option: 'same_day' | 'day_before' | 'week_before') => {
+  const handleToggleJBPAlertOption = (option: string) => {
     const currentOptions = formData.nextJBPAlertOptions || [];
     const newOptions = currentOptions.includes(option)
       ? currentOptions.filter(o => o !== option)
       : [...currentOptions, option];
     updateField('nextJBPAlertOptions', newOptions);
+  };
+
+  const handleJBPCustomDaysChange = (value: string) => {
+    setJbpCustomDays(value);
+    const currentOptions = formData.nextJBPAlertOptions || [];
+    // Remove any existing custom options
+    const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      if (!filteredOptions.includes(customOption)) {
+        updateField('nextJBPAlertOptions', [...filteredOptions, customOption]);
+      }
+    } else {
+      updateField('nextJBPAlertOptions', filteredOptions);
+    }
+  };
+
+  const handleEventCustomDaysChange = (eventId: string, value: string) => {
+    setEventCustomDays(prev => ({ ...prev, [eventId]: value }));
+    
+    setCustomerEvents(prev =>
+      prev.map(event => {
+        if (event.id === eventId) {
+          const currentOptions = event.alertOptions || [];
+          // Remove any existing custom options
+          const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+          
+          if (value && parseInt(value) > 0) {
+            const customOption = `custom_${value}`;
+            return { ...event, alertOptions: [...filteredOptions, customOption] };
+          }
+          return { ...event, alertOptions: filteredOptions };
+        }
+        return event;
+      })
+    );
+  };
+
+  const isJBPCustomChecked = (formData.nextJBPAlertOptions || []).some(opt => opt.startsWith('custom_'));
+  
+  const getEventCustomChecked = (event: CustomerEvent) => {
+    return (event.alertOptions || []).some(opt => opt.startsWith('custom_'));
   };
 
   const removeCustomerEvent = (id: string) => {
@@ -1660,21 +1707,62 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                       Alert me:
                     </Label>
                     <div className="space-y-2">
-                      {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                        <div key={option} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`jbp-${option}`}
-                            checked={(formData.nextJBPAlertOptions || []).includes(option)}
-                            onCheckedChange={() => handleToggleJBPAlertOption(option)}
-                          />
-                          <Label
-                            htmlFor={`jbp-${option}`}
-                            className="text-sm font-normal cursor-pointer"
-                          >
-                            {getAlertOptionLabel(option)}
-                          </Label>
-                        </div>
-                      ))}
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-30-days"
+                          checked={(formData.nextJBPAlertOptions || []).includes('30_days_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('30_days_before')}
+                        />
+                        <Label htmlFor="jbp-30-days" className="text-sm font-normal cursor-pointer">
+                          30 Days Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-7-days"
+                          checked={(formData.nextJBPAlertOptions || []).includes('7_days_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('7_days_before')}
+                        />
+                        <Label htmlFor="jbp-7-days" className="text-sm font-normal cursor-pointer">
+                          7 Days Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-1-day"
+                          checked={(formData.nextJBPAlertOptions || []).includes('1_day_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('1_day_before')}
+                        />
+                        <Label htmlFor="jbp-1-day" className="text-sm font-normal cursor-pointer">
+                          1 Day Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-custom"
+                          checked={isJBPCustomChecked}
+                          onCheckedChange={(checked) => {
+                            if (!checked) {
+                              setJbpCustomDays('');
+                              const filteredOptions = (formData.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                              updateField('nextJBPAlertOptions', filteredOptions);
+                            }
+                          }}
+                        />
+                        <Label htmlFor="jbp-custom" className="text-sm font-normal cursor-pointer">
+                          Custom:
+                        </Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="days"
+                          value={jbpCustomDays}
+                          onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
+                          className="w-20 h-7 text-xs"
+                          disabled={!isJBPCustomChecked}
+                        />
+                        <span className="text-sm text-gray-600">days before</span>
+                      </div>
                     </div>
                     {(formData.nextJBPAlertOptions || []).length > 0 && (
                       <p className="text-xs text-gray-500">
@@ -2132,21 +2220,68 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                               Alert me:
                             </Label>
                             <div className="space-y-2">
-                              {(['same_day', 'day_before', 'week_before'] as const).map((option) => (
-                                <div key={option} className="flex items-center space-x-2">
-                                  <Checkbox
-                                    id={`event-${event.id}-${option}`}
-                                    checked={(event.alertOptions || []).includes(option)}
-                                    onCheckedChange={() => handleToggleEventAlertOption(event.id, option)}
-                                  />
-                                  <Label
-                                    htmlFor={`event-${event.id}-${option}`}
-                                    className="text-sm font-normal cursor-pointer"
-                                  >
-                                    {getAlertOptionLabel(option)}
-                                  </Label>
-                                </div>
-                              ))}
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-30-days`}
+                                  checked={(event.alertOptions || []).includes('30_days_before')}
+                                  onCheckedChange={() => handleToggleEventAlertOption(event.id, '30_days_before')}
+                                />
+                                <Label htmlFor={`event-${event.id}-30-days`} className="text-sm font-normal cursor-pointer">
+                                  30 Days Before
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-7-days`}
+                                  checked={(event.alertOptions || []).includes('7_days_before')}
+                                  onCheckedChange={() => handleToggleEventAlertOption(event.id, '7_days_before')}
+                                />
+                                <Label htmlFor={`event-${event.id}-7-days`} className="text-sm font-normal cursor-pointer">
+                                  7 Days Before
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-1-day`}
+                                  checked={(event.alertOptions || []).includes('1_day_before')}
+                                  onCheckedChange={() => handleToggleEventAlertOption(event.id, '1_day_before')}
+                                />
+                                <Label htmlFor={`event-${event.id}-1-day`} className="text-sm font-normal cursor-pointer">
+                                  1 Day Before
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-custom`}
+                                  checked={getEventCustomChecked(event)}
+                                  onCheckedChange={(checked) => {
+                                    if (!checked) {
+                                      setEventCustomDays(prev => {
+                                        const newState = { ...prev };
+                                        delete newState[event.id];
+                                        return newState;
+                                      });
+                                      const filteredOptions = (event.alertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                      setCustomerEvents(prev =>
+                                        prev.map(e => e.id === event.id ? { ...e, alertOptions: filteredOptions } : e)
+                                      );
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor={`event-${event.id}-custom`} className="text-sm font-normal cursor-pointer">
+                                  Custom:
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  placeholder="days"
+                                  value={eventCustomDays[event.id] || ''}
+                                  onChange={(e) => handleEventCustomDaysChange(event.id, e.target.value)}
+                                  className="w-20 h-7 text-xs"
+                                  disabled={!getEventCustomChecked(event)}
+                                />
+                                <span className="text-sm text-gray-600">days before</span>
+                              </div>
                             </div>
                             {(event.alertOptions || []).length > 0 && (
                               <p className="text-xs text-gray-500">
