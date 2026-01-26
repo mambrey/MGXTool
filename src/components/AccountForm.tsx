@@ -1379,7 +1379,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* Strategy and Capabilities Section - keeping rest of form unchanged */}
+      {/* Strategy and Capabilities Section - REORGANIZED */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -1388,13 +1388,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* HQ Level of Influence */}
+          {/* HQ Level of Influence - REORGANIZED */}
           <div>
             <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
               <Building2 className="w-4 h-4" />
               HQ Level of Influence
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Row 1: Assortment/Shelf + Private Label */}
               <div>
                 <Label className="text-xs font-medium">Assortment / Shelf</Label>
                 <Select 
@@ -1414,13 +1415,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
 
               <div>
-                <Label className="text-xs font-medium">Price / Promo</Label>
+                <Label className="text-xs font-medium">Private Label</Label>
                 <Select 
-                  value={formData.influencePricePromo || 'none'} 
-                  onValueChange={(value) => updateField('influencePricePromo', value)}
+                  value={formData.privateLabel || 'none'} 
+                  onValueChange={(value) => updateField('privateLabel', value)}
                 >
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
+                    <SelectValue placeholder="Select private label level" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
@@ -1431,6 +1432,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Row 2: Display/Merchandising + Are Displays Mandated */}
               <div>
                 <Label className="text-xs font-medium">Display / Merchandising</Label>
                 <Select 
@@ -1450,10 +1452,55 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
 
               <div>
-                <Label className="text-xs font-medium">Digital</Label>
+                <Label className="text-xs font-medium">Are Displays Mandated</Label>
                 <Select 
-                  value={formData.influenceDigital || 'none'} 
-                  onValueChange={(value) => updateField('influenceDigital', value)}
+                  value={formData.displayMandates || 'none'} 
+                  onValueChange={(value) => updateField('displayMandates', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select display mandate level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Fully Mandated">
+                      <div className="flex flex-col">
+                        <span className="font-medium">Fully Mandated</span>
+                        <span className="text-xs text-gray-500">Chainwide requirement with strict enforcement and formal compliance</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Partially Mandated">
+                      <div className="flex flex-col">
+                        <span className="font-medium">Partially Mandated</span>
+                        <span className="text-xs text-gray-500">Required only in certain areas or periods with light enforcement</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Encouraged but Optional">
+                      <div className="flex flex-col">
+                        <span className="font-medium">Encouraged but Optional</span>
+                        <span className="text-xs text-gray-500">Corporate supports displays, but execution depends on local teams</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Store-Level Discretion">
+                      <div className="flex flex-col">
+                        <span className="font-medium">Store-Level Discretion</span>
+                        <span className="text-xs text-gray-500">No corporate direction- individual stores decide if displays happen</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Not Mandated">
+                      <div className="flex flex-col">
+                        <span className="font-medium">Not Mandated</span>
+                        <span className="text-xs text-gray-500">No expectation for displays- execution is purely opportunistic</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 3: Price/Promo + Pricing Strategy */}
+              <div>
+                <Label className="text-xs font-medium">Price / Promo</Label>
+                <Select 
+                  value={formData.influencePricePromo || 'none'} 
+                  onValueChange={(value) => updateField('influencePricePromo', value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select level" />
@@ -1467,6 +1514,25 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              <div>
+                <Label className="text-xs font-medium">Pricing Strategy</Label>
+                <Select 
+                  value={formData.pricingStrategy || 'none'} 
+                  onValueChange={(value) => updateField('pricingStrategy', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select pricing strategy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="EDLP (Everyday Low Pricing)">EDLP (Everyday Low Pricing)</SelectItem>
+                    <SelectItem value="High-Low">High-Low</SelectItem>
+                    <SelectItem value="Margin Focused">Margin Focused</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 4: eCommerce + Digital/Social (RENAMED) */}
               <div>
                 <Label className="text-xs font-medium">eCommerce</Label>
                 <Select 
@@ -1486,10 +1552,29 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
 
               <div>
-                <Label className="text-xs font-medium">In Store Events</Label>
+                <Label className="text-xs font-medium">Digital/Social</Label>
                 <Select 
-                  value={formData.influenceInStoreEvents || 'none'} 
-                  onValueChange={(value) => updateField('influenceInStoreEvents', value)}
+                  value={formData.influenceDigital || 'none'} 
+                  onValueChange={(value) => updateField('influenceDigital', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 5: Buying/PO Ownership + Shrink Management */}
+              <div>
+                <Label className="text-xs font-medium">Buying / PO Ownership</Label>
+                <Select 
+                  value={formData.influenceBuyingPOOwnership || 'none'} 
+                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select level" />
@@ -1521,11 +1606,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Row 6: In Store Events + Allows Wet Sampling */}
               <div>
-                <Label className="text-xs font-medium">Buying / PO Ownership</Label>
+                <Label className="text-xs font-medium">In Store Events</Label>
                 <Select 
-                  value={formData.influenceBuyingPOOwnership || 'none'} 
-                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value)}
+                  value={formData.influenceInStoreEvents || 'none'} 
+                  onValueChange={(value) => updateField('influenceInStoreEvents', value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select level" />
@@ -1538,100 +1624,90 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   </SelectContent>
                 </Select>
               </div>
+
+              <div>
+                <Label className="text-xs font-medium">Allows Wet Sampling</Label>
+                <Select 
+                  value={formData.allowsWetSampling || ''} 
+                  onValueChange={(value) => updateField('allowsWetSampling', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select wet sampling policy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                    <SelectItem value="Yes Everywhere">Yes Everywhere</SelectItem>
+                    <SelectItem value="Yes State Dependent">Yes State Dependent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 7: Innovation Appetite + Innovation Lead Time */}
+              <div>
+                <Label className="text-xs font-medium">Innovation Appetite</Label>
+                <Select 
+                  value={formData.innovationAppetite?.toString() || ''} 
+                  onValueChange={(value) => updateField('innovationAppetite', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select innovation appetite" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    <SelectItem value="Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities">Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities</SelectItem>
+                    <SelectItem value="Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge">Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge</SelectItem>
+                    <SelectItem value="Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy">Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy</SelectItem>
+                    <SelectItem value="Cautious Adopter - Moves slowly on new items and prefers proven success before committing">Cautious Adopter - Moves slowly on new items and prefers proven success before committing</SelectItem>
+                    <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium">Innovation Lead Time</Label>
+                <Select 
+                  value={formData.innovationLeadTime || ''} 
+                  onValueChange={(value) => updateField('innovationLeadTime', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select innovation lead time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    <SelectItem value="In-Market Ready">In-Market Ready</SelectItem>
+                    <SelectItem value="<3 Months">&lt;3 Months</SelectItem>
+                    <SelectItem value="3–6 Months">3–6 Months</SelectItem>
+                    <SelectItem value="6–12 Months">6–12 Months</SelectItem>
+                    <SelectItem value="12+ Months">12+ Months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 8: Has Planogram + JBP Customer */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="hasPlanograms"
+                  checked={formData.hasPlanograms}
+                  onCheckedChange={(checked) => updateField('hasPlanograms', checked as boolean)}
+                />
+                <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isJBP"
+                  checked={formData.isJBP}
+                  onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
+                />
+                <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
+              </div>
             </div>
           </div>
 
           <div className="border-t pt-4"></div>
 
-          {/* Other Strategy Fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isJBP"
-                checked={formData.isJBP}
-                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
-              />
-              <Label htmlFor="isJBP" className="text-sm font-medium">JBP Customer</Label>
-            </div>
-            <div>
-              <Label className="text-xs font-medium">Pricing Strategy</Label>
-              <Select 
-                value={formData.pricingStrategy || 'none'} 
-                onValueChange={(value) => updateField('pricingStrategy', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select pricing strategy" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="EDLP (Everyday Low Pricing)">EDLP (Everyday Low Pricing)</SelectItem>
-                  <SelectItem value="High-Low">High-Low</SelectItem>
-                  <SelectItem value="Margin Focused">Margin Focused</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs font-medium">Private Label</Label>
-              <Select 
-                value={formData.privateLabel || 'none'} 
-                onValueChange={(value) => updateField('privateLabel', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select private label level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs font-medium">Are Displays Mandated</Label>
-              <Select 
-                value={formData.displayMandates || 'none'} 
-                onValueChange={(value) => updateField('displayMandates', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select display mandate level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Fully Mandated">
-                    <div className="flex flex-col">
-                      <span className="font-medium">Fully Mandated</span>
-                      <span className="text-xs text-gray-500">Chainwide requirement with strict enforcement and formal compliance</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Partially Mandated">
-                    <div className="flex flex-col">
-                      <span className="font-medium">Partially Mandated</span>
-                      <span className="text-xs text-gray-500">Required only in certain areas or periods with light enforcement</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Encouraged but Optional">
-                    <div className="flex flex-col">
-                      <span className="font-medium">Encouraged but Optional</span>
-                      <span className="text-xs text-gray-500">Corporate supports displays, but execution depends on local teams</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Store-Level Discretion">
-                    <div className="flex flex-col">
-                      <span className="font-medium">Store-Level Discretion</span>
-                      <span className="text-xs text-gray-500">No corporate direction- individual stores decide if displays happen</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Not Mandated">
-                    <div className="flex flex-col">
-                      <span className="font-medium">Not Mandated</span>
-                      <span className="text-xs text-gray-500">No expectation for displays- execution is purely opportunistic</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+          {/* JBP Section */}
           {formData.isJBP && (
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1785,26 +1861,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             </div>
           </div>
 
-          <div>
-            <Label className="text-xs font-medium">Innovation Appetite</Label>
-            <Select 
-              value={formData.innovationAppetite?.toString() || ''} 
-              onValueChange={(value) => updateField('innovationAppetite', value === 'clear' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select innovation appetite" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                <SelectItem value="Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities">Innovation Leader - Actively shapes category trends and seeks first-to-market opportunities</SelectItem>
-                <SelectItem value="Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge">Early Adopter - Embraces new items and programs ahead of peers to gain a competitive edge</SelectItem>
-                <SelectItem value="Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy">Selective Adopter - Evaluates innovation carefully and participates when aligned to strategy</SelectItem>
-                <SelectItem value="Cautious Adopter - Moves slowly on new items and prefers proven success before committing">Cautious Adopter - Moves slowly on new items and prefers proven success before committing</SelectItem>
-                <SelectItem value="Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment">Innovation Resistant - Rarely accepts innovation and sticks to a stable-risk assortment</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label className="text-xs font-medium">Category Captain</Label>
@@ -1867,55 +1923,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
 
           {/* Planogram Section */}
-          <div className="flex items-center space-x-2 pt-4 border-t">
-            <Checkbox
-              id="hasPlanograms"
-              checked={formData.hasPlanograms}
-              onCheckedChange={(checked) => updateField('hasPlanograms', checked as boolean)}
-            />
-            <Label htmlFor="hasPlanograms" className="text-sm font-medium">Has Planogram</Label>
-          </div>
-
-          {/* NEW: Allows Wet Sampling Dropdown */}
-          <div>
-            <Label className="text-xs font-medium">Allows Wet Sampling</Label>
-            <Select 
-              value={formData.allowsWetSampling || ''} 
-              onValueChange={(value) => updateField('allowsWetSampling', value === 'clear' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select wet sampling policy" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                <SelectItem value="No">No</SelectItem>
-                <SelectItem value="Yes Everywhere">Yes Everywhere</SelectItem>
-                <SelectItem value="Yes State Dependent">Yes State Dependent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* NEW: Innovation Lead Time Dropdown */}
-          <div>
-            <Label className="text-xs font-medium">Innovation Lead Time</Label>
-            <Select 
-              value={formData.innovationLeadTime || ''} 
-              onValueChange={(value) => updateField('innovationLeadTime', value === 'clear' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select innovation lead time" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                <SelectItem value="In-Market Ready">In-Market Ready</SelectItem>
-                <SelectItem value="<3 Months">&lt;3 Months</SelectItem>
-                <SelectItem value="3–6 Months">3–6 Months</SelectItem>
-                <SelectItem value="6–12 Months">6–12 Months</SelectItem>
-                <SelectItem value="12+ Months">12+ Months</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {formData.hasPlanograms && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
               <Label className="text-sm font-medium block flex items-center gap-2">
