@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare, Building, BarChart3, RefreshCw, AlertCircle } from 'lucide-react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare, Building, BarChart3, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -207,7 +207,6 @@ export default function AccountDetails({
 
   // Helper function to format large numbers
   const formatLargeNumber = (value: string | number) => {
-    if (value === 'N/A' || value === null || value === undefined) return 'N/A';
     const num = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(num)) return 'N/A';
     
@@ -220,16 +219,15 @@ export default function AccountDetails({
 
   // Helper function to format percentage
   const formatPercentage = (value: string | number) => {
-    if (value === 'N/A' || value === null || value === undefined) return 'N/A';
     const num = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(num)) return 'N/A';
     return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
 
-  // Helper function to format price
-  const formatPrice = (value: string | number) => {
-    if (value === 'N/A' || value === null || value === undefined) return 'N/A';
-    const num = typeof value === 'string' ? parseFloat(value) : value;
+  // Helper function to safely format price - handles 'N/A' strings
+  const formatPrice = (value: string) => {
+    if (value === 'N/A') return 'N/A';
+    const num = parseFloat(value);
     if (isNaN(num)) return 'N/A';
     return `$${num.toFixed(2)}`;
   };
@@ -713,16 +711,7 @@ export default function AccountDetails({
 
                       {marketError && !marketLoading && (
                         <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                          <div className="flex items-start gap-2">
-                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-medium text-red-800 mb-1">Unable to fetch market data</p>
-                              <p className="text-xs text-red-600">{marketError}</p>
-                              <p className="text-xs text-red-600 mt-2">
-                                This could be due to: API rate limits, invalid ticker symbol, or network issues. Please try again in a moment.
-                              </p>
-                            </div>
-                          </div>
+                          <p className="text-sm text-red-600">{marketError}</p>
                         </div>
                       )}
 
@@ -750,10 +739,7 @@ export default function AccountDetails({
                                 <TrendingUp className="w-3 h-3" />
                                 Change
                               </label>
-                              <p className={`text-2xl font-bold mt-1 ${
-                                marketData.percentChange === 'N/A' ? 'text-gray-600' :
-                                parseFloat(marketData.percentChange) >= 0 ? 'text-green-600' : 'text-red-600'
-                              }`}>
+                              <p className={`text-2xl font-bold mt-1 ${parseFloat(marketData.percentChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {formatPercentage(marketData.percentChange)}
                               </p>
                             </div>
@@ -770,34 +756,34 @@ export default function AccountDetails({
                             <div>
                               <label className="text-xs font-medium text-gray-600">Open</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                {formatPrice(marketData.openPrice)}
+                                ${parseFloat(marketData.openPrice).toFixed(2)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">Previous Close</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                {formatPrice(marketData.previousClose)}
+                                ${parseFloat(marketData.previousClose).toFixed(2)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">Day High</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                {formatPrice(marketData.highPrice)}
+                                ${parseFloat(marketData.highPrice).toFixed(2)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">Day Low</label>
                               <p className="text-sm font-semibold text-gray-900 mt-1">
-                                {formatPrice(marketData.lowPrice)}
+                                ${parseFloat(marketData.lowPrice).toFixed(2)}
                               </p>
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-600">52W Range</label>
                               <p className="text-xs font-semibold text-gray-900 mt-1">
-                                {formatPrice(marketData.fiftyTwoWeekLow)} - {formatPrice(marketData.fiftyTwoWeekHigh)}
+                                ${parseFloat(marketData.fiftyTwoWeekLow).toFixed(2)} - ${parseFloat(marketData.fiftyTwoWeekHigh).toFixed(2)}
                               </p>
                             </div>
-                            {marketData.annualSales !== '0' && marketData.annualSales !== 'N/A' && (
+                            {marketData.annualSales !== '0' && (
                               <div>
                                 <label className="text-xs font-medium text-gray-600">Annual Sales</label>
                                 <p className="text-sm font-semibold text-gray-900 mt-1">
@@ -805,19 +791,19 @@ export default function AccountDetails({
                                 </p>
                               </div>
                             )}
-                            {marketData.dividendYield !== '0' && marketData.dividendYield !== 'N/A' && (
+                            {marketData.dividendYield !== '0' && (
                               <div>
                                 <label className="text-xs font-medium text-gray-600">Dividend Yield</label>
                                 <p className="text-sm font-semibold text-gray-900 mt-1">
-                                  {marketData.dividendYield === 'N/A' ? 'N/A' : `${(parseFloat(marketData.dividendYield) * 100).toFixed(2)}%`}
+                                  {(parseFloat(marketData.dividendYield) * 100).toFixed(2)}%
                                 </p>
                               </div>
                             )}
-                            {marketData.pegRatio !== '0' && marketData.pegRatio !== 'N/A' && (
+                            {marketData.pegRatio !== '0' && (
                               <div>
                                 <label className="text-xs font-medium text-gray-600">PEG Ratio</label>
                                 <p className="text-sm font-semibold text-gray-900 mt-1">
-                                  {marketData.pegRatio === 'N/A' ? 'N/A' : parseFloat(marketData.pegRatio).toFixed(2)}
+                                  {parseFloat(marketData.pegRatio).toFixed(2)}
                                 </p>
                               </div>
                             )}
