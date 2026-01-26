@@ -901,10 +901,10 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                 {/* Contact Information */}
                                 <div className="flex flex-wrap gap-2 mb-3">
                                   {contact.email && (
-                                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                                    <a href={`mailto:${contact.email}`} className="inline-block"><Badge variant="outline" className="text-xs flex items-center gap-1 cursor-pointer hover:bg-gray-100 transition-colors">
                                       <Mail className="w-3 h-3" />
                                       {contact.email}
-                                    </Badge>
+                                    </Badge></a>
                                   )}
                                   {contact.officePhone && (
                                     <Badge variant="secondary" className="text-xs flex items-center gap-1">
@@ -953,10 +953,10 @@ export default function CRMTool({ userName }: CRMToolProps) {
                                       </Badge>
                                     )}
                                     {contact.primaryDiageoRelationshipOwners.ownerEmail && (
-                                      <Badge variant="outline" className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-800 border-indigo-300">
+                                      <a href={`mailto:${contact.primaryDiageoRelationshipOwners.ownerEmail}`} className="inline-block"><Badge variant="outline" className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-800 border-indigo-300 cursor-pointer hover:bg-indigo-100 transition-colors">
                                         <Mail className="w-3 h-3" />
                                         {contact.primaryDiageoRelationshipOwners.ownerEmail}
-                                      </Badge>
+                                      </Badge></a>
                                     )}
                                   </div>
                                 )}
