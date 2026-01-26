@@ -95,11 +95,32 @@ class AlphaVantageService {
   async getGlobalQuote(symbol: string): Promise<AlphaVantageQuote | null> {
     try {
       const url = `${BASE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${this.apiKey}`;
+      console.log(`📡 Fetching quote from: ${url}`);
+      
       const response = await fetch(url);
       const data = await response.json();
+      
+      console.log(`📊 Raw API response for GLOBAL_QUOTE:`, JSON.stringify(data, null, 2));
+
+      // Check for API error messages
+      if (data['Error Message']) {
+        console.error('❌ API Error:', data['Error Message']);
+        throw new Error(`Invalid ticker symbol: ${symbol}`);
+      }
+
+      if (data['Note']) {
+        console.warn('⚠️ API Rate Limit:', data['Note']);
+        throw new Error('API rate limit reached. Please try again in a moment.');
+      }
+
+      if (data['Information']) {
+        console.warn('⚠️ API Information:', data['Information']);
+        throw new Error('API rate limit reached. Please try again in a moment.');
+      }
 
       if (data['Global Quote'] && Object.keys(data['Global Quote']).length > 0) {
         const quote = data['Global Quote'];
+        console.log('✅ Quote data parsed successfully');
         return {
           symbol: quote['01. symbol'],
           name: symbol, // Will be enriched from overview
@@ -115,11 +136,11 @@ class AlphaVantageService {
         };
       }
 
-      console.warn('No quote data found for symbol:', symbol);
+      console.warn('⚠️ No quote data found for symbol:', symbol);
       return null;
     } catch (error) {
-      console.error('Error fetching global quote:', error);
-      return null;
+      console.error('❌ Error fetching global quote:', error);
+      throw error;
     }
   }
 
@@ -129,10 +150,31 @@ class AlphaVantageService {
   async getCompanyOverview(symbol: string): Promise<AlphaVantageOverview | null> {
     try {
       const url = `${BASE_URL}?function=OVERVIEW&symbol=${symbol}&apikey=${this.apiKey}`;
+      console.log(`📡 Fetching overview from: ${url}`);
+      
       const response = await fetch(url);
       const data = await response.json();
+      
+      console.log(`📊 Raw API response for OVERVIEW:`, JSON.stringify(data, null, 2));
+
+      // Check for API error messages
+      if (data['Error Message']) {
+        console.error('❌ API Error:', data['Error Message']);
+        throw new Error(`Invalid ticker symbol: ${symbol}`);
+      }
+
+      if (data['Note']) {
+        console.warn('⚠️ API Rate Limit:', data['Note']);
+        throw new Error('API rate limit reached. Please try again in a moment.');
+      }
+
+      if (data['Information']) {
+        console.warn('⚠️ API Information:', data['Information']);
+        throw new Error('API rate limit reached. Please try again in a moment.');
+      }
 
       if (data.Symbol) {
+        console.log('✅ Overview data parsed successfully');
         return {
           symbol: data.Symbol,
           name: data.Name,
@@ -177,11 +219,11 @@ class AlphaVantageService {
         };
       }
 
-      console.warn('No overview data found for symbol:', symbol);
+      console.warn('⚠️ No overview data found for symbol:', symbol);
       return null;
     } catch (error) {
-      console.error('Error fetching company overview:', error);
-      return null;
+      console.error('❌ Error fetching company overview:', error);
+      throw error;
     }
   }
 
@@ -198,31 +240,34 @@ class AlphaVantageService {
         this.getCompanyOverview(symbol)
       ]);
 
+      console.log('📦 Quote result:', quote ? 'Success' : 'Failed');
+      console.log('📦 Overview result:', overview ? 'Success' : 'Failed');
+
       if (!quote && !overview) {
-        throw new Error(`No data found for symbol: ${symbol}`);
+        throw new Error(`No data available for symbol: ${symbol}. Please verify the ticker symbol is correct.`);
       }
 
       // Combine data from both sources
       const snapshot: MarketSnapshot = {
         symbol: symbol,
         name: overview?.name || symbol,
-        currentPrice: quote?.price || '0',
-        percentChange: quote?.changePercent || '0',
-        marketCap: overview?.marketCapitalization || '0',
-        highPrice: quote?.high || '0',
-        lowPrice: quote?.low || '0',
-        openPrice: quote?.open || '0',
-        previousClose: quote?.previousClose || '0',
-        pegRatio: overview?.pegRatio || '0',
-        annualSales: overview?.revenueTTM || '0',
-        dividendYield: overview?.dividendYield || '0',
-        fiftyTwoWeekLow: overview?.week52Low || '0',
-        fiftyTwoWeekHigh: overview?.week52High || '0',
+        currentPrice: quote?.price || 'N/A',
+        percentChange: quote?.changePercent || 'N/A',
+        marketCap: overview?.marketCapitalization || 'N/A',
+        highPrice: quote?.high || 'N/A',
+        lowPrice: quote?.low || 'N/A',
+        openPrice: quote?.open || 'N/A',
+        previousClose: quote?.previousClose || 'N/A',
+        pegRatio: overview?.pegRatio || 'N/A',
+        annualSales: overview?.revenueTTM || 'N/A',
+        dividendYield: overview?.dividendYield || 'N/A',
+        fiftyTwoWeekLow: overview?.week52Low || 'N/A',
+        fiftyTwoWeekHigh: overview?.week52High || 'N/A',
         currency: overview?.currency || 'USD',
         lastUpdated: new Date().toISOString()
       };
 
-      console.log('✅ Market snapshot fetched successfully:', snapshot);
+      console.log('✅ Market snapshot created:', snapshot);
       return snapshot;
     } catch (error) {
       console.error('❌ Error fetching market snapshot:', error);
