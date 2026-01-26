@@ -235,6 +235,7 @@ export interface Contact {
   // UPDATED: Added lastCheckIn tracking for each role
   primaryDiageoRelationshipOwners?: {
     ownerName?: string; // NEW: Owner name field
+    ownerTitle?: string; // NEW: Owner title field
     ownerEmail?: string; // NEW: Owner email field
     svp?: string; // NEW: SVP dropdown field
     sales?: {
