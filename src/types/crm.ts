@@ -123,7 +123,14 @@ export interface Account {
   ecommerceMaturityLevel?: string; // UPDATED: Changed from hasEcommerce (boolean) to ecommerceMaturityLevel (string) for dropdown
   ecommerceSalesPercentage?: string; // NEW: % of Sales Coming From E-Commerce
   ecommercePartners?: string[]; // NEW: Primary E-Commerce Partners (multi-select)
+  // JBP (Joint Business Plan) fields
   isJBP?: boolean;
+  jbpStatus?: string; // NEW: JBP Status (Draft, Active, Under Review, Completed)
+  jbpStartDate?: string; // NEW: JBP Start Date
+  jbpEndDate?: string; // NEW: JBP End Date
+  jbpGoals?: string; // NEW: JBP Goals/Objectives (textarea)
+  jbpInvestmentAmount?: string; // NEW: JBP Investment Amount
+  jbpNotes?: string; // NEW: JBP Notes (textarea)
   lastJBPDate?: string;
   nextJBPDate?: string;
   nextJBPAlert?: boolean;
