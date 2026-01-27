@@ -84,14 +84,19 @@ const CADENCE_OPTIONS = ['Annual', 'Semi Annual', 'Quarterly', 'Monthly', 'Ongoi
 const SVP_OPTIONS = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
 
 // Decision Bias Profile options with commentary
+// Decision Bias Profile options with commentary
 const DECISION_BIAS_OPTIONS = {
   'Data Centric': {
     description: 'Decides based on numbers, scorecards, consumer insights, and test results.',
     bestToLeadWith: 'category data, shopper insights, P and L impact, test and learn.'
   },
-  'Margin First': {
+  'Margin Maximizer': {
     description: 'Focuses primarily on penny profit, margin mix, and trade terms.',
     bestToLeadWith: 'trade structure, margin math, mix improvement, cash efficiency.'
+  },
+  'Price Leadership': {
+    description: 'Prioritizes competitive pricing and market share through aggressive price positioning.',
+    bestToLeadWith: 'competitive pricing analysis, market share data, volume growth opportunities, price elasticity studies.'
   },
   'Consumer Trend Focused': {
     description: 'Drawn to what is new, premium, multicultural, or fast growing.',
@@ -1940,7 +1945,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       <div className="text-xs text-gray-600">Decides based on numbers, scorecards, consumer insights, and test results.</div>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Margin First">
+                  <SelectItem value="Margin Maximizer">
                     <div className="py-1">
                       <div className="font-medium">Margin First</div>
                       <div className="text-xs text-gray-600">Focuses primarily on penny profit, margin mix, and trade terms.</div>
@@ -1963,6 +1968,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       <div className="font-medium">Competitor Reactive</div>
                       <div className="text-xs text-gray-600">Reacts to what key competitors and local markets are doing.</div>
                     </div>
+                  <SelectItem value="Price Leadership">
+                    <div className="py-1">
+                      <div className="font-medium">Price Leadership</div>
+                      <div className="text-xs text-gray-600">Prioritizes competitive pricing and market share through aggressive price positioning.</div>
+                    </div>
+                  </SelectItem>
                   </SelectItem>
                 </SelectContent>
               </Select>

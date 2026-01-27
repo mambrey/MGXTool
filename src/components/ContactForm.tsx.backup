@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Plus, Bell, BellOff, Calendar as CalendarIcon, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText } from 'lucide-react';
+import { X, Plus, Bell, BellOff, Calendar as CalendarIcon, Upload, Info, Crown, Search, Check, Users, Package, Trash2, ClipboardList, Image, Briefcase, ChevronDown, FileText, Building, Building2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,11 +15,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useLoadScript } from '@react-google-maps/api';
-import type { Contact, Account, CustomerEvent } from '@/types/crm';
+import type { Contact, Account, CustomerEvent, BannerBuyingOffice } from '@/types/crm';
 import { loadFromStorage } from '@/lib/storage';
 
 interface ContactFormProps {
@@ -32,7 +30,7 @@ interface ContactFormProps {
 // Extended event interface with alert functionality
 interface ContactEventWithAlert extends CustomerEvent {
   alertEnabled?: boolean;
-  alertDays?: number;
+  alertOptions?: string[];
 }
 
 // Category options for segment ownership - REORDERED Non-Alc below Whiskey Other
@@ -169,6 +167,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     currentRoleTenure: contact?.currentRoleTenure || '',
     managerId: contact?.managerId || '',
     accountId: contact?.accountId || '',
+    bannerBuyingOfficeId: contact?.bannerBuyingOfficeId || '',
     isPrimaryContact: contact?.isPrimaryContact || false,
     contactActiveStatus: contact?.contactActiveStatus || 'Active',
     relationshipStatus: contact?.relationshipStatus || '',
@@ -176,10 +175,10 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     responsibilityLevels: contact?.responsibilityLevels || {},
     birthday: contact?.birthday || '',
     birthdayAlert: contact?.birthdayAlert || false,
-    birthdayAlertDays: contact?.birthdayAlertDays || 7,
+    birthdayAlertOptions: contact?.birthdayAlertOptions || [],
     nextContactDate: contact?.nextContactDate || '',
     nextContactAlert: contact?.nextContactAlert || false,
-    nextContactAlertDays: contact?.nextContactAlertDays || 7,
+    nextContactAlertOptions: contact?.nextContactAlertOptions || [],
     lastContactDate: contact?.lastContactDate || '',
     linkedinProfile: contact?.linkedinProfile || '',
     knownPreferences: contact?.knownPreferences || '',
@@ -196,15 +195,21 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [contactEvents, setContactEvents] = useState<ContactEventWithAlert[]>(
     (contact?.contactEvents || []).map(event => ({
       ...event,
-      alertEnabled: false,
-      alertDays: 7
+      alertEnabled: event.alertEnabled || false,
+      alertOptions: event.alertOptions || []
     }))
   );
   const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventAlertEnabled, setNewEventAlertEnabled] = useState(false);
-  const [newEventAlertDays, setNewEventAlertDays] = useState(7);
+  const [newEventAlertOptions, setNewEventAlertOptions] = useState<string[]>([]);
+
+  // State for custom alert days
+  const [birthdayCustomDays, setBirthdayCustomDays] = useState<string>('');
+  const [nextContactCustomDays, setNextContactCustomDays] = useState<string>('');
+  const [newEventCustomDays, setNewEventCustomDays] = useState<string>('');
+  const [eventCustomDays, setEventCustomDays] = useState<{[key: string]: string}>({});
 
   const [newNote, setNewNote] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -213,9 +218,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [headshotFileName, setHeadshotFileName] = useState('');
   const [headshotError, setHeadshotError] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Primary Diageo Relationship Owner(s) state
+  // Primary Diageo Relationship Owner(s) state - Default to empty string (Not Assigned)
   const [ownerName, setOwnerName] = useState(contact?.primaryDiageoRelationshipOwners?.ownerName || '');
+  const [ownerTitle, setOwnerTitle] = useState(contact?.primaryDiageoRelationshipOwners?.ownerTitle || '');
   const [ownerEmail, setOwnerEmail] = useState(contact?.primaryDiageoRelationshipOwners?.ownerEmail || '');
   const [svp, setSvp] = useState(contact?.primaryDiageoRelationshipOwners?.svp || '');
   const [salesRoles, setSalesRoles] = useState<{[role: string]: string}>(
@@ -233,9 +241,19 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     contact?.primaryDiageoRelationshipOwners?.supportLastCheckIn || {}
   );
 
-  // Popover states for calendar date pickers
-  const [salesCalendarOpen, setSalesCalendarOpen] = useState<{[role: string]: boolean}>({});
-  const [supportCalendarOpen, setSupportCalendarOpen] = useState<{[role: string]: boolean}>({});
+  // Sync relationship owner state with contact prop changes
+  useEffect(() => {
+    if (contact?.primaryDiageoRelationshipOwners) {
+      setOwnerTitle(contact.primaryDiageoRelationshipOwners.ownerTitle || '');
+      setOwnerName(contact.primaryDiageoRelationshipOwners.ownerName || '');
+      setOwnerEmail(contact.primaryDiageoRelationshipOwners.ownerEmail || '');
+      setSvp(contact.primaryDiageoRelationshipOwners.svp || '');
+      setSalesRoles(contact.primaryDiageoRelationshipOwners.sales || {});
+      setSupportRoles(contact.primaryDiageoRelationshipOwners.support || {});
+      setSalesLastCheckIn(contact.primaryDiageoRelationshipOwners.salesLastCheckIn || {});
+      setSupportLastCheckIn(contact.primaryDiageoRelationshipOwners.supportLastCheckIn || {});
+    }
+  }, [contact]);
 
   // Google Places Autocomplete state
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -257,7 +275,111 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     }
   };
 
-  // Initialize autocomplete when Google Maps is loaded
+  // Helper function to toggle alert options - UPDATED FOR NEW ALERT SYSTEM
+  const handleToggleBirthdayAlertOption = (option: string) => {
+    setFormData(prev => {
+      const currentOptions = prev.birthdayAlertOptions || [];
+      const newOptions = currentOptions.includes(option)
+        ? currentOptions.filter(o => o !== option)
+        : [...currentOptions, option];
+      return { ...prev, birthdayAlertOptions: newOptions };
+    });
+  };
+
+  const handleToggleNextContactAlertOption = (option: string) => {
+    setFormData(prev => {
+      const currentOptions = prev.nextContactAlertOptions || [];
+      const newOptions = currentOptions.includes(option)
+        ? currentOptions.filter(o => o !== option)
+        : [...currentOptions, option];
+      return { ...prev, nextContactAlertOptions: newOptions };
+    });
+  };
+
+  const handleToggleNewEventAlertOption = (option: string) => {
+    setNewEventAlertOptions(prev => {
+      return prev.includes(option)
+        ? prev.filter(o => o !== option)
+        : [...prev, option];
+    });
+  };
+
+  // Custom days handlers
+  const handleBirthdayCustomDaysChange = (value: string) => {
+    setBirthdayCustomDays(value);
+    const currentOptions = formData.birthdayAlertOptions || [];
+    const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      setFormData(prev => ({ ...prev, birthdayAlertOptions: [...filteredOptions, customOption] }));
+    } else {
+      setFormData(prev => ({ ...prev, birthdayAlertOptions: filteredOptions }));
+    }
+  };
+
+  const handleNextContactCustomDaysChange = (value: string) => {
+    setNextContactCustomDays(value);
+    const currentOptions = formData.nextContactAlertOptions || [];
+    const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      setFormData(prev => ({ ...prev, nextContactAlertOptions: [...filteredOptions, customOption] }));
+    } else {
+      setFormData(prev => ({ ...prev, nextContactAlertOptions: filteredOptions }));
+    }
+  };
+
+  const handleNewEventCustomDaysChange = (value: string) => {
+    setNewEventCustomDays(value);
+    const filteredOptions = newEventAlertOptions.filter(opt => !opt.startsWith('custom_'));
+    
+    if (value && parseInt(value) > 0) {
+      const customOption = `custom_${value}`;
+      setNewEventAlertOptions([...filteredOptions, customOption]);
+    } else {
+      setNewEventAlertOptions(filteredOptions);
+    }
+  };
+
+  const handleEventCustomDaysChange = (eventId: string, value: string) => {
+    setEventCustomDays(prev => ({ ...prev, [eventId]: value }));
+    
+    setContactEvents(contactEvents.map(event => {
+      if (event.id === eventId) {
+        const currentOptions = event.alertOptions || [];
+        const filteredOptions = currentOptions.filter(opt => !opt.startsWith('custom_'));
+        
+        if (value && parseInt(value) > 0) {
+          const customOption = `custom_${value}`;
+          return { ...event, alertOptions: [...filteredOptions, customOption] };
+        }
+        return { ...event, alertOptions: filteredOptions };
+      }
+      return event;
+    }));
+  };
+
+  const getAlertOptionLabel = (option: string): string => {
+    if (option === '30_days_before') return '30 Days Before';
+    if (option === '7_days_before') return '7 Days Before';
+    if (option === '1_day_before') return '1 Day Before';
+    if (option.startsWith('custom_')) {
+      const days = option.replace('custom_', '');
+      return `${days} Days Before`;
+    }
+    return option;
+  };
+
+  const isBirthdayCustomChecked = (formData.birthdayAlertOptions || []).some(opt => opt.startsWith('custom_'));
+  const isNextContactCustomChecked = (formData.nextContactAlertOptions || []).some(opt => opt.startsWith('custom_'));
+  const isNewEventCustomChecked = newEventAlertOptions.some(opt => opt.startsWith('custom_'));
+  
+  const getEventCustomChecked = (event: ContactEventWithAlert) => {
+    return (event.alertOptions || []).some(opt => opt.startsWith('custom_'));
+  };
+
   useEffect(() => {
     if (isLoaded && inputRef.current && window.google) {
       autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
@@ -291,8 +413,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
     setHeadshotError('');
 
-    if (!file.type.match(/image\/(jpeg|jpg)/)) {
-      setHeadshotError('Please upload a JPG or JPEG image file');
+    if (!file.type.match(/image\/(jpeg|jpg|png|gif|webp|bmp)/)) {
+      setHeadshotError('Please upload a valid image file (JPG, JPEG, PNG, GIF, WebP, BMP)');
       e.target.value = '';
       return;
     }
@@ -422,18 +544,18 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     }));
   };
   
-  const handleSalesLastCheckInChange = (role: string, date: string) => {
-    setSalesLastCheckIn(prev => ({
-      ...prev,
-      [role]: date
-    }));
-  };
-
-  const handleSalesCalendarSelect = (role: string, date: Date | undefined) => {
-    if (date) {
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      handleSalesLastCheckInChange(role, formattedDate);
-      setSalesCalendarOpen(prev => ({ ...prev, [role]: false }));
+  const handleSalesLastCheckInChange = (role: string, value: string) => {
+    if (value) {
+      setSalesLastCheckIn(prev => ({
+        ...prev,
+        [role]: value
+      }));
+    } else {
+      setSalesLastCheckIn(prev => {
+        const newLastCheckIn = { ...prev };
+        delete newLastCheckIn[role];
+        return newLastCheckIn;
+      });
     }
   };
 
@@ -464,18 +586,18 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     }));
   };
   
-  const handleSupportLastCheckInChange = (role: string, date: string) => {
-    setSupportLastCheckIn(prev => ({
-      ...prev,
-      [role]: date
-    }));
-  };
-
-  const handleSupportCalendarSelect = (role: string, date: Date | undefined) => {
-    if (date) {
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      handleSupportLastCheckInChange(role, formattedDate);
-      setSupportCalendarOpen(prev => ({ ...prev, [role]: false }));
+  const handleSupportLastCheckInChange = (role: string, value: string) => {
+    if (value) {
+      setSupportLastCheckIn(prev => ({
+        ...prev,
+        [role]: value
+      }));
+    } else {
+      setSupportLastCheckIn(prev => {
+        const newLastCheckIn = { ...prev };
+        delete newLastCheckIn[role];
+        return newLastCheckIn;
+      });
     }
   };
 
@@ -490,7 +612,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       title: newEventTitle.trim(),
       date: newEventDate,
       alertEnabled: newEventAlertEnabled,
-      alertDays: newEventAlertDays
+      alertOptions: newEventAlertOptions
     };
 
     setContactEvents([...contactEvents, newEvent]);
@@ -498,7 +620,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setNewEventTitle('');
     setNewEventDate('');
     setNewEventAlertEnabled(false);
-    setNewEventAlertDays(7);
+    setNewEventAlertOptions([]);
+    setNewEventCustomDays('');
     setIsAddEventDialogOpen(false);
   };
 
@@ -516,12 +639,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     ));
   };
 
-  const handleUpdateEventAlertDays = (eventId: string, days: number) => {
-    setContactEvents(contactEvents.map(event => 
-      event.id === eventId 
-        ? { ...event, alertDays: days }
-        : event
-    ));
+  const handleToggleEventAlertOption = (eventId: string, option: string) => {
+    setContactEvents(contactEvents.map(event => {
+      if (event.id === eventId) {
+        const currentOptions = event.alertOptions || [];
+        const newOptions = currentOptions.includes(option)
+          ? currentOptions.filter(o => o !== option)
+          : [...currentOptions, option];
+        return { ...event, alertOptions: newOptions };
+      }
+      return event;
+    }));
   };
 
   const getDaysUntilEvent = (eventDate: string) => {
@@ -558,10 +686,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation: If ownerName is filled, ownerEmail must also be filled
+    if (ownerName && !ownerEmail) {
+      alert('Primary Owner Email is required when Primary Owner is specified.');
+      return;
+    }
+    
     const contactData: Contact = {
       id: contact?.id || Date.now().toString(),
       ...formData,
       primaryDiageoRelationshipOwners: {
+        ownerTitle,
         ownerName,
         ownerEmail,
         svp,
@@ -570,7 +705,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
         salesLastCheckIn,
         supportLastCheckIn
       },
-      contactEvents: contactEvents.map(({ alertEnabled, alertDays, ...event }) => event),
+      contactEvents: contactEvents.map(({ alertEnabled, alertOptions, ...event }) => ({ ...event, alertEnabled, alertOptions })),
       createdAt: contact?.createdAt || new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
@@ -578,9 +713,34 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     onSave(contactData);
   };
 
-  const handleAccountChange = (accountId: string) => {
-    setFormData(prev => ({ ...prev, accountId }));
+  // Handle account/banner selection - stores both accountId and bannerBuyingOfficeId
+  const handleAccountOrBannerChange = (value: string) => {
+    // Value format: "account:{accountId}" or "banner:{accountId}:{bannerId}"
+    if (value.startsWith('account:')) {
+      const accountId = value.replace('account:', '');
+      setFormData(prev => ({ ...prev, accountId, bannerBuyingOfficeId: '' }));
+    } else if (value.startsWith('banner:')) {
+      const [, accountId, bannerId] = value.split(':');
+      setFormData(prev => ({ ...prev, accountId, bannerBuyingOfficeId: bannerId }));
+    }
     setAccountSearchOpen(false);
+  };
+
+  // Get display name for selected account/banner
+  const getSelectedAccountOrBannerName = () => {
+    if (!formData.accountId) return 'Select';
+    
+    const account = accounts.find(a => a.id === formData.accountId);
+    if (!account) return 'Select';
+    
+    if (formData.bannerBuyingOfficeId && account.bannerBuyingOffices) {
+      const banner = account.bannerBuyingOffices.find(b => b.id === formData.bannerBuyingOfficeId);
+      if (banner) {
+        return `${banner.accountName} (${account.accountName})`;
+      }
+    }
+    
+    return account.accountName;
   };
 
   const handleManagerChange = (managerId: string) => {
@@ -609,6 +769,70 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
       ...prev,
       uploadedNotes: prev.uploadedNotes.filter(note => note.id !== noteId)
     }));
+  };
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const note = {
+          id: Date.now().toString() + Math.random(),
+          content: `Uploaded file: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`,
+          timestamp: new Date().toISOString(),
+          type: 'file' as const,
+          fileName: file.name,
+          fileData: e.target?.result as string,
+          fileType: file.type
+        };
+        setFormData(prev => ({
+          ...prev,
+          uploadedNotes: [...prev.uploadedNotes, note]
+        }));
+      };
+      reader.onerror = () => {
+        alert(`Failed to read file: ${file.name}`);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    handleFileUpload(files);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileUpload(e.target.files);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -716,12 +940,12 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Input
                   id="headshot"
                   type="file"
-                  accept=".jpg,.jpeg"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.bmp"
                   onChange={handleHeadshotUpload}
                   className="cursor-pointer"
                 />
                 <p className="text-xs text-gray-500">
-                  Upload a JPG or JPEG image (max 5MB)
+                  Upload an image file (JPG, JPEG, PNG, GIF, WebP, BMP - max 5MB)
                 </p>
                 {headshotError && (
                   <p className="text-xs text-red-600">{headshotError}</p>
@@ -793,42 +1017,82 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                     aria-expanded={accountSearchOpen}
                     className="w-full justify-between"
                   >
-                    {formData.accountId
-                      ? accounts.find(account => account.id === formData.accountId)?.accountName
-                      : "Select"}
+                    {getSelectedAccountOrBannerName()}
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="start">
+                <PopoverContent className="w-[500px] p-0" align="start">
                   <Command shouldFilter={true}>
                     <CommandInput 
-                      placeholder="Search accounts by name, industry, or owner..." 
+                      placeholder="Search accounts and banners..." 
                     />
                     <CommandList>
-                      <CommandEmpty>No account found.</CommandEmpty>
+                      <CommandEmpty>No account or banner found.</CommandEmpty>
                       <CommandGroup>
                         {accounts.map((account) => {
+                          const accountValue = `account:${account.id}`;
+                          const isAccountSelected = formData.accountId === account.id && !formData.bannerBuyingOfficeId;
                           const searchableText = `${account.accountName} ${account.industry || ''} ${account.accountOwner || ''}`;
+                          
                           return (
-                            <CommandItem
-                              key={account.id}
-                              value={searchableText}
-                              onSelect={() => handleAccountChange(account.id)}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.accountId === account.id ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <div className="flex flex-col">
-                                <span className="font-medium">{account.accountName}</span>
-                                <span className="text-xs text-gray-500">
-                                  {account.industry && `${account.industry} • `}
-                                  {account.accountOwner && `Owner: ${account.accountOwner}`}
-                                </span>
-                              </div>
-                            </CommandItem>
+                            <React.Fragment key={account.id}>
+                              {/* Parent Account */}
+                              <CommandItem
+                                value={searchableText}
+                                onSelect={() => handleAccountOrBannerChange(accountValue)}
+                                className="flex items-center gap-2"
+                              >
+                                <Check
+                                  className={cn(
+                                    "h-4 w-4 shrink-0",
+                                    isAccountSelected ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <span className="font-medium truncate">{account.accountName}</span>
+                                  <span className="text-xs text-gray-500 truncate">
+                                    {account.industry && `${account.industry} • `}
+                                    {account.accountOwner && `Owner: ${account.accountOwner}`}
+                                  </span>
+                                </div>
+                              </CommandItem>
+                              
+                              {/* Banner/Buying Offices under this account */}
+                              {account.bannerBuyingOffices && account.bannerBuyingOffices.length > 0 && (
+                                <>
+                                  {account.bannerBuyingOffices.map((banner) => {
+                                    const bannerValue = `banner:${account.id}:${banner.id}`;
+                                    const isBannerSelected = formData.accountId === account.id && formData.bannerBuyingOfficeId === banner.id;
+                                    const bannerSearchText = `${banner.accountName} ${banner.channel || ''} ${account.accountName}`;
+                                    
+                                    return (
+                                      <CommandItem
+                                        key={banner.id}
+                                        value={bannerSearchText}
+                                        onSelect={() => handleAccountOrBannerChange(bannerValue)}
+                                        className="flex items-center gap-2 pl-8"
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "h-4 w-4 shrink-0",
+                                            isBannerSelected ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        <Building className="h-4 w-4 text-purple-600 shrink-0" />
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                          <span className="font-medium text-sm truncate">{banner.accountName}</span>
+                                          <span className="text-xs text-gray-500 truncate">
+                                            {banner.channel && `${banner.channel} • `}
+                                            Parent: {account.accountName}
+                                          </span>
+                                        </div>
+                                      </CommandItem>
+                                    );
+                                  })}
+                                </>
+                              )}
+                            </React.Fragment>
                           );
                         })}
                       </CommandGroup>
@@ -836,6 +1100,9 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </Command>
                 </PopoverContent>
               </Popover>
+              <p className="text-xs text-gray-500 mt-1">
+                Select a parent account or a specific banner/buying office
+              </p>
             </div>
 
             <div>
@@ -970,6 +1237,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Label htmlFor="officePhone">Office Phone</Label>
                 <Input
                   id="officePhone"
+                  type="tel"
                   value={formData.officePhone}
                   onChange={(e) => handlePhoneChange('officePhone', e.target.value)}
                   placeholder="(555) 123-4567"
@@ -980,6 +1248,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Label htmlFor="mobilePhone">Mobile Phone</Label>
                 <Input
                   id="mobilePhone"
+                  type="tel"
                   value={formData.mobilePhone}
                   onChange={(e) => handlePhoneChange('mobilePhone', e.target.value)}
                   placeholder="(555) 987-6543"
@@ -1033,44 +1302,44 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="relationshipStatus">Support Style</Label>
+              <Label htmlFor="relationshipStatus">Advocacy Style</Label>
               <Select 
                 value={formData.relationshipStatus} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value === 'clear' ? '' : value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select support style..." />
+                  <SelectValue placeholder="Select advocacy style..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                  <SelectItem value="Promoter — Champions our partnership">
+                  <SelectItem value="Promoter | Champions our partnership">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#166534'}}></div>
-                      <span>Promoter — Champions our partnership</span>
+                      <span>Promoter | Champions our partnership</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Supporter — Leans in consistently">
+                  <SelectItem value="Supporter | Leans in consistently">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#16a34a'}}></div>
-                      <span>Supporter — Leans in consistently</span>
+                      <span>Supporter | Leans in consistently</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Neutral — Transactional, low engagement">
+                  <SelectItem value="Neutral | Transactional, low engagement">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#6b7280'}}></div>
-                      <span>Neutral — Transactional, low engagement</span>
+                      <span>Neutral | Transactional, low engagement</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Detractor — Resists our efforts">
+                  <SelectItem value="Detractor | Resists our efforts">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ef4444'}}></div>
-                      <span>Detractor — Resists our efforts</span>
+                      <span>Detractor | Resists our efforts</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="Adversarial — Actively works against">
+                  <SelectItem value="Adversarial | Actively works against">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#991b1b'}}></div>
-                      <span>Adversarial — Actively works against</span>
+                      <span>Adversarial | Actively works against</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -1203,6 +1472,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   type="date"
                   value={birthdayToDateInput(formData.birthday)}
                   onChange={(e) => handleBirthdayChange(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 />
                 
                 <div className="space-y-3 pt-2 border-t border-gray-200">
@@ -1222,24 +1492,72 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   
                   {formData.birthdayAlert && (
                     <div className="space-y-2 pl-6">
-                      <Label htmlFor="birthday-alert-days" className="text-sm text-gray-600">
-                        Alert me (days before event):
+                      <Label className="text-sm text-gray-600">
+                        Alert me:
                       </Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="birthday-alert-days"
-                          type="number"
-                          min="1"
-                          max="90"
-                          value={formData.birthdayAlertDays}
-                          onChange={(e) => setFormData(prev => ({ ...prev, birthdayAlertDays: parseInt(e.target.value) || 7 }))}
-                          className="w-24 h-9"
-                        />
-                        <span className="text-sm text-gray-500">days before</span>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-30-days"
+                            checked={(formData.birthdayAlertOptions || []).includes('30_days_before')}
+                            onCheckedChange={() => handleToggleBirthdayAlertOption('30_days_before')}
+                          />
+                          <Label htmlFor="birthday-30-days" className="text-sm font-normal cursor-pointer">
+                            30 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-7-days"
+                            checked={(formData.birthdayAlertOptions || []).includes('7_days_before')}
+                            onCheckedChange={() => handleToggleBirthdayAlertOption('7_days_before')}
+                          />
+                          <Label htmlFor="birthday-7-days" className="text-sm font-normal cursor-pointer">
+                            7 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-1-day"
+                            checked={(formData.birthdayAlertOptions || []).includes('1_day_before')}
+                            onCheckedChange={() => handleToggleBirthdayAlertOption('1_day_before')}
+                          />
+                          <Label htmlFor="birthday-1-day" className="text-sm font-normal cursor-pointer">
+                            1 Day Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="birthday-custom"
+                            checked={isBirthdayCustomChecked}
+                            onCheckedChange={(checked) => {
+                              if (!checked) {
+                                setBirthdayCustomDays('');
+                                const filteredOptions = (formData.birthdayAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                setFormData(prev => ({ ...prev, birthdayAlertOptions: filteredOptions }));
+                              }
+                            }}
+                          />
+                          <Label htmlFor="birthday-custom" className="text-sm font-normal cursor-pointer">
+                            Custom:
+                          </Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="days"
+                            value={birthdayCustomDays}
+                            onChange={(e) => handleBirthdayCustomDaysChange(e.target.value)}
+                            className="w-20 h-7 text-xs"
+                            disabled={!isBirthdayCustomChecked}
+                          />
+                          <span className="text-sm text-gray-600">days before</span>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        You'll receive an alert {formData.birthdayAlertDays} {formData.birthdayAlertDays === 1 ? 'day' : 'days'} before this date
-                      </p>
+                      {(formData.birthdayAlertOptions || []).length > 0 && (
+                        <p className="text-xs text-gray-500">
+                          You'll receive {(formData.birthdayAlertOptions || []).length} alert{(formData.birthdayAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1271,24 +1589,72 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   
                   {formData.nextContactAlert && (
                     <div className="space-y-2 pl-6">
-                      <Label htmlFor="next-contact-alert-days" className="text-sm text-gray-600">
-                        Alert me (days before event):
+                      <Label className="text-sm text-gray-600">
+                        Alert me:
                       </Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="next-contact-alert-days"
-                          type="number"
-                          min="1"
-                          max="90"
-                          value={formData.nextContactAlertDays}
-                          onChange={(e) => setFormData(prev => ({ ...prev, nextContactAlertDays: parseInt(e.target.value) || 7 }))}
-                          className="w-24 h-9"
-                        />
-                        <span className="text-sm text-gray-500">days before</span>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-30-days"
+                            checked={(formData.nextContactAlertOptions || []).includes('30_days_before')}
+                            onCheckedChange={() => handleToggleNextContactAlertOption('30_days_before')}
+                          />
+                          <Label htmlFor="next-contact-30-days" className="text-sm font-normal cursor-pointer">
+                            30 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-7-days"
+                            checked={(formData.nextContactAlertOptions || []).includes('7_days_before')}
+                            onCheckedChange={() => handleToggleNextContactAlertOption('7_days_before')}
+                          />
+                          <Label htmlFor="next-contact-7-days" className="text-sm font-normal cursor-pointer">
+                            7 Days Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-1-day"
+                            checked={(formData.nextContactAlertOptions || []).includes('1_day_before')}
+                            onCheckedChange={() => handleToggleNextContactAlertOption('1_day_before')}
+                          />
+                          <Label htmlFor="next-contact-1-day" className="text-sm font-normal cursor-pointer">
+                            1 Day Before
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="next-contact-custom"
+                            checked={isNextContactCustomChecked}
+                            onCheckedChange={(checked) => {
+                              if (!checked) {
+                                setNextContactCustomDays('');
+                                const filteredOptions = (formData.nextContactAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                setFormData(prev => ({ ...prev, nextContactAlertOptions: filteredOptions }));
+                              }
+                            }}
+                          />
+                          <Label htmlFor="next-contact-custom" className="text-sm font-normal cursor-pointer">
+                            Custom:
+                          </Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="days"
+                            value={nextContactCustomDays}
+                            onChange={(e) => handleNextContactCustomDaysChange(e.target.value)}
+                            className="w-20 h-7 text-xs"
+                            disabled={!isNextContactCustomChecked}
+                          />
+                          <span className="text-sm text-gray-600">days before</span>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        You'll receive an alert {formData.nextContactAlertDays} {formData.nextContactAlertDays === 1 ? 'day' : 'days'} before this date
-                      </p>
+                      {(formData.nextContactAlertOptions || []).length > 0 && (
+                        <p className="text-xs text-gray-500">
+                          You'll receive {(formData.nextContactAlertOptions || []).length} alert{(formData.nextContactAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1314,7 +1680,16 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                     <div className="space-y-3">
                       {contactEvents.map((event) => {
                         const daysUntil = getDaysUntilEvent(event.date);
-                        const isUpcoming = daysUntil >= 0 && daysUntil <= (event.alertDays || 7);
+                        const isUpcoming = daysUntil >= 0 && (event.alertOptions || []).some(opt => {
+                          if (opt === '30_days_before') return daysUntil <= 30;
+                          if (opt === '7_days_before') return daysUntil <= 7;
+                          if (opt === '1_day_before') return daysUntil <= 1;
+                          if (opt.startsWith('custom_')) {
+                            const customDays = parseInt(opt.replace('custom_', ''));
+                            return daysUntil <= customDays;
+                          }
+                          return false;
+                        });
                         
                         return (
                           <Card key={event.id} className={`p-3 ${isUpcoming && event.alertEnabled ? 'border-orange-300 bg-orange-50' : ''}`}>
@@ -1368,24 +1743,89 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                 </div>
 
                                 {event.alertEnabled && (
-                                  <div className="space-y-1 pl-5">
-                                    <Label htmlFor={`alert-days-${event.id}`} className="text-xs text-gray-600">
-                                      Alert me (days before):
+                                  <div className="space-y-2 pl-5">
+                                    <Label className="text-xs text-gray-600">
+                                      Alert me:
                                     </Label>
-                                    <div className="flex items-center gap-2">
-                                      <Input
-                                        id={`alert-days-${event.id}`}
-                                        type="number"
-                                        min="1"
-                                        max="90"
-                                        value={event.alertDays || 7}
-                                        onChange={(e) => handleUpdateEventAlertDays(event.id, parseInt(e.target.value) || 7)}
-                                        className="w-16 h-7 text-xs"
-                                      />
-                                      <span className="text-xs text-gray-500">days</span>
+                                    <div className="space-y-1.5">
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-30-days`}
+                                          checked={(event.alertOptions || []).includes('30_days_before')}
+                                          onCheckedChange={() => handleToggleEventAlertOption(event.id, '30_days_before')}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label
+                                          htmlFor={`event-${event.id}-30-days`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          30 Days Before
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-7-days`}
+                                          checked={(event.alertOptions || []).includes('7_days_before')}
+                                          onCheckedChange={() => handleToggleEventAlertOption(event.id, '7_days_before')}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label
+                                          htmlFor={`event-${event.id}-7-days`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          7 Days Before
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-1-day`}
+                                          checked={(event.alertOptions || []).includes('1_day_before')}
+                                          onCheckedChange={() => handleToggleEventAlertOption(event.id, '1_day_before')}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label
+                                          htmlFor={`event-${event.id}-1-day`}
+                                          className="text-xs font-normal cursor-pointer"
+                                        >
+                                          1 Day Before
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`event-${event.id}-custom`}
+                                          checked={getEventCustomChecked(event)}
+                                          onCheckedChange={(checked) => {
+                                            if (!checked) {
+                                              setEventCustomDays(prev => {
+                                                const newState = { ...prev };
+                                                delete newState[event.id];
+                                                return newState;
+                                              });
+                                              const filteredOptions = (event.alertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                              setContactEvents(contactEvents.map(e => 
+                                                e.id === event.id ? { ...e, alertOptions: filteredOptions } : e
+                                              ));
+                                            }
+                                          }}
+                                          className="h-3 w-3"
+                                        />
+                                        <Label htmlFor={`event-${event.id}-custom`} className="text-xs font-normal cursor-pointer">
+                                          Custom:
+                                        </Label>
+                                        <Input
+                                          type="number"
+                                          min="1"
+                                          placeholder="days"
+                                          value={eventCustomDays[event.id] || ''}
+                                          onChange={(e) => handleEventCustomDaysChange(event.id, e.target.value)}
+                                          className="w-16 h-6 text-xs"
+                                          disabled={!getEventCustomChecked(event)}
+                                        />
+                                        <span className="text-xs text-gray-600">days before</span>
+                                      </div>
                                     </div>
-                                    {isUpcoming && (
-                                      <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                    {isUpcoming && (event.alertOptions || []).length > 0 && (
+                                      <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-2">
                                         <Bell className="w-3 h-3" />
                                         <span>Alert active</span>
                                       </div>
@@ -1464,6 +1904,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <SelectContent>
                   <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="Yes with Restrictions">Yes with Restrictions</SelectItem>
                   <SelectItem value="No">No</SelectItem>
                 </SelectContent>
               </Select>
@@ -1615,14 +2056,27 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 />
               </div>
               <div>
-                <Label htmlFor="ownerEmail">Primary Owner Email</Label>
+                <Label htmlFor="ownerTitle">Primary Owner Title</Label>
+                <Input
+                  id="ownerTitle"
+                  value={ownerTitle}
+                  onChange={(e) => setOwnerTitle(e.target.value)}
+                  placeholder="Enter owner title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="ownerEmail">Primary Owner Email *</Label>
                 <Input
                   id="ownerEmail"
                   type="email"
                   value={ownerEmail}
                   onChange={(e) => setOwnerEmail(e.target.value)}
                   placeholder="owner@company.com"
+                  required={!!ownerName}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Required when Primary Owner is specified
+                </p>
               </div>
             </div>
 
@@ -1680,33 +2134,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Popover 
-                          open={salesCalendarOpen[role] || false} 
-                          onOpenChange={(open) => setSalesCalendarOpen(prev => ({ ...prev, [role]: open }))}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              disabled={!(role in salesRoles)}
-                              className={cn(
-                                "h-9 text-xs w-full justify-start text-left font-normal",
-                                !salesLastCheckIn[role] && "text-muted-foreground",
-                                !(role in salesRoles) && "opacity-50"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-3 w-3" />
-                              {salesLastCheckIn[role] ? format(new Date(salesLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={salesLastCheckIn[role] ? new Date(salesLastCheckIn[role]) : undefined}
-                              onSelect={(date) => handleSalesCalendarSelect(role, date)}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <Input
+                          type="date"
+                          value={salesLastCheckIn[role] || ''}
+                          onChange={(e) => handleSalesLastCheckInChange(role, e.target.value)}
+                          disabled={!(role in salesRoles)}
+                          className={cn(
+                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                            "h-9 text-xs",
+                            !(role in salesRoles) && "opacity-50"
+                          )}
+                        />
                       </div>
                     </div>
                   ))}
@@ -1766,33 +2204,17 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                         </Select>
                       </div>
                       <div className="col-span-4">
-                        <Popover 
-                          open={supportCalendarOpen[role] || false} 
-                          onOpenChange={(open) => setSupportCalendarOpen(prev => ({ ...prev, [role]: open }))}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              disabled={!(role in supportRoles)}
-                              className={cn(
-                                "h-9 text-xs w-full justify-start text-left font-normal",
-                                !supportLastCheckIn[role] && "text-muted-foreground",
-                                !(role in supportRoles) && "opacity-50"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-3 w-3" />
-                              {supportLastCheckIn[role] ? format(new Date(supportLastCheckIn[role]), "MM/dd/yyyy") : "Pick date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={supportLastCheckIn[role] ? new Date(supportLastCheckIn[role]) : undefined}
-                              onSelect={(date) => handleSupportCalendarSelect(role, date)}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <Input
+                          type="date"
+                          value={supportLastCheckIn[role] || ''}
+                          onChange={(e) => handleSupportLastCheckInChange(role, e.target.value)}
+                          disabled={!(role in supportRoles)}
+                          className={cn(
+                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                            "h-9 text-xs",
+                            !(role in supportRoles) && "opacity-50"
+                          )}
+                        />
                       </div>
                     </div>
                   ))}
@@ -1841,7 +2263,26 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 </div>
               ))}
             </div>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileInputChange}
+              className="hidden"
+              accept="*/*"
+            />
+            <div 
+              className={cn(
+                "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
+                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+              )}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleUploadClick}
+            >
               <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm text-gray-600">
                 Drag and drop files here or click to upload
@@ -1876,7 +2317,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               <Label htmlFor="event-title">Event Title *</Label>
               <Input
                 id="event-title"
-                placeholder="e.g., Birthday, Anniversary, Meeting"
+                placeholder="e.g., Anniversary, Meeting, Milestone, etc."
                 value={newEventTitle}
                 onChange={(e) => setNewEventTitle(e.target.value)}
               />
@@ -1915,24 +2356,72 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
 
               {newEventAlertEnabled && (
                 <div className="space-y-2 pl-6 pt-2">
-                  <Label htmlFor="alert-days" className="text-sm">
-                    Alert me (days before event):
+                  <Label className="text-sm">
+                    Alert me:
                   </Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="alert-days"
-                      type="number"
-                      min="1"
-                      max="90"
-                      value={newEventAlertDays}
-                      onChange={(e) => setNewEventAlertDays(parseInt(e.target.value) || 7)}
-                      className="w-24"
-                    />
-                    <span className="text-sm text-gray-500">days before</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-30-days"
+                        checked={newEventAlertOptions.includes('30_days_before')}
+                        onCheckedChange={() => handleToggleNewEventAlertOption('30_days_before')}
+                      />
+                      <Label htmlFor="new-event-30-days" className="text-sm font-normal cursor-pointer">
+                        30 Days Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-7-days"
+                        checked={newEventAlertOptions.includes('7_days_before')}
+                        onCheckedChange={() => handleToggleNewEventAlertOption('7_days_before')}
+                      />
+                      <Label htmlFor="new-event-7-days" className="text-sm font-normal cursor-pointer">
+                        7 Days Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-1-day"
+                        checked={newEventAlertOptions.includes('1_day_before')}
+                        onCheckedChange={() => handleToggleNewEventAlertOption('1_day_before')}
+                      />
+                      <Label htmlFor="new-event-1-day" className="text-sm font-normal cursor-pointer">
+                        1 Day Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="new-event-custom"
+                        checked={isNewEventCustomChecked}
+                        onCheckedChange={(checked) => {
+                          if (!checked) {
+                            setNewEventCustomDays('');
+                            const filteredOptions = newEventAlertOptions.filter(opt => !opt.startsWith('custom_'));
+                            setNewEventAlertOptions(filteredOptions);
+                          }
+                        }}
+                      />
+                      <Label htmlFor="new-event-custom" className="text-sm font-normal cursor-pointer">
+                        Custom:
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="days"
+                        value={newEventCustomDays}
+                        onChange={(e) => handleNewEventCustomDaysChange(e.target.value)}
+                        className="w-20 h-7 text-xs"
+                        disabled={!isNewEventCustomChecked}
+                      />
+                      <span className="text-sm text-gray-600">days before</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    You'll receive an alert {newEventAlertDays} {newEventAlertDays === 1 ? 'day' : 'days'} before this event
-                  </p>
+                  {newEventAlertOptions.length > 0 && (
+                    <p className="text-xs text-gray-500">
+                      You'll receive {newEventAlertOptions.length} alert{newEventAlertOptions.length !== 1 ? 's' : ''} for this event
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -1943,7 +2432,8 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
               setNewEventTitle('');
               setNewEventDate('');
               setNewEventAlertEnabled(false);
-              setNewEventAlertDays(7);
+              setNewEventAlertOptions([]);
+              setNewEventCustomDays('');
             }}>
               Cancel
             </Button>
