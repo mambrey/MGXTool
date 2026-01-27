@@ -1472,6 +1472,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   type="date"
                   value={birthdayToDateInput(formData.birthday)}
                   onChange={(e) => handleBirthdayChange(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 />
                 
                 <div className="space-y-3 pt-2 border-t border-gray-200">
@@ -2138,7 +2139,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           value={salesLastCheckIn[role] || ''}
                           onChange={(e) => handleSalesLastCheckInChange(role, e.target.value)}
                           disabled={!(role in salesRoles)}
-                          className={cn("h-9 text-xs", !(role in salesRoles) && "opacity-50")}
+                          className={cn(
+                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                            "h-9 text-xs",
+                            !(role in salesRoles) && "opacity-50"
+                          )}
                         />
                       </div>
                     </div>
@@ -2204,7 +2209,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           value={supportLastCheckIn[role] || ''}
                           onChange={(e) => handleSupportLastCheckInChange(role, e.target.value)}
                           disabled={!(role in supportRoles)}
-                          className={cn("h-9 text-xs", !(role in supportRoles) && "opacity-50")}
+                          className={cn(
+                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                            "h-9 text-xs",
+                            !(role in supportRoles) && "opacity-50"
+                          )}
                         />
                       </div>
                     </div>
