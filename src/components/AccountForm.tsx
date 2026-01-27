@@ -1648,7 +1648,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
 
 
-      {/* BUSINESS STRATEGY SECTION */}
+      {/* BUSINESS STRATEGY - NEW SEPARATE CARD */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -1657,90 +1657,79 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-xs font-medium">E-Commerce Maturity Level</Label>
-              <Select 
-                value={formData.ecommerceMaturity || 'none'} 
-                onValueChange={(value) => updateField('ecommerceMaturity', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select Maturity Level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="emerging">Emerging</SelectItem>
-                  <SelectItem value="developing">Developing</SelectItem>
-                  <SelectItem value="mature">Mature</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs font-medium">% of Sales Coming from Ecommerce</Label>
+          <div>
+            <Label className="text-xs font-medium">E-Commerce Maturity Level</Label>
+            <Select 
+              value={formData.ecommerceMaturityLevel || 'none'} 
+              onValueChange={(value) => updateField('ecommerceMaturityLevel', value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select e-commerce maturity level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
+                <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
+                <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
+                <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-xs font-medium">% of Sales Coming From E-Commerce:</Label>
+            <div className="flex items-center gap-2 mt-1">
               <Input
                 type="number"
                 min="0"
                 max="100"
-                value={formData.ecommerceSalesPercentage || ''}
+                step="1"
+                value={formData.ecommerceSalesPercentage}
                 onChange={(e) => updateField('ecommerceSalesPercentage', e.target.value)}
                 placeholder="Enter percentage"
-                className="mt-1"
+                className="w-32"
               />
+              <span className="text-sm font-medium text-gray-600">%</span>
             </div>
           </div>
 
           <div>
             <Label className="text-xs font-medium mb-2 block">Available Fulfillment Types</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {['Ship to Home', 'Buy Online Pickup In Store', 'Curbside Pickup', 'Same Day Delivery', 'Delivery via Third Party'].map((type) => (
-                <div key={type} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`fulfillment-${type.replace(/\s+/g, '-').toLowerCase()}`}
-                    checked={formData.fulfillmentTypes?.includes(type) || false}
-                    onCheckedChange={(checked) => {
-                      const current = formData.fulfillmentTypes || [];
-                      const updated = checked
-                        ? [...current, type]
-                        : current.filter((t) => t !== type);
-                      updateField('fulfillmentTypes', updated);
-                    }}
-                  />
-                  <Label
-                    htmlFor={`fulfillment-${type.replace(/\s+/g, '-').toLowerCase()}`}
-                    className="text-xs cursor-pointer"
-                  >
-                    {type}
-                  </Label>
-                </div>
-              ))}
+            <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {FULFILLMENT_TYPES.map(type => (
+                  <div key={type} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`fulfillment-${type}`}
+                      checked={selectedFulfillmentTypes.includes(type)}
+                      onCheckedChange={() => toggleFulfillmentType(type)}
+                    />
+                    <Label htmlFor={`fulfillment-${type}`} className="text-xs cursor-pointer">
+                      {type}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
           <div>
-            <Label className="text-xs font-medium mb-2 block">Primary Ecommerce Partners</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {['Instacart', 'DoorDash', 'Uber Eats', 'Drizly', 'Minibar', 'Shipt', 'Postmates', 'GoPuff'].map((partner) => (
-                <div key={partner} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`partner-${partner.toLowerCase()}`}
-                    checked={formData.ecommercePartners?.includes(partner) || false}
-                    onCheckedChange={(checked) => {
-                      const current = formData.ecommercePartners || [];
-                      const updated = checked
-                        ? [...current, partner]
-                        : current.filter((p) => p !== partner);
-                      updateField('ecommercePartners', updated);
-                    }}
-                  />
-                  <Label
-                    htmlFor={`partner-${partner.toLowerCase()}`}
-                    className="text-xs cursor-pointer"
-                  >
-                    {partner}
-                  </Label>
-                </div>
-              ))}
+            <Label className="text-xs font-medium mb-2 block">Primary E-Commerce Partners</Label>
+            <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {ECOMMERCE_PARTNERS.map(partner => (
+                  <div key={partner} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`partner-${partner}`}
+                      checked={selectedEcommercePartners.includes(partner)}
+                      onCheckedChange={() => toggleEcommercePartner(partner)}
+                    />
+                    <Label htmlFor={`partner-${partner}`} className="text-xs cursor-pointer">
+                      {partner}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1806,193 +1795,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
         </CardContent>
       </Card>
-            </div>
-          </div>
-
-          {formData.hasPlanograms && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
-              <Label className="text-sm font-medium block flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Planogram Information
-              </Label>
-              
-              <div>
-                <Label className="text-xs font-medium mb-2 block">Affected Categories</Label>
-                <div className="p-3 border rounded-lg bg-white">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {AFFECTED_CATEGORIES.map(category => (
-                      <div key={category} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`category-${category}`}
-                          checked={selectedAffectedCategories.includes(category)}
-                          onCheckedChange={() => toggleAffectedCategory(category)}
-                        />
-                        <Label htmlFor={`category-${category}`} className="text-xs cursor-pointer">
-                          {category}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs font-medium">Reset Frequency</Label>
-                <Select 
-                  value={formData.resetFrequency || ''} 
-                  onValueChange={(value) => updateField('resetFrequency', value === 'clear' ? '' : value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select reset frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                    {RESET_FREQUENCY_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-medium">Reset Window Lead Time Requirement</Label>
-                <Select 
-                  value={formData.resetWindowLeadTime || ''} 
-                  onValueChange={(value) => updateField('resetWindowLeadTime', value === 'clear' ? '' : value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select lead time requirement" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                    {RESET_LEAD_TIME_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-medium">
-                  Are there different reset windows for different categories?
-                </Label>
-                <Select 
-                  value={formData.hasDifferentResetWindows || ""} 
-                  onValueChange={(value) => updateField("hasDifferentResetWindows", value === "clear" ? "" : value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select yes or no" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.hasDifferentResetWindows !== 'Yes' && (
-                <div>
-                  <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
-                  <div className="p-3 border rounded-lg bg-white">
-                    <div className="grid grid-cols-6 gap-2">
-                      {MONTHS.map(month => (
-                        <div key={month} className="flex items-center space-x-1">
-                          <Checkbox
-                            id={`month-${month}`}
-                            checked={selectedResetMonths.includes(month)}
-                            onCheckedChange={() => toggleResetMonth(month)}
-                          />
-                          <Label htmlFor={`month-${month}`} className="text-xs cursor-pointer">
-                            {month}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {formData.hasDifferentResetWindows === 'Yes' && (
-                <div className="space-y-3 p-3 bg-white border border-gray-300 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-medium">Category-Specific Reset Windows</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addCategoryResetWindow}
-                      className="flex items-center gap-1 h-7"
-                    >
-                      <Plus className="w-3 h-3" />
-                      Add
-                    </Button>
-                  </div>
-
-                  {categoryResetWindows.map((crw, idx) => (
-                    <div key={crw.id} className="p-3 border border-gray-200 rounded-lg bg-gray-50">
-                      <div className="flex items-center justify-between mb-2">
-                        <Label className="text-xs font-medium text-gray-600">Window #{idx + 1}</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeCategoryResetWindow(crw.id)}
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div>
-                          <Label className="text-xs font-medium text-gray-600">Category</Label>
-                          <Select 
-                            value={crw.category} 
-                            onValueChange={(value) => updateCategoryResetWindow(crw.id, 'category', value === 'clear' ? '' : value)}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                              {selectedAffectedCategories.length > 0 ? (
-                                selectedAffectedCategories.map(category => (
-                                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                                ))
-                              ) : (
-                                <SelectItem value="" disabled>No categories selected</SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label className="text-xs font-medium text-gray-600 mb-1 block">Reset Window Months</Label>
-                          <div className="p-2 border rounded-lg bg-white">
-                            <div className="grid grid-cols-6 gap-1">
-                              {MONTHS.map(month => (
-                                <div key={month} className="flex items-center space-x-1">
-                                  <Checkbox
-                                    id={`crw-${crw.id}-${month}`}
-                                    checked={crw.months.includes(month)}
-                                    onCheckedChange={() => toggleCategoryMonth(crw.id, month)}
-                                  />
-                                  <Label htmlFor={`crw-${crw.id}-${month}`} className="text-xs cursor-pointer">
-                                    {month}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
 
           {formData.hasPlanograms && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
@@ -2741,3 +2543,4 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       </div>
     </form>
   );
+}

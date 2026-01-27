@@ -994,6 +994,31 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
+
+            {/* Business Strategy - NEW SEPARATE ACCORDION */}
+            <AccordionItem value="business-strategy">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Business Strategy
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <InfoItem label="E-commerce Maturity Level" value={account.ecommerceMaturityLevel} />
+                      <InfoItem label="% of Sales from E-Commerce" value={account.ecommerceSalesPercentage ? `${account.ecommerceSalesPercentage}%` : undefined} />
+                      <InfoItem label="Fulfillment Types" value={Array.isArray(account.fulfillmentTypes) ? account.fulfillmentTypes.join(', ') : account.fulfillmentTypes} />
+                      <InfoItem label="E-commerce Partners" value={Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : account.ecommercePartners} />
+                      <InfoItem label="Category Captain" value={account.categoryCaptain} />
+                      <InfoItem label="Category Validator" value={account.categoryAdvisor} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
             {/* Strategy and Capabilities */}
             <AccordionItem value="strategy">
               <AccordionTrigger className="text-lg font-semibold">
@@ -1006,29 +1031,13 @@ export default function AccountDetails({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      {/* Business Strategy */}
                       <div>
-                        <h4 className="font-semibold mb-3 text-sm text-gray-700">Business Strategy</h4>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">HQ Level of Influence</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <InfoItem label="Pricing Strategy" value={account.pricingStrategy} />
                           <InfoItem label="Private Label" value={account.privateLabel} />
                           <InfoItem label="Display Mandates" value={account.displayMandates} />
                           <InfoItem label="Innovation Appetite" value={account.innovationAppetite} />
-                          <InfoItem label="Category Captain" value={account.categoryCaptain} />
-                          <InfoItem label="Category Validator" value={account.categoryAdvisor} />
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      {/* E-commerce & Fulfillment */}
-                      <div>
-                        <h4 className="font-semibold mb-3 text-sm text-gray-700">E-commerce & Fulfillment</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="E-commerce Maturity Level" value={account.ecommerceMaturityLevel} />
-                          <InfoItem label="% of Sales from E-Commerce" value={account.ecommerceSalesPercentage ? `${account.ecommerceSalesPercentage}%` : undefined} />
-                          <InfoItem label="Fulfillment Types" value={Array.isArray(account.fulfillmentTypes) ? account.fulfillmentTypes.join(', ') : account.fulfillmentTypes} />
-                          <InfoItem label="E-commerce Partners" value={Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : account.ecommercePartners} />
                         </div>
                       </div>
                     </div>
@@ -1036,10 +1045,6 @@ export default function AccountDetails({
                 </Card>
               </AccordionContent>
             </AccordionItem>
-
-            {/* Additional Information */}
-            <AccordionItem value="additional-info">
-              <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   Additional Information
@@ -1202,4 +1207,3 @@ export default function AccountDetails({
       {/* Add Event Dialog - remains the same */}
     </div>
   );
-}
