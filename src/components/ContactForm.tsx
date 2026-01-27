@@ -1238,6 +1238,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Input
                   id="officePhone"
                   type="tel"
+                  type="tel"
                   value={formData.officePhone}
                   onChange={(e) => handlePhoneChange('officePhone', e.target.value)}
                   placeholder="(555) 123-4567"
