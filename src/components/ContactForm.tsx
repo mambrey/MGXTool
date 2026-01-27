@@ -84,7 +84,6 @@ const CADENCE_OPTIONS = ['Annual', 'Semi Annual', 'Quarterly', 'Monthly', 'Ongoi
 const SVP_OPTIONS = ['Justin Zylick', 'Matt Johnson', 'Alicia Shiel'];
 
 // Decision Bias Profile options with commentary
-// Decision Bias Profile options with commentary
 const DECISION_BIAS_OPTIONS = {
   'Data Centric': {
     description: 'Decides based on numbers, scorecards, consumer insights, and test results.',
@@ -1947,7 +1946,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   </SelectItem>
                   <SelectItem value="Margin Maximizer">
                     <div className="py-1">
-                      <div className="font-medium">Margin First</div>
+                      <div className="font-medium">Margin Maximizer</div>
                       <div className="text-xs text-gray-600">Focuses primarily on penny profit, margin mix, and trade terms.</div>
                     </div>
                   </SelectItem>
@@ -1973,7 +1972,6 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       <div className="font-medium">Price Leadership</div>
                       <div className="text-xs text-gray-600">Prioritizes competitive pricing and market share through aggressive price positioning.</div>
                     </div>
-                  </SelectItem>
                   </SelectItem>
                 </SelectContent>
               </Select>
