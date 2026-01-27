@@ -1791,7 +1791,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                                           htmlFor={`event-${event.id}-1-day`}
                                           className="text-xs font-normal cursor-pointer"
                                         >
-                                          1 Day Before
+                          1 Day Before
                                         </Label>
                                       </div>
                                       <div className="flex items-center space-x-2">
@@ -1967,6 +1967,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       <div className="font-medium">Competitor Reactive</div>
                       <div className="text-xs text-gray-600">Reacts to what key competitors and local markets are doing.</div>
                     </div>
+                  </SelectItem>
                   <SelectItem value="Price Leadership">
                     <div className="py-1">
                       <div className="font-medium">Price Leadership</div>
