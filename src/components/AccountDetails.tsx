@@ -1045,10 +1045,6 @@ export default function AccountDetails({
                 </Card>
               </AccordionContent>
             </AccordionItem>
-
-            {/* Additional Information */}
-            <AccordionItem value="additional-info">
-              <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   Additional Information
@@ -1100,47 +1096,114 @@ export default function AccountDetails({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[600px] pr-4">
+              <ScrollArea className="h-[800px] pr-4">
                 <div className="space-y-3">
-                  {contacts.map((contact) => (
-                    <Card 
-                      key={contact.id} 
-                      className={`cursor-pointer transition-all ${
-                        selectedContact?.id === contact.id 
-                          ? 'ring-2 ring-blue-500 bg-blue-50' 
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => setSelectedContact(contact)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-sm">
-                              {contact.firstName} {contact.lastName}
-                            </h3>
-                            <p className="text-xs text-gray-600 mt-1">{contact.title}</p>
-                            {contact.email && (
-                              <p className="text-xs text-blue-600 mt-1">{contact.email}</p>
-                            )}
-                            {contact.phone && (
-                              <p className="text-xs text-gray-600 mt-1">{contact.phone}</p>
-                            )}
-                          </div>
-                          {contact.isPrimary && (
-                            <Badge variant="secondary" className="text-xs">
-                              Primary
-                            </Badge>
-                          )}
+                  {contacts.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-sm">No contacts yet for {account.accountName}</p>
+                    </div>
+                  ) : (
+                    contacts.map((contact, index) => {
+                      const preferredContactInfo = getPreferredContactInfo(contact);
+                      
+                      return (
+                        <div key={contact.id}>
+                          <Card 
+                            className="p-3 hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => onViewContact(contact)}
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-sm">
+                                      {contact.firstName} {contact.lastName}
+                                    </h3>
+                                  </div>
+                                  {contact.title && (
+                                    <p className="text-xs text-gray-600">{contact.title}</p>
+                                  )}
+                                  {contact.contactType && (
+                                    <Badge variant={contact.contactType === 'Primary' ? 'default' : 'secondary'} className="text-xs mt-1">
+                                      {contact.contactType}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {contact.relationshipStatus && (
+                                  <Badge 
+                                    className="text-xs text-white"
+                                    style={{ backgroundColor: getSupportStyleColor(contact.relationshipStatus) }}
+                                  >
+                                    {getSupportStyleLabel(contact.relationshipStatus)}
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-1">
+                                {/* Display preferred contact method */}
+                                {preferredContactInfo && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <a 
+                                      href={preferredContactInfo.href}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      <preferredContactInfo.icon className="w-3 h-3" />
+                                      <span className="truncate">{preferredContactInfo.value}</span>
+                                    </a>
+                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      {preferredContactInfo.label}
+                                    </Badge>
+                                  </div>
+                                )}
+                                
+                                {/* Show "Not specified" if no preferred contact method data available */}
+                                {!preferredContactInfo && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <Mail className="w-3 h-3" />
+                                    <span>Contact method not specified</span>
+                                  </div>
+                                )}
+                                
+                                {/* Preferred Shipping Address Display */}
+                                {contact.preferredShippingAddress && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <MapPin className="w-3 h-3" />
+                                    <span className="truncate">Ship to: {contact.preferredShippingAddress}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Birthday Display */}
+                                {contact.birthday && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>Birthday: {formatBirthday(contact.birthday)}</span>
+                                  </div>
+                                )}
+                                
+                                {contact.influence && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <Badge variant="outline" className="text-xs">
+                                      {contact.influence}
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                          {index < contacts.length - 1 && <Separator className="my-2" />}
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                      );
+                    })
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Add Event Dialog - remains the same */}
     </div>
   );
-}
