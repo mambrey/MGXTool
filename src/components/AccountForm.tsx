@@ -146,6 +146,51 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const KEY_COMPETITORS = [
+  '7-Eleven',
+  'AAFES',
+  'ABC',
+  'ALBSCO',
+  'BEVMO/GO-PUFF',
+  'BJs',
+  'CASEYS',
+  'Circle K',
+  'Coast Guard',
+  'Coborns',
+  'COSTCO',
+  'Cub',
+  'CVS',
+  'El Super',
+  'Festival Foods',
+  'Food Maxx',
+  'Giant Eagle',
+  'Goody Goody',
+  'HyVee',
+  'KROGER',
+  'Kum & Go',
+  'LEE\'S DISCOUNT LIQUOR',
+  'Lucky',
+  'MARINE\'S',
+  'Meijer',
+  'NEXCOM',
+  'Raley\'s',
+  'Rouses',
+  'SAMS CLUB',
+  'Save Mart',
+  'SCHNUCK\'S',
+  'Smart & Final',
+  'SPEC\'S',
+  'Stater Bros',
+  'Target',
+  'Total Wine & More',
+  'Twin Liquors',
+  'Walgreens',
+  'Walmart',
+  'Wegmans',
+  'WFM',
+  'WINN DIXIE (SEG)'
+];
+
 const getAlertOptionLabel = (option: string): string => {
   if (option === '30_days_before') return '30 Days Before';
   if (option === '7_days_before') return '7 Days Before';
@@ -2146,13 +2191,20 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
           <div>
             <Label className="text-xs font-medium">Key Competitors</Label>
-            <Textarea
-              value={formData.keyCompetitors}
-              onChange={(e) => updateField('keyCompetitors', e.target.value)}
-              placeholder="Enter key competitors"
-              rows={3}
-              className="mt-1"
-            />
+            <Select 
+              value={formData.keyCompetitors || ''} 
+              onValueChange={(value) => updateField('keyCompetitors', value === 'clear' ? '' : value)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select key competitor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                {KEY_COMPETITORS.map(competitor => (
+                  <SelectItem key={competitor} value={competitor}>{competitor}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label className="text-xs font-medium">Designated Charities</Label>
