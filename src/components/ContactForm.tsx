@@ -1237,6 +1237,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Label htmlFor="officePhone">Office Phone</Label>
                 <Input
                   id="officePhone"
+                  type="tel"
                   value={formData.officePhone}
                   onChange={(e) => handlePhoneChange('officePhone', e.target.value)}
                   placeholder="(555) 123-4567"
@@ -1247,6 +1248,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 <Label htmlFor="mobilePhone">Mobile Phone</Label>
                 <Input
                   id="mobilePhone"
+                  type="tel"
                   value={formData.mobilePhone}
                   onChange={(e) => handlePhoneChange('mobilePhone', e.target.value)}
                   placeholder="(555) 987-6543"

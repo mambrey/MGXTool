@@ -1093,15 +1093,15 @@ export default function AccountDetails({
         {/* Contacts Sidebar */}
         <div>
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 All Contacts ({contacts.length})
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <ScrollArea className="h-[600px] pr-4">
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {contacts.map((contact) => (
                     <Card 
                       key={contact.id} 
@@ -1112,18 +1112,18 @@ export default function AccountDetails({
                       }`}
                       onClick={() => setSelectedContact(contact)}
                     >
-                      <CardContent className="p-4">
+                      <CardContent className="p-2">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h3 className="font-semibold text-sm">
                               {contact.firstName} {contact.lastName}
                             </h3>
-                            <p className="text-xs text-gray-600 mt-1">{contact.title}</p>
+                            <p className="text-xs text-gray-600 mt-0.5">{contact.title}</p>
                             {contact.email && (
-                              <p className="text-xs text-blue-600 mt-1">{contact.email}</p>
+                              <p className="text-xs text-blue-600 mt-0.5">{contact.email}</p>
                             )}
                             {contact.phone && (
-                              <p className="text-xs text-gray-600 mt-1">{contact.phone}</p>
+                              <p className="text-xs text-gray-600 mt-0.5">{contact.phone}</p>
                             )}
                           </div>
                           {contact.isPrimary && (
