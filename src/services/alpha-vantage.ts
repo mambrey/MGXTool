@@ -233,21 +233,35 @@ class AlphaVantageService {
    * Fetch complete market snapshot (combines quote and overview data)
    */
   async getMarketSnapshot(symbol: string): Promise<MarketSnapshot | null> {
-    try {
+    try{
       console.log(`🔍 Fetching market data for ${symbol} from Alpha Vantage...`);
 
-      // Fetch both quote and overview data in parallel
-      const [quote, overview] = await Promise.all([
-        this.getGlobalQuote(symbol),
-        this.getCompanyOverview(symbol)
-      ]);
+      // Fetch quote first (more reliable, less rate limit issues)
+      const quote = await this.getGlobalQuote(symbol);
+      
+      // Try to fetch overview, but don't fail if it errors
+      let overview = null;
+      try {
+        overview = await this.getCompanyOverview(symbol);
+      } catch (overviewError) {
+        console.warn('⚠️ Could not fetch overview data (possibly rate limited), using quote data only');
+      }
 
       console.log('📦 Quote result:', quote ? 'Success' : 'Failed');
       console.log('📦 Overview result:', overview ? 'Success' : 'Failed');
 
-      if (!quote && !overview) {
-        throw new Error(`No data available for symbol: ${symbol}. Please verify the ticker symbol is correct.`);
+      if (!quote) {
+        throw new Error(`No quote data available for symbol: ${symbol}. Please verify the ticker symbol is correct.`);
       }
+      
+      // We can proceed with just quote data if overview is not available
+      console.log('📦 Overview result:', overview ? 'Success' : 'Failed');
+
+      if (!quote) {
+        throw new Error(`No quote data available for symbol: ${symbol}. Please verify the ticker symbol is correct.`);
+      }
+      
+      // We can proceed with just quote data if overview is not available
 
       // Combine data from both sources
       const snapshot: MarketSnapshot = {
