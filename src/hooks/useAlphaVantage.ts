@@ -23,13 +23,10 @@ export function useAlphaVantage() {
         setError(null);
       } else {
         setError(`No market data found for symbol: ${symbol}`);
-        setMarketData(null);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch market data';
       setError(errorMessage);
-      setMarketData(null);
-      console.error('Error in useAlphaVantage:', err);
     } finally {
       setLoading(false);
     }
