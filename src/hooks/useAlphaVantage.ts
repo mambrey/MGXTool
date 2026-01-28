@@ -12,6 +12,7 @@ export function useAlphaVantage() {
       return;
     }
 
+    setLoading(true);
     // Don't clear error here - let it show alongside loading state
 
     try {
