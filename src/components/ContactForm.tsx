@@ -2099,11 +2099,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 
                 <div className="grid grid-cols-12 gap-2 items-center px-2 pb-2 border-b border-gray-200">
                   <div className="col-span-1"></div>
-                  <div className="col-span-4"></div>
+                  <div className="col-span-3"></div>
                   <div className="col-span-3">
                     <Label className="text-xs font-semibold text-gray-700">Cadence</Label>
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-5">
                     <Label className="text-xs font-semibold text-gray-700">Last Check In Date</Label>
                   </div>
                 </div>
@@ -2120,7 +2120,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       </div>
                       <Label 
                         htmlFor={`sales-${role}`} 
-                        className="col-span-4 cursor-pointer text-sm"
+                        className="col-span-3 cursor-pointer text-sm"
                       >
                         {role}
                       </Label>
@@ -2143,15 +2143,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-4">
+                      <div className="col-span-5">
                         <Input
                           type="date"
                           value={salesLastCheckIn[role] || ''}
                           onChange={(e) => handleSalesLastCheckInChange(role, e.target.value)}
                           disabled={!(role in salesRoles)}
                           className={cn(
-                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-                            "h-9 text-xs",
+                            "flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                             !(role in salesRoles) && "opacity-50"
                           )}
                         />
@@ -2169,11 +2168,11 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                 
                 <div className="grid grid-cols-12 gap-2 items-center px-2 pb-2 border-b border-gray-200">
                   <div className="col-span-1"></div>
-                  <div className="col-span-4"></div>
+                  <div className="col-span-3"></div>
                   <div className="col-span-3">
                     <Label className="text-xs font-semibold text-gray-700">Cadence</Label>
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-5">
                     <Label className="text-xs font-semibold text-gray-700">Last Check In Date</Label>
                   </div>
                 </div>
@@ -2190,7 +2189,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                       </div>
                       <Label 
                         htmlFor={`support-${role}`} 
-                        className="col-span-4 cursor-pointer text-sm"
+                        className="col-span-3 cursor-pointer text-sm"
                       >
                         {role}
                       </Label>
@@ -2213,15 +2212,14 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-4">
+                      <div className="col-span-5">
                         <Input
                           type="date"
                           value={supportLastCheckIn[role] || ''}
                           onChange={(e) => handleSupportLastCheckInChange(role, e.target.value)}
                           disabled={!(role in supportRoles)}
                           className={cn(
-                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-                            "h-9 text-xs",
+                            "flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                             !(role in supportRoles) && "opacity-50"
                           )}
                         />
