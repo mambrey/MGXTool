@@ -4,7 +4,7 @@
  */
 
 const FMP_API_KEY = 'SWwNNWvzhEb3ze28GzPFaDjZxvihd3qf';
-const BASE_URL = 'https://financialmodelingprep.com/api/v3';
+const BASE_URL = 'https://financialmodelingprep.com/stable';
 
 export interface FMPQuote {
   symbol: string;
@@ -166,30 +166,44 @@ class FinancialModelingPrepService {
    */
   async getQuote(symbol: string): Promise<FMPQuote | null> {
     try {
-      const url = `${BASE_URL}/quote/${symbol}?apikey=${this.apiKey}`;
-      console.log(`📡 Fetching quote from FMP: ${url}`);
+      const url = `${BASE_URL}/quote?symbol=${symbol}&apikey=${this.apiKey}`;
+      console.log(`📡 [FMP] Fetching quote for ${symbol}`);
+      console.log(`📡 [FMP] URL: ${url}`);
       
       const response = await fetch(url);
-      const data = await response.json();
       
-      console.log(`📊 Raw FMP API response for quote:`, JSON.stringify(data, null, 2));
+      if (!response.ok) {
+        console.error(`❌ [FMP] HTTP Error: ${response.status} ${response.statusText}`);
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 [FMP] Raw API response:`, data);
 
-      // Check for API error messages
-      if (data['Error Message'] || (Array.isArray(data) && data.length === 0)) {
-        console.error('❌ FMP API Error: Invalid symbol or no data');
-        throw new Error(`Invalid ticker symbol: ${symbol}`);
+      // Check for API error messages in response
+      if (data.error || data['Error Message']) {
+        const errorMsg = data.error || data['Error Message'];
+        console.error(`❌ [FMP] API Error: ${errorMsg}`);
+        throw new Error(errorMsg);
       }
 
-      if (Array.isArray(data) && data.length > 0) {
+      // FMP returns an array of quotes
+      if (Array.isArray(data)) {
+        if (data.length === 0) {
+          console.warn(`⚠️ [FMP] Empty array returned for ${symbol} - symbol may not exist`);
+          throw new Error(`No data found for ticker symbol: ${symbol}. Please verify the symbol is correct.`);
+        }
+        
         const quote = data[0];
-        console.log('✅ Quote data parsed successfully');
+        console.log(`✅ [FMP] Quote data received for ${quote.symbol}`);
         return quote;
       }
 
-      console.warn('⚠️ No quote data found for symbol:', symbol);
-      return null;
+      // Handle unexpected response format
+      console.error(`❌ [FMP] Unexpected response format:`, typeof data, data);
+      throw new Error('Unexpected API response format');
     } catch (error) {
-      console.error('❌ Error fetching quote:', error);
+      console.error(`❌ [FMP] Error fetching quote for ${symbol}:`, error);
       throw error;
     }
   }
@@ -199,31 +213,34 @@ class FinancialModelingPrepService {
    */
   async getCompanyProfile(symbol: string): Promise<FMPProfile | null> {
     try {
-      const url = `${BASE_URL}/profile/${symbol}?apikey=${this.apiKey}`;
-      console.log(`📡 Fetching profile from FMP: ${url}`);
+      const url = `${BASE_URL}/profile?symbol=${symbol}&apikey=${this.apiKey}`;
+      console.log(`📡 [FMP] Fetching profile for ${symbol}`);
       
       const response = await fetch(url);
-      const data = await response.json();
       
-      console.log(`📊 Raw FMP API response for profile:`, JSON.stringify(data, null, 2));
+      if (!response.ok) {
+        console.error(`❌ [FMP] HTTP Error: ${response.status} ${response.statusText}`);
+        return null; // Profile is optional, don't throw
+      }
+      
+      const data = await response.json();
+      console.log(`📊 [FMP] Profile response:`, data);
 
-      // Check for API error messages
-      if (data['Error Message'] || (Array.isArray(data) && data.length === 0)) {
-        console.error('❌ FMP API Error: Invalid symbol or no data');
-        throw new Error(`Invalid ticker symbol: ${symbol}`);
+      if (data.error || data['Error Message']) {
+        console.warn(`⚠️ [FMP] Profile API Error: ${data.error || data['Error Message']}`);
+        return null;
       }
 
       if (Array.isArray(data) && data.length > 0) {
-        const profile = data[0];
-        console.log('✅ Profile data parsed successfully');
-        return profile;
+        console.log(`✅ [FMP] Profile data received for ${data[0].symbol}`);
+        return data[0];
       }
 
-      console.warn('⚠️ No profile data found for symbol:', symbol);
+      console.warn(`⚠️ [FMP] No profile data for ${symbol}`);
       return null;
     } catch (error) {
-      console.error('❌ Error fetching profile:', error);
-      throw error;
+      console.warn(`⚠️ [FMP] Error fetching profile (non-critical):`, error);
+      return null;
     }
   }
 
@@ -232,24 +249,29 @@ class FinancialModelingPrepService {
    */
   async getKeyMetrics(symbol: string): Promise<FMPKeyMetrics | null> {
     try {
-      const url = `${BASE_URL}/key-metrics/${symbol}?apikey=${this.apiKey}&limit=1`;
-      console.log(`📡 Fetching key metrics from FMP: ${url}`);
+      const url = `${BASE_URL}/key-metrics?symbol=${symbol}&apikey=${this.apiKey}&limit=1`;
+      console.log(`📡 [FMP] Fetching key metrics for ${symbol}`);
       
       const response = await fetch(url);
-      const data = await response.json();
       
-      console.log(`📊 Raw FMP API response for key metrics:`, JSON.stringify(data, null, 2));
+      if (!response.ok) {
+        console.error(`❌ [FMP] HTTP Error: ${response.status} ${response.statusText}`);
+        return null;
+      }
+      
+      const data = await response.json();
+      console.log(`📊 [FMP] Key metrics response:`, data);
 
       if (Array.isArray(data) && data.length > 0) {
-        console.log('✅ Key metrics data parsed successfully');
+        console.log(`✅ [FMP] Key metrics received for ${symbol}`);
         return data[0];
       }
 
-      console.warn('⚠️ No key metrics data found for symbol:', symbol);
+      console.warn(`⚠️ [FMP] No key metrics for ${symbol}`);
       return null;
     } catch (error) {
-      console.error('❌ Error fetching key metrics:', error);
-      return null; // Don't throw, this is optional data
+      console.warn(`⚠️ [FMP] Error fetching key metrics (non-critical):`, error);
+      return null;
     }
   }
 
@@ -258,34 +280,34 @@ class FinancialModelingPrepService {
    */
   async getMarketSnapshot(symbol: string): Promise<MarketSnapshot | null> {
     try {
-      console.log(`🔍 Fetching market data for ${symbol} from Financial Modeling Prep...`);
+      console.log(`🔍 [FMP] Starting market snapshot fetch for ${symbol}`);
 
-      // Fetch quote data (required)
+      // Fetch quote data (required) - this will throw if it fails
       const quote = await this.getQuote(symbol);
       
       if (!quote) {
-        throw new Error(`No quote data available for symbol: ${symbol}. Please verify the ticker symbol is correct.`);
+        throw new Error(`Unable to fetch market data for ${symbol}`);
       }
 
-      // Try to fetch profile and metrics, but don't fail if they error
-      let profile = null;
-      let metrics = null;
+      console.log(`✅ [FMP] Quote fetched successfully`);
+
+      // Try to fetch profile and metrics (optional)
+      let profile: FMPProfile | null = null;
+      let metrics: FMPKeyMetrics | null = null;
       
       try {
         profile = await this.getCompanyProfile(symbol);
+        console.log(`📦 [FMP] Profile result: ${profile ? 'Success' : 'Not available'}`);
       } catch (profileError) {
-        console.warn('⚠️ Could not fetch profile data, using quote data only');
+        console.warn(`⚠️ [FMP] Profile fetch failed (continuing with quote only)`);
       }
 
       try {
         metrics = await this.getKeyMetrics(symbol);
+        console.log(`📦 [FMP] Metrics result: ${metrics ? 'Success' : 'Not available'}`);
       } catch (metricsError) {
-        console.warn('⚠️ Could not fetch key metrics data');
+        console.warn(`⚠️ [FMP] Metrics fetch failed (continuing without metrics)`);
       }
-
-      console.log('📦 Quote result:', quote ? 'Success' : 'Failed');
-      console.log('📦 Profile result:', profile ? 'Success' : 'Failed');
-      console.log('📦 Metrics result:', metrics ? 'Success' : 'Failed');
 
       // Combine data from all sources
       const snapshot: MarketSnapshot = {
@@ -301,7 +323,7 @@ class FinancialModelingPrepService {
         openPrice: quote.open ? quote.open.toString() : 'N/A',
         previousClose: quote.previousClose ? quote.previousClose.toString() : 'N/A',
         pegRatio: metrics?.pegRatio ? metrics.pegRatio.toString() : 'N/A',
-        annualSales: 'N/A', // FMP doesn't provide this in quote/profile
+        annualSales: 'N/A',
         dividendYield: profile?.lastDiv && quote.price ? ((profile.lastDiv / quote.price) * 100).toFixed(2) : 'N/A',
         fiftyTwoWeekLow: quote.yearLow ? quote.yearLow.toString() : 'N/A',
         fiftyTwoWeekHigh: quote.yearHigh ? quote.yearHigh.toString() : 'N/A',
@@ -309,10 +331,11 @@ class FinancialModelingPrepService {
         lastUpdated: new Date().toISOString()
       };
 
-      console.log('✅ Market snapshot created:', snapshot);
+      console.log(`✅ [FMP] Market snapshot created successfully for ${symbol}`);
+      console.log(`📊 [FMP] Snapshot data:`, snapshot);
       return snapshot;
     } catch (error) {
-      console.error('❌ Error fetching market snapshot:', error);
+      console.error(`❌ [FMP] Failed to create market snapshot for ${symbol}:`, error);
       throw error;
     }
   }
