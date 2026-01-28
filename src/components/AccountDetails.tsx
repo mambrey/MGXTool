@@ -515,9 +515,9 @@ export default function AccountDetails({
   const allImportantDates = getAllImportantDates();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <Button variant="ghost" onClick={onBack} className="mb-2">
             ← Back to Accounts
@@ -577,9 +577,9 @@ export default function AccountDetails({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Main Content - Collapsible Sections */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-2">
           <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
             
             {/* Customer Overview */}
@@ -592,12 +592,12 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
+                  <CardContent className="pt-4">
+                    <div className="space-y-4">
                       {/* Basic Information */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">Basic Information</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <InfoItem label="Account Name" value={account.accountName} icon={Building2} />
                           <InfoItem label="Parent Company" value={account.parentCompany} />
                           <InfoItem label="Ticker Symbol" value={account.tickerSymbol} />
@@ -609,7 +609,7 @@ export default function AccountDetails({
                       {/* Channel & Footprint */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">Channel & Footprint</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <InfoItem label="Channel" value={account.channel} />
                           <InfoItem label="Sub-Channel" value={account.subChannel} />
                           <InfoItem label="Geographic Scope" value={account.footprint} />
@@ -625,7 +625,7 @@ export default function AccountDetails({
                       {/* Execution Reliability */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">Execution Reliability</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {account.executionReliabilityScore && (
                             <div className="md:col-span-2">
                               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">Execution Reliability Score</label>
@@ -646,7 +646,7 @@ export default function AccountDetails({
                       {/* Team Information */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">Team Information</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <InfoItem label="Primary Contact" value={primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : account.accountOwner} icon={User} />
                           <InfoItem 
                             label="Relationship Owner" 
@@ -673,8 +673,8 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
+                  <CardContent className="pt-4">
+                    <div className="space-y-3">
                       {/* Address with embedded Google Map */}
                       {account.address && (
                         <div>
@@ -722,7 +722,7 @@ export default function AccountDetails({
                 </AccordionTrigger>
                 <AccordionContent>
                   <Card>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-4">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-semibold text-sm text-gray-700">Real-time Market Data</h4>
                         <button
@@ -759,7 +759,7 @@ export default function AccountDetails({
                           </div>
 
                           {/* Current Price and Change */}
-                          <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="grid grid-cols-2 gap-3 mb-4">
                             <div>
                               <label className="text-xs font-medium text-gray-600 flex items-center gap-1">
                                 <DollarSign className="w-3 h-3" />
@@ -875,8 +875,8 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CardContent className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <InfoItem label="Assortment / Shelf" value={account.influenceAssortmentShelf} />
                       <InfoItem label="Price / Promo" value={account.influencePricePromo} />
                       <InfoItem label="Display / Merchandising" value={account.influenceDisplayMerchandising} />
@@ -901,9 +901,9 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CardContent className="pt-4">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <InfoItem label="Has Planogram" value={account.hasPlanograms ? 'Yes' : 'No'} />
                         <InfoItem label="Planogram Written By" value={account.planogramWrittenBy} />
                       </div>
@@ -913,7 +913,7 @@ export default function AccountDetails({
                           <Separator />
                           <div>
                             <h4 className="font-semibold mb-3 text-sm text-gray-700">Reset Information</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               <InfoItem label="Affected Categories" value={Array.isArray(account.affectedCategories) ? account.affectedCategories.join(', ') : account.affectedCategories} />
                               <InfoItem label="Reset Frequency" value={account.resetFrequency} />
                               <InfoItem label="Reset Window Lead Time" value={account.resetWindowLeadTime} />
@@ -958,8 +958,8 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CardContent className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <InfoItem label="JBP Customer" value={account.isJBP ? 'Yes' : 'No'} />
                       {account.isJBP && (
                         <>
@@ -1005,8 +1005,8 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CardContent className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <InfoItem label="E-commerce Maturity Level" value={account.ecommerceMaturityLevel} />
                       <InfoItem label="% of Sales from E-Commerce" value={account.ecommerceSalesPercentage ? `${account.ecommerceSalesPercentage}%` : undefined} />
                       <InfoItem label="Fulfillment Types" value={Array.isArray(account.fulfillmentTypes) ? account.fulfillmentTypes.join(', ') : account.fulfillmentTypes} />
@@ -1029,11 +1029,11 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
+                  <CardContent className="pt-4">
+                    <div className="space-y-4">
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700">HQ Level of Influence</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <InfoItem label="Pricing Strategy" value={account.pricingStrategy} />
                           <InfoItem label="Private Label" value={account.privateLabel} />
                           <InfoItem label="Display Mandates" value={account.displayMandates} />
@@ -1056,8 +1056,8 @@ export default function AccountDetails({
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
+                  <CardContent className="pt-4">
+                    <div className="space-y-3">
                       {account.strategicPriorities && (
                         <div>
                           <label className="text-sm font-medium text-gray-600">Customer Strategic Priorities</label>
