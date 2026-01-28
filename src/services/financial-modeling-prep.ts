@@ -10,7 +10,7 @@ export interface FMPQuote {
   symbol: string;
   name: string;
   price: number;
-  changePercentage: number;  // Note: API uses 'changePercentage', not 'changesPercentage'
+  changePercentage: number;
   change: number;
   dayLow: number;
   dayHigh: number;
@@ -37,6 +37,7 @@ export interface FMPProfile {
   volAvg: number;
   mktCap: number;
   lastDiv?: number;
+  lastDividend?: number;
   range: string;
   changes: number;
   companyName: string;
@@ -133,6 +134,30 @@ export interface FMPKeyMetrics {
   pegRatio?: number;
 }
 
+export interface FMPRatios {
+  symbol: string;
+  date: string;
+  fiscalYear: string;
+  period: string;
+  priceToEarningsRatio?: number;
+  priceToBookRatio?: number;
+  priceToSalesRatio?: number;
+  dividendYield?: number;
+  dividendYieldPercentage?: number;
+  priceToEarningsGrowthRatio?: number;
+  [key: string]: string | number | undefined;
+}
+
+export interface FMPEarningsCalendar {
+  symbol: string;
+  date: string;
+  epsActual?: number;
+  epsEstimated?: number;
+  revenueActual?: number;
+  revenueEstimated?: number;
+  lastUpdated?: string;
+}
+
 export interface MarketSnapshot {
   peRatio?: string;
   earningDate?: string;
@@ -168,7 +193,6 @@ class FinancialModelingPrepService {
     try {
       const url = `${BASE_URL}/quote?symbol=${symbol}&apikey=${this.apiKey}`;
       console.log(`📡 [FMP] Fetching quote for ${symbol}`);
-      console.log(`📡 [FMP] URL: ${url}`);
       
       const response = await fetch(url);
       
@@ -178,29 +202,25 @@ class FinancialModelingPrepService {
       }
       
       const data = await response.json();
-      console.log(`📊 [FMP] Raw API response:`, data);
+      console.log(`📊 [FMP] Raw quote response:`, data);
 
-      // Check for API error messages in response
       if (data.error || data['Error Message']) {
         const errorMsg = data.error || data['Error Message'];
         console.error(`❌ [FMP] API Error: ${errorMsg}`);
         throw new Error(errorMsg);
       }
 
-      // FMP returns an array of quotes
       if (Array.isArray(data)) {
         if (data.length === 0) {
-          console.warn(`⚠️ [FMP] Empty array returned for ${symbol} - symbol may not exist`);
-          throw new Error(`No data found for ticker symbol: ${symbol}. Please verify the symbol is correct.`);
+          console.warn(`⚠️ [FMP] Empty array returned for ${symbol}`);
+          throw new Error(`No data found for ticker symbol: ${symbol}`);
         }
         
         const quote = data[0];
-        console.log(`✅ [FMP] Quote data received for ${quote.symbol}`);
-        console.log(`📊 [FMP] Quote details - price: ${quote.price}, changePercentage: ${quote.changePercentage}, pe: ${quote.pe}`);
+        console.log(`✅ [FMP] Quote received - price: ${quote.price}, change: ${quote.changePercentage}%`);
         return quote;
       }
 
-      // Handle unexpected response format
       console.error(`❌ [FMP] Unexpected response format:`, typeof data, data);
       throw new Error('Unexpected API response format');
     } catch (error) {
@@ -221,11 +241,10 @@ class FinancialModelingPrepService {
       
       if (!response.ok) {
         console.error(`❌ [FMP] HTTP Error: ${response.status} ${response.statusText}`);
-        return null; // Profile is optional, don't throw
+        return null;
       }
       
       const data = await response.json();
-      console.log(`📊 [FMP] Profile response:`, data);
 
       if (data.error || data['Error Message']) {
         console.warn(`⚠️ [FMP] Profile API Error: ${data.error || data['Error Message']}`);
@@ -233,7 +252,7 @@ class FinancialModelingPrepService {
       }
 
       if (Array.isArray(data) && data.length > 0) {
-        console.log(`✅ [FMP] Profile data received for ${data[0].symbol}`);
+        console.log(`✅ [FMP] Profile received for ${data[0].symbol}`);
         return data[0];
       }
 
@@ -241,6 +260,76 @@ class FinancialModelingPrepService {
       return null;
     } catch (error) {
       console.warn(`⚠️ [FMP] Error fetching profile (non-critical):`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch financial ratios including PE ratio
+   */
+  async getRatios(symbol: string): Promise<FMPRatios | null> {
+    try {
+      const url = `${BASE_URL}/ratios?symbol=${symbol}&apikey=${this.apiKey}&limit=1`;
+      console.log(`📡 [FMP] Fetching ratios for ${symbol}`);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error(`❌ [FMP] HTTP Error: ${response.status} ${response.statusText}`);
+        return null;
+      }
+      
+      const data = await response.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        console.log(`✅ [FMP] Ratios received - PE: ${data[0].priceToEarningsRatio}`);
+        return data[0];
+      }
+
+      console.warn(`⚠️ [FMP] No ratios data for ${symbol}`);
+      return null;
+    } catch (error) {
+      console.warn(`⚠️ [FMP] Error fetching ratios (non-critical):`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch earnings calendar to get next earnings date
+   */
+  async getEarningsCalendar(symbol: string): Promise<FMPEarningsCalendar | null> {
+    try {
+      const url = `${BASE_URL}/earnings-calendar?symbol=${symbol}&apikey=${this.apiKey}`;
+      console.log(`📡 [FMP] Fetching earnings calendar for ${symbol}`);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error(`❌ [FMP] HTTP Error: ${response.status} ${response.statusText}`);
+        return null;
+      }
+      
+      const data = await response.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        // Find the most recent or upcoming earnings date
+        const sortedEarnings = data
+          .filter((e: FMPEarningsCalendar) => e.symbol === symbol)
+          .sort((a: FMPEarningsCalendar, b: FMPEarningsCalendar) => 
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+        
+        if (sortedEarnings.length > 0) {
+          const latestEarnings = sortedEarnings[0];
+          console.log(`✅ [FMP] Earnings date found: ${latestEarnings.date}`);
+          return latestEarnings;
+        }
+      }
+
+      console.warn(`⚠️ [FMP] No earnings calendar data for ${symbol}`);
+      return null;
+    } catch (error) {
+      console.warn(`⚠️ [FMP] Error fetching earnings calendar (non-critical):`, error);
       return null;
     }
   }
@@ -261,7 +350,6 @@ class FinancialModelingPrepService {
       }
       
       const data = await response.json();
-      console.log(`📊 [FMP] Key metrics response:`, data);
 
       if (Array.isArray(data) && data.length > 0) {
         console.log(`✅ [FMP] Key metrics received for ${symbol}`);
@@ -277,13 +365,13 @@ class FinancialModelingPrepService {
   }
 
   /**
-   * Fetch complete market snapshot (combines quote, profile, and metrics)
+   * Fetch complete market snapshot (combines quote, profile, ratios, earnings, and metrics)
    */
   async getMarketSnapshot(symbol: string): Promise<MarketSnapshot | null> {
     try {
       console.log(`🔍 [FMP] Starting market snapshot fetch for ${symbol}`);
 
-      // Fetch quote data (required) - this will throw if it fails
+      // Fetch quote data (required)
       const quote = await this.getQuote(symbol);
       
       if (!quote) {
@@ -292,23 +380,20 @@ class FinancialModelingPrepService {
 
       console.log(`✅ [FMP] Quote fetched successfully`);
 
-      // Try to fetch profile and metrics (optional)
-      let profile: FMPProfile | null = null;
-      let metrics: FMPKeyMetrics | null = null;
-      
-      try {
-        profile = await this.getCompanyProfile(symbol);
-        console.log(`📦 [FMP] Profile result: ${profile ? 'Success' : 'Not available'}`);
-      } catch (profileError) {
-        console.warn(`⚠️ [FMP] Profile fetch failed (continuing with quote only)`);
-      }
+      // Fetch additional data in parallel (all optional)
+      const [profile, ratios, earnings, metrics] = await Promise.all([
+        this.getCompanyProfile(symbol),
+        this.getRatios(symbol),
+        this.getEarningsCalendar(symbol),
+        this.getKeyMetrics(symbol)
+      ]);
 
-      try {
-        metrics = await this.getKeyMetrics(symbol);
-        console.log(`📦 [FMP] Metrics result: ${metrics ? 'Success' : 'Not available'}`);
-      } catch (metricsError) {
-        console.warn(`⚠️ [FMP] Metrics fetch failed (continuing without metrics)`);
-      }
+      console.log(`📦 [FMP] Additional data fetched:`, {
+        profile: !!profile,
+        ratios: !!ratios,
+        earnings: !!earnings,
+        metrics: !!metrics
+      });
 
       // Helper function to safely convert to string
       const safeToString = (value: number | undefined | null): string => {
@@ -318,15 +403,33 @@ class FinancialModelingPrepService {
         return value.toString();
       };
 
-      // Combine data from all sources with safe null checks
-      // CRITICAL FIX: Use 'changePercentage' (correct field name from API)
+      // Get PE ratio from ratios endpoint (most reliable source)
+      const peRatio = ratios?.priceToEarningsRatio 
+        ? safeToString(ratios.priceToEarningsRatio)
+        : (quote.pe ? safeToString(quote.pe) : 'N/A');
+
+      // Get earnings date from earnings calendar
+      const earningDate = earnings?.date || quote.earningsAnnouncement || undefined;
+
+      // Get dividend yield - check both profile fields
+      let dividendYield = 'N/A';
+      if (ratios?.dividendYieldPercentage) {
+        dividendYield = ratios.dividendYieldPercentage.toFixed(2);
+      } else if (profile && quote.price) {
+        const lastDiv = profile.lastDividend || profile.lastDiv;
+        if (lastDiv) {
+          dividendYield = ((lastDiv / quote.price) * 100).toFixed(2);
+        }
+      }
+
+      // Combine data from all sources
       const snapshot: MarketSnapshot = {
-        peRatio: quote.pe ? safeToString(quote.pe) : 'N/A',
-        earningDate: quote.earningsAnnouncement || undefined,
+        peRatio: peRatio,
+        earningDate: earningDate,
         symbol: symbol,
         name: profile?.companyName || quote.name || symbol,
         currentPrice: safeToString(quote.price),
-        percentChange: safeToString(quote.changePercentage),  // FIXED: was changesPercentage, now changePercentage
+        percentChange: safeToString(quote.changePercentage),
         marketCap: safeToString(quote.marketCap),
         highPrice: safeToString(quote.dayHigh),
         lowPrice: safeToString(quote.dayLow),
@@ -334,15 +437,15 @@ class FinancialModelingPrepService {
         previousClose: safeToString(quote.previousClose),
         pegRatio: metrics?.pegRatio ? safeToString(metrics.pegRatio) : 'N/A',
         annualSales: 'N/A',
-        dividendYield: (profile?.lastDiv && quote.price) ? ((profile.lastDiv / quote.price) * 100).toFixed(2) : 'N/A',
+        dividendYield: dividendYield,
         fiftyTwoWeekLow: safeToString(quote.yearLow),
         fiftyTwoWeekHigh: safeToString(quote.yearHigh),
         currency: profile?.currency || 'USD',
         lastUpdated: new Date().toISOString()
       };
 
-      console.log(`✅ [FMP] Market snapshot created successfully for ${symbol}`);
-      console.log(`📊 [FMP] Snapshot data:`, snapshot);
+      console.log(`✅ [FMP] Market snapshot created successfully`);
+      console.log(`📊 [FMP] PE Ratio: ${peRatio}, Earnings Date: ${earningDate || 'N/A'}`);
       return snapshot;
     } catch (error) {
       console.error(`❌ [FMP] Failed to create market snapshot for ${symbol}:`, error);
