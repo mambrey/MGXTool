@@ -842,6 +842,22 @@ export default function AccountDetails({
                                 </p>
                               </div>
                             )}
+                            {marketData.peRatio && marketData.peRatio !== "0" && marketData.peRatio !== "N/A" && (
+                              <div>
+                                <label className="text-xs font-medium text-gray-600">P/E Ratio</label>
+                                <p className="text-sm font-semibold text-gray-900 mt-1">
+                                  {parseFloat(marketData.peRatio).toFixed(2)}
+                                </p>
+                              </div>
+                            )}
+                            {marketData.earningDate && marketData.earningDate !== "N/A" && (
+                              <div>
+                                <label className="text-xs font-medium text-gray-600">Earning Date</label>
+                                <p className="text-sm font-semibold text-gray-900 mt-1">
+                                  {new Date(marketData.earningDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                                </p>
+                              </div>
+                            )}
                           </div>
 
                           {/* Last Updated */}

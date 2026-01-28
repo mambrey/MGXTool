@@ -64,6 +64,8 @@ export interface AlphaVantageOverview {
 }
 
 export interface MarketSnapshot {
+  peRatio?: string;
+  earningDate?: string;
   symbol: string;
   name: string;
   currentPrice: string;
@@ -249,6 +251,8 @@ class AlphaVantageService {
 
       // Combine data from both sources
       const snapshot: MarketSnapshot = {
+        peRatio: overview?.peRatio || undefined,
+        earningDate: undefined, // Alpha Vantage does not provide earning date in OVERVIEW
         symbol: symbol,
         name: overview?.name || symbol,
         currentPrice: quote?.price || 'N/A',
