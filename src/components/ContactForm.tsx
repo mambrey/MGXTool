@@ -1936,7 +1936,7 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
                   )}
                   <ChevronDown className="h-4 w-4 opacity-50 absolute right-3 top-1/2 -translate-y-1/2" />
                 </SelectTrigger>
-                <SelectContent className="max-w-md">
+                <SelectContent className="max-w-2xl">
                   <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                   <SelectItem value="Data Centric">
                     <div className="py-1">
