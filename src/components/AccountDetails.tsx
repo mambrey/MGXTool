@@ -743,11 +743,6 @@ export default function AccountDetails({
                       )}
 
                       {/* Show error as warning banner if there's an error BUT still show data if available */}
-                      {marketError && !marketLoading && (
-                        <div className="p-3 mb-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <p className="text-xs text-yellow-800">{marketError}</p>
-                        </div>
-                      )}
 
                       {/* Show data if available, regardless of error state */}
                       {marketData && !marketLoading && (
