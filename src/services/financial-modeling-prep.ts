@@ -23,9 +23,9 @@ export interface FMPQuote {
   avgVolume: number;
   open: number;
   previousClose: number;
-  eps: number;
-  pe: number;
-  earningsAnnouncement: string;
+  eps?: number;
+  pe?: number;
+  earningsAnnouncement?: string;
   sharesOutstanding: number;
   timestamp: number;
 }
@@ -36,7 +36,7 @@ export interface FMPProfile {
   beta: number;
   volAvg: number;
   mktCap: number;
-  lastDiv: number;
+  lastDiv?: number;
   range: string;
   changes: number;
   companyName: string;
@@ -73,63 +73,63 @@ export interface FMPKeyMetrics {
   date: string;
   symbol: string;
   period: string;
-  revenuePerShare: number;
-  netIncomePerShare: number;
-  operatingCashFlowPerShare: number;
-  freeCashFlowPerShare: number;
-  cashPerShare: number;
-  bookValuePerShare: number;
-  tangibleBookValuePerShare: number;
-  shareholdersEquityPerShare: number;
-  interestDebtPerShare: number;
-  marketCap: number;
-  enterpriseValue: number;
-  peRatio: number;
-  priceToSalesRatio: number;
-  pocfratio: number;
-  pfcfRatio: number;
-  pbRatio: number;
-  ptbRatio: number;
-  evToSales: number;
-  enterpriseValueOverEBITDA: number;
-  evToOperatingCashFlow: number;
-  evToFreeCashFlow: number;
-  earningsYield: number;
-  freeCashFlowYield: number;
-  debtToEquity: number;
-  debtToAssets: number;
-  netDebtToEBITDA: number;
-  currentRatio: number;
-  interestCoverage: number;
-  incomeQuality: number;
-  dividendYield: number;
-  payoutRatio: number;
-  salesGeneralAndAdministrativeToRevenue: number;
-  researchAndDdevelopementToRevenue: number;
-  intangiblesToTotalAssets: number;
-  capexToOperatingCashFlow: number;
-  capexToRevenue: number;
-  capexToDepreciation: number;
-  stockBasedCompensationToRevenue: number;
-  grahamNumber: number;
-  roic: number;
-  returnOnTangibleAssets: number;
-  grahamNetNet: number;
-  workingCapital: number;
-  tangibleAssetValue: number;
-  netCurrentAssetValue: number;
-  investedCapital: number;
-  averageReceivables: number;
-  averagePayables: number;
-  averageInventory: number;
-  daysSalesOutstanding: number;
-  daysPayablesOutstanding: number;
-  daysOfInventoryOnHand: number;
-  receivablesTurnover: number;
-  payablesTurnover: number;
-  inventoryTurnover: number;
-  roe: number;
-  capexPerShare: number;
+  revenuePerShare?: number;
+  netIncomePerShare?: number;
+  operatingCashFlowPerShare?: number;
+  freeCashFlowPerShare?: number;
+  cashPerShare?: number;
+  bookValuePerShare?: number;
+  tangibleBookValuePerShare?: number;
+  shareholdersEquityPerShare?: number;
+  interestDebtPerShare?: number;
+  marketCap?: number;
+  enterpriseValue?: number;
+  peRatio?: number;
+  priceToSalesRatio?: number;
+  pocfratio?: number;
+  pfcfRatio?: number;
+  pbRatio?: number;
+  ptbRatio?: number;
+  evToSales?: number;
+  enterpriseValueOverEBITDA?: number;
+  evToOperatingCashFlow?: number;
+  evToFreeCashFlow?: number;
+  earningsYield?: number;
+  freeCashFlowYield?: number;
+  debtToEquity?: number;
+  debtToAssets?: number;
+  netDebtToEBITDA?: number;
+  currentRatio?: number;
+  interestCoverage?: number;
+  incomeQuality?: number;
+  dividendYield?: number;
+  payoutRatio?: number;
+  salesGeneralAndAdministrativeToRevenue?: number;
+  researchAndDdevelopementToRevenue?: number;
+  intangiblesToTotalAssets?: number;
+  capexToOperatingCashFlow?: number;
+  capexToRevenue?: number;
+  capexToDepreciation?: number;
+  stockBasedCompensationToRevenue?: number;
+  grahamNumber?: number;
+  roic?: number;
+  returnOnTangibleAssets?: number;
+  grahamNetNet?: number;
+  workingCapital?: number;
+  tangibleAssetValue?: number;
+  netCurrentAssetValue?: number;
+  investedCapital?: number;
+  averageReceivables?: number;
+  averagePayables?: number;
+  averageInventory?: number;
+  daysSalesOutstanding?: number;
+  daysPayablesOutstanding?: number;
+  daysOfInventoryOnHand?: number;
+  receivablesTurnover?: number;
+  payablesTurnover?: number;
+  inventoryTurnover?: number;
+  roe?: number;
+  capexPerShare?: number;
   pegRatio?: number;
 }
 
@@ -309,24 +309,32 @@ class FinancialModelingPrepService {
         console.warn(`⚠️ [FMP] Metrics fetch failed (continuing without metrics)`);
       }
 
-      // Combine data from all sources
+      // Helper function to safely convert to string
+      const safeToString = (value: number | undefined | null): string => {
+        if (value === undefined || value === null || isNaN(value)) {
+          return 'N/A';
+        }
+        return value.toString();
+      };
+
+      // Combine data from all sources with safe null checks
       const snapshot: MarketSnapshot = {
-        peRatio: quote.pe ? quote.pe.toString() : 'N/A',
+        peRatio: quote.pe ? safeToString(quote.pe) : 'N/A',
         earningDate: quote.earningsAnnouncement || undefined,
         symbol: symbol,
         name: profile?.companyName || quote.name || symbol,
-        currentPrice: quote.price.toString(),
-        percentChange: quote.changesPercentage.toString(),
-        marketCap: quote.marketCap ? quote.marketCap.toString() : 'N/A',
-        highPrice: quote.dayHigh ? quote.dayHigh.toString() : 'N/A',
-        lowPrice: quote.dayLow ? quote.dayLow.toString() : 'N/A',
-        openPrice: quote.open ? quote.open.toString() : 'N/A',
-        previousClose: quote.previousClose ? quote.previousClose.toString() : 'N/A',
-        pegRatio: metrics?.pegRatio ? metrics.pegRatio.toString() : 'N/A',
+        currentPrice: safeToString(quote.price),
+        percentChange: safeToString(quote.changesPercentage),
+        marketCap: safeToString(quote.marketCap),
+        highPrice: safeToString(quote.dayHigh),
+        lowPrice: safeToString(quote.dayLow),
+        openPrice: safeToString(quote.open),
+        previousClose: safeToString(quote.previousClose),
+        pegRatio: metrics?.pegRatio ? safeToString(metrics.pegRatio) : 'N/A',
         annualSales: 'N/A',
-        dividendYield: profile?.lastDiv && quote.price ? ((profile.lastDiv / quote.price) * 100).toFixed(2) : 'N/A',
-        fiftyTwoWeekLow: quote.yearLow ? quote.yearLow.toString() : 'N/A',
-        fiftyTwoWeekHigh: quote.yearHigh ? quote.yearHigh.toString() : 'N/A',
+        dividendYield: (profile?.lastDiv && quote.price) ? ((profile.lastDiv / quote.price) * 100).toFixed(2) : 'N/A',
+        fiftyTwoWeekLow: safeToString(quote.yearLow),
+        fiftyTwoWeekHigh: safeToString(quote.yearHigh),
         currency: profile?.currency || 'USD',
         lastUpdated: new Date().toISOString()
       };
