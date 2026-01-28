@@ -225,7 +225,7 @@ export default function AccountDetails({
     if (account.tickerSymbol) {
       fetchMarketData(account.tickerSymbol);
     }
-  }, [account.tickerSymbol, fetchMarketData]);
+  }, [account.tickerSymbol]);
 
   // Helper function to format large numbers
   const formatLargeNumber = (value: string | number) => {
