@@ -10,7 +10,7 @@ export interface FMPQuote {
   symbol: string;
   name: string;
   price: number;
-  changesPercentage: number;
+  changePercentage: number;  // Note: API uses 'changePercentage', not 'changesPercentage'
   change: number;
   dayLow: number;
   dayHigh: number;
@@ -20,7 +20,7 @@ export interface FMPQuote {
   priceAvg50: number;
   priceAvg200: number;
   volume: number;
-  avgVolume: number;
+  avgVolume?: number;
   open: number;
   previousClose: number;
   eps?: number;
@@ -196,6 +196,7 @@ class FinancialModelingPrepService {
         
         const quote = data[0];
         console.log(`✅ [FMP] Quote data received for ${quote.symbol}`);
+        console.log(`📊 [FMP] Quote details - price: ${quote.price}, changePercentage: ${quote.changePercentage}, pe: ${quote.pe}`);
         return quote;
       }
 
@@ -318,13 +319,14 @@ class FinancialModelingPrepService {
       };
 
       // Combine data from all sources with safe null checks
+      // CRITICAL FIX: Use 'changePercentage' (correct field name from API)
       const snapshot: MarketSnapshot = {
         peRatio: quote.pe ? safeToString(quote.pe) : 'N/A',
         earningDate: quote.earningsAnnouncement || undefined,
         symbol: symbol,
         name: profile?.companyName || quote.name || symbol,
         currentPrice: safeToString(quote.price),
-        percentChange: safeToString(quote.changesPercentage),
+        percentChange: safeToString(quote.changePercentage),  // FIXED: was changesPercentage, now changePercentage
         marketCap: safeToString(quote.marketCap),
         highPrice: safeToString(quote.dayHigh),
         lowPrice: safeToString(quote.dayLow),
