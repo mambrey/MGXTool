@@ -12,8 +12,7 @@ export function useAlphaVantage() {
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    // Don't clear error here - let it show alongside loading state
 
     try {
       const data = await alphaVantageService.getMarketSnapshot(symbol.trim().toUpperCase());
