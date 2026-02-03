@@ -1,9 +1,0 @@
-/* Global styles to force black text in Google Maps Place Autocomplete */
-gmp-place-autocomplete {
-  color: #000000 !important;
-}
-
-gmp-place-autocomplete input {
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
-}
