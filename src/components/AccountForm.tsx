@@ -222,7 +222,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     operatingStates: '',
     allSpiritsOutlets: '',
     fullProofOutlets: '',
-    displayMandates: 'none',
+    displayMandates: '',
     currentPrice: '',
     percentChange: '',
     highPrice: '',
@@ -449,7 +449,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       nextJBPAlertOptions: [],
       pricingStrategy: 'none',
       privateLabel: 'none',
-      displayMandates: 'none',
+      displayMandates: '',
       ecommerceMaturityLevel: 'none',
       ecommerceSalesPercentage: '',
       fulfillmentTypes: [],
@@ -813,7 +813,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       pricingStrategy: formData.pricingStrategy === 'none' ? '' : formData.pricingStrategy,
       privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel,
       innovationAppetite: formData.innovationAppetite === 'none' ? '' : formData.innovationAppetite,
-      displayMandates: formData.displayMandates === 'none' ? '' : formData.displayMandates,
+      displayMandates: formData.displayMandates,
       ecommerceMaturityLevel: formData.ecommerceMaturityLevel === 'none' ? '' : formData.ecommerceMaturityLevel,
       influenceAssortmentShelf: formData.influenceAssortmentShelf === 'none' ? '' : formData.influenceAssortmentShelf,
       influencePricePromo: formData.influencePricePromo === 'none' ? '' : formData.influencePricePromo,
@@ -1508,13 +1508,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               <div>
                 <Label className="text-xs font-medium">Are Displays Mandated</Label>
                 <Select 
-                  value={formData.displayMandates || 'none'} 
-                  onValueChange={(value) => updateField('displayMandates', value)}
+                  value={formData.displayMandates || ''} 
+                  onValueChange={(value) => updateField('displayMandates', value === 'clear' ? '' : value)}
                 >
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select display mandate level" />
+                    <SelectValue placeholder="Select One" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                     <SelectItem value="Fully Mandated">
                       <div className="flex flex-col">
                         <span className="font-medium">Fully Mandated</span>
@@ -1631,7 +1632,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   onValueChange={(value) => updateField('influenceBuyingPOOwnership', value === 'clear' ? '' : value)}
                 >
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select level" />
+                    <SelectValue placeholder="Select One" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
