@@ -179,6 +179,21 @@ const formatAlertOptions = (options?: string[]) => {
   }).join(', ');
 };
 
+// Helper function to format key competitors
+const formatKeyCompetitors = (competitors: string | string[] | undefined): string => {
+  if (!competitors) return '';
+  
+  // If it's already a string, return it as is
+  if (typeof competitors === 'string') return competitors;
+  
+  // If it's an array, join with comma and space
+  if (Array.isArray(competitors)) {
+    return competitors.join(', ');
+  }
+  
+  return '';
+};
+
 export default function AccountDetails({ 
   account, 
   contacts, 
@@ -1094,7 +1109,7 @@ export default function AccountDetails({
                       {account.keyCompetitors && (
                         <div>
                           <label className="text-sm font-medium text-gray-600">Key Competitors</label>
-                          <p className="text-sm mt-1 whitespace-pre-wrap">{account.keyCompetitors}</p>
+                          <p className="text-sm mt-1 whitespace-pre-wrap">{formatKeyCompetitors(account.keyCompetitors)}</p>
                         </div>
                       )}
                       {account.designatedCharities && (
