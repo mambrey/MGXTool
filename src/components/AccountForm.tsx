@@ -286,7 +286,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     influenceEcommerce: 'none',
     influenceInStoreEvents: 'none',
     influenceShrinkManagement: 'none',
-    influenceBuyingPOOwnership: 'none',
+    influenceBuyingPOOwnership: '',
     createdAt: account?.createdAt || currentTime,
     lastModified: currentTime,
     accountOwnerName: '',
@@ -441,7 +441,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       influenceEcommerce: 'none',
       influenceInStoreEvents: 'none',
       influenceShrinkManagement: 'none',
-      influenceBuyingPOOwnership: 'none',
+      influenceBuyingPOOwnership: '',
       isJBP: false,
       lastJBPDate: '',
       nextJBPDate: '',
@@ -822,7 +822,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       influenceEcommerce: formData.influenceEcommerce === 'none' ? '' : formData.influenceEcommerce,
       influenceInStoreEvents: formData.influenceInStoreEvents === 'none' ? '' : formData.influenceInStoreEvents,
       influenceShrinkManagement: formData.influenceShrinkManagement === 'none' ? '' : formData.influenceShrinkManagement,
-      influenceBuyingPOOwnership: formData.influenceBuyingPOOwnership === 'none' ? '' : formData.influenceBuyingPOOwnership
+      influenceBuyingPOOwnership: formData.influenceBuyingPOOwnership
     };
 
     const hasNewTickerSymbol = 
@@ -1627,14 +1627,14 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               <div>
                 <Label className="text-xs font-medium">Buying / PO Ownership</Label>
                 <Select 
-                  value={formData.influenceBuyingPOOwnership || 'none'} 
-                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value)}
+                  value={formData.influenceBuyingPOOwnership || ''} 
+                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value === 'clear' ? '' : value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                     <SelectItem value="Yes">Yes</SelectItem>
                     <SelectItem value="No">No</SelectItem>
                     <SelectItem value="Hybrid">Hybrid</SelectItem>
