@@ -1148,7 +1148,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Header - Made Sticky */}
       <div className="lg:hidden sticky top-0 z-50 bg-white border-b px-4 py-3 flex items-center justify-between shadow-sm">
-        <h1 className="text-xl font-bold">Diageo AccountIQ</h1>
+        <div className="flex items-center gap-3"><img src="/MGXTool/diageo-logo.png" alt="Diageo Logo" className="h-8 w-auto" /><h1 className="text-xl font-bold">AccountIQ</h1></div>
         <Button
           variant="ghost"
           size="sm"
@@ -1162,7 +1162,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
         {/* Desktop Sidebar */}
         <div className="hidden lg:block w-64 bg-white border-r min-h-screen">
           <div className="p-6">
-            <h1 className="text-xl font-bold mb-6">Diageo AccountIQ</h1>
+            <div className="flex items-center gap-3 mb-6"><img src="/MGXTool/diageo-logo.png" alt="Diageo Logo" className="h-10 w-auto" /><h1 className="text-xl font-bold">AccountIQ</h1></div>
             {renderNavigation()}
           </div>
         </div>
@@ -1173,7 +1173,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
             <div className="w-64 bg-white h-full">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h1 className="text-xl font-bold">Diageo AccountIQ</h1>
+                  <div className="flex items-center gap-3"><img src="/MGXTool/diageo-logo.png" alt="Diageo Logo" className="h-8 w-auto" /><h1 className="text-xl font-bold">AccountIQ</h1></div>
                   <Button
                     variant="ghost"
                     size="sm"
