@@ -120,7 +120,7 @@ export default function WelcomeScreen({
               </div>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                  Diageo AccountIQ
+                  AccountIQ
                 </h1>
                 <p className="text-gray-600 mt-1">U.S. Strategic Accounts Platform</p>
               </div>
@@ -261,7 +261,7 @@ export default function WelcomeScreen({
         <Card className="bg-white/70 backdrop-blur-sm border-white/20 mb-8">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
-              Welcome to Diageo AccountIQ {userName}!
+              Welcome to AccountIQ {userName}!
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
