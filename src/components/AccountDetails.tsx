@@ -517,6 +517,14 @@ export default function AccountDetails({
 
   const allImportantDates = getAllImportantDates();
 
+  // Calculate the total buying offices count
+  const getTotalBuyingOfficesCount = () => {
+    if (account.bannerBuyingOffices && account.bannerBuyingOffices.length > 0) {
+      return account.bannerBuyingOffices.length;
+    }
+    return 1; // Default to 1 if no buying offices exist
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -619,7 +627,7 @@ export default function AccountDetails({
                           <InfoItem label="Operating States" value={Array.isArray(account.operatingStates) ? account.operatingStates.join(', ') : account.operatingStates} />
                           {renderSpiritsOutletsByState()}
                           <InfoItem label="Full Proof Outlets" value={account.fullProofOutlets} />
-                          <InfoItem label="Total Buying Offices" value={account.totalBuyingOffices} />
+                          <InfoItem label="Total Buying Offices" value={getTotalBuyingOfficesCount()} />
                         </div>
                       </div>
 
