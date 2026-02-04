@@ -1623,6 +1623,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
               {/* Row 6: In Store Events + Allows Wet Sampling */}
               <div>
+          <div className="pt-4 border-t">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Sampling & Innovation
+            </Label>
+          </div>
+
                 <Label className="text-xs font-medium">In Store Events</Label>
                 <Select 
                   value={formData.influenceInStoreEvents || 'none'} 
