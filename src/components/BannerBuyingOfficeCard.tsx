@@ -534,7 +534,7 @@ export default function BannerBuyingOfficeCard({
           </Label>
           
           <div className="space-y-4">
-            {/* HQ Level of Influence - UPDATED HEADER */}
+            {/* HQ Level of Influence */}
             <div>
               <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
                 <Building2 className="w-4 h-4" />
@@ -751,15 +751,18 @@ export default function BannerBuyingOfficeCard({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+            </div>
 
-                {/* Special Grid Item: Sampling & Innovation Section Header + In Store Events */}
+            {/* Sampling & Innovation Section */}
+            <div className="pt-4 border-t">
+              <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                Sampling & Innovation
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* In Store Events */}
                 <div>
-                  <div className="pt-4 border-t">
-                    <Label className="text-sm font-medium flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      Sampling & Innovation
-                    </Label>
-                  </div>
                   <Label className="text-xs font-medium">In Store Events</Label>
                   <Select 
                     value={banner.influenceInStoreEvents || 'none'} 
@@ -777,7 +780,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
-                {/* Row 6: Allows Wet Sampling */}
+                {/* Allows Wet Sampling */}
                 <div>
                   <Label className="text-xs font-medium">Allows Wet Sampling</Label>
                   <Select 
@@ -796,7 +799,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
-                {/* Row 7: Innovation Appetite + Innovation Information Lead Time */}
+                {/* Innovation Appetite */}
                 <div>
                   <Label className="text-xs font-medium">Innovation Appetite</Label>
                   <Select 
@@ -817,6 +820,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* Innovation Information Lead Time */}
                 <div>
                   <Label className="text-xs font-medium">Innovation Information Lead Time</Label>
                   <Select 
@@ -835,6 +839,26 @@ export default function BannerBuyingOfficeCard({
                       <SelectItem value="12 months">12 months</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Has Planogram */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`banner-${banner.id}-hasPlanograms`}
+                    checked={banner.hasPlanograms}
+                    onCheckedChange={(checked) => onUpdateField(banner.id, 'hasPlanograms', checked as boolean)}
+                  />
+                  <Label htmlFor={`banner-${banner.id}-hasPlanograms`} className="text-sm font-medium">Has Planogram</Label>
+                </div>
+
+                {/* JBP Customer */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`banner-${banner.id}-isJBP`}
+                    checked={banner.isJBP}
+                    onCheckedChange={(checked) => onUpdateField(banner.id, 'isJBP', checked as boolean)}
+                  />
+                  <Label htmlFor={`banner-${banner.id}-isJBP`} className="text-sm font-medium">JBP Customer</Label>
                 </div>
               </div>
             </div>
@@ -867,7 +891,7 @@ export default function BannerBuyingOfficeCard({
                   </div>
                 </div>
                 
-                {/* Alert Section - UPDATED WITH NEW OPTIONS */}
+                {/* Alert Section */}
                 <div className="space-y-3 pt-2 border-t border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1323,7 +1347,7 @@ export default function BannerBuyingOfficeCard({
               />
             </div>
             
-            {/* UPDATED: Key Competitors - Now with consistent grid layout */}
+            {/* Key Competitors */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-xs font-medium">Key Competitors</Label>
@@ -1455,7 +1479,7 @@ export default function BannerBuyingOfficeCard({
                         </div>
                       </div>
                       
-                      {/* Alert Section for Customer Events - UPDATED WITH NEW OPTIONS */}
+                      {/* Alert Section for Customer Events */}
                       <div className="mt-3 pt-3 border-t border-gray-200">
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
