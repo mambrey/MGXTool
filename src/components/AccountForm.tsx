@@ -148,8 +148,8 @@ const MONTHS = [
 
 // UPDATED: Added Instacart, Doordash, UberEats, and GoPuff to the list
 const KEY_COMPETITORS = [
-  '7-eleven', 'Aafes', 'Abc', 'Albsco', 'Bevmo/go-puff', 'Bjs', 'Caseys', 'Circle k',
-  'Coast guard', 'Coborns', 'Costco', 'Cub', 'Cvs', 'Doordash', 'El super',
+  '7-eleven', 'Aafes', 'Abc', 'ALBSCO', 'Bevmo/Go-Puff', 'Bjs', 'Caseys', 'Circle k',
+  'Coast guard', 'Coborns', 'Costco', 'Cub', 'CVS', 'Doordash', 'El super',
   'Festival foods', 'Food maxx', 'Giant eagle', 'Goody goody', 'Gopuff', 'Hyvee',
   'Instacart', 'Kroger', 'Kum & go', "Lee's discount liquor", 'Lucky', "Marine's",
   'Meijer', 'Nexcom', "Raley's", 'Rouses', 'Sams club', 'Save mart', "Schnuck's",
