@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Trash2, Calendar, Target, TrendingUp, Plus, Bell, Building2, CheckSquare, Square, X } from 'lucide-react';
+import { Save, Trash2, Calendar, Target, Plus, Bell, Building2, CheckSquare, Square, X, Sparkles, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -534,11 +534,11 @@ export default function BannerBuyingOfficeCard({
           </Label>
           
           <div className="space-y-4">
-            {/* Level of Influence - UPDATED TO MATCH HQ PAIRED LAYOUT */}
+            {/* HQ Level of Influence - UPDATED HEADER */}
             <div>
               <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Level of Influence
+                <Building2 className="w-4 h-4" />
+                HQ Level of Influence
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Row 1: Assortment/Shelf + Private Label Emphasis */}
@@ -715,7 +715,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
-                {/* Row 5: Buying/PO Ownership + Shrink Management - UPDATED OPTIONS */}
+                {/* Row 5: Buying/PO Ownership + Shrink Management */}
                 <div>
                   <Label className="text-xs font-medium">Buying / PO Ownership</Label>
                   <Select 
@@ -752,8 +752,14 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
-                {/* Row 6: In Store Events + Allows Wet Sampling */}
+                {/* Special Grid Item: Sampling & Innovation Section Header + In Store Events */}
                 <div>
+                  <div className="pt-4 border-t">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Sampling & Innovation
+                    </Label>
+                  </div>
                   <Label className="text-xs font-medium">In Store Events</Label>
                   <Select 
                     value={banner.influenceInStoreEvents || 'none'} 
@@ -771,6 +777,7 @@ export default function BannerBuyingOfficeCard({
                   </Select>
                 </div>
 
+                {/* Row 6: Allows Wet Sampling */}
                 <div>
                   <Label className="text-xs font-medium">Allows Wet Sampling</Label>
                   <Select 
@@ -828,26 +835,6 @@ export default function BannerBuyingOfficeCard({
                       <SelectItem value="12 months">12 months</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                {/* Has Planogram */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`banner-${banner.id}-hasPlanograms`}
-                    checked={banner.hasPlanograms}
-                    onCheckedChange={(checked) => onUpdateField(banner.id, 'hasPlanograms', checked as boolean)}
-                  />
-                  <Label htmlFor={`banner-${banner.id}-hasPlanograms`} className="text-sm font-medium">Has Planogram</Label>
-                </div>
-
-                {/* JBP Customer */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`banner-${banner.id}-isJBP`}
-                    checked={banner.isJBP}
-                    onCheckedChange={(checked) => onUpdateField(banner.id, 'isJBP', checked as boolean)}
-                  />
-                  <Label htmlFor={`banner-${banner.id}-isJBP`} className="text-sm font-medium">JBP Customer</Label>
                 </div>
               </div>
             </div>
@@ -970,142 +957,160 @@ export default function BannerBuyingOfficeCard({
               </div>
             )}
 
-            <div>
-              <Label className="text-xs font-medium">E-Commerce Maturity Level</Label>
-              <Select 
-                value={banner.ecommerceMaturityLevel || 'none'} 
-                onValueChange={(value) => onUpdateField(banner.id, 'ecommerceMaturityLevel', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select e-commerce maturity level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
-                  <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
-                  <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
-                  <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* E-Commerce & Digital Operating Model Section Header */}
+            <div className="pt-4 border-t">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Building2 className="w-4 h-4" />
+                E-Commerce & Digital Operating Model
+              </Label>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium">% of Sales Coming From E-Commerce:</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={banner.ecommerceSalesPercentage}
-                  onChange={(e) => onUpdateField(banner.id, 'ecommerceSalesPercentage', e.target.value)}
-                  placeholder="Enter percentage"
-                  className="w-32"
-                />
-                <span className="text-sm font-medium text-gray-600">%</span>
-              </div>
-            </div>
-
-            {/* Fulfillment Types */}
-            <div>
-              <Label className="text-xs font-medium mb-2 block">Available Fulfillment Types</Label>
-              <div className="p-3 border rounded-lg bg-gray-50">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {fulfillmentTypes.map(type => (
-                    <div key={type} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`banner-${banner.id}-fulfillment-${type}`}
-                        checked={banner.fulfillmentTypes.includes(type)}
-                        onCheckedChange={() => onToggleFulfillmentType(banner.id, type)}
-                      />
-                      <Label htmlFor={`banner-${banner.id}-fulfillment-${type}`} className="text-xs cursor-pointer">
-                        {type}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* E-Commerce Partners */}
-            <div>
-              <Label className="text-xs font-medium mb-2 block">Primary E-Commerce Partners</Label>
-              <div className="p-3 border rounded-lg bg-gray-50">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {ecommercePartners.map(partner => (
-                    <div key={partner} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`banner-${banner.id}-partner-${partner}`}
-                        checked={banner.ecommercePartners.includes(partner)}
-                        onCheckedChange={() => onToggleEcommercePartner(banner.id, partner)}
-                      />
-                      <Label htmlFor={`banner-${banner.id}-partner-${partner}`} className="text-xs cursor-pointer">
-                        {partner}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="pt-4 space-y-4">
               <div>
-                <Label className="text-xs font-medium">Category Captain</Label>
+                <Label className="text-xs font-medium">E-Commerce Maturity Level</Label>
                 <Select 
-                  value={banner.categoryCaptain || 'none'} 
-                  onValueChange={(value) => onUpdateField(banner.id, 'categoryCaptain', value)}
+                  value={banner.ecommerceMaturityLevel || 'none'} 
+                  onValueChange={(value) => onUpdateField(banner.id, 'ecommerceMaturityLevel', value)}
                 >
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select Category Captain" />
+                    <SelectValue placeholder="Select e-commerce maturity level" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Diageo">Diageo</SelectItem>
-                    <SelectItem value="AB-InBev">AB-InBev</SelectItem>
-                    <SelectItem value="Bacardi">Bacardi</SelectItem>
-                    <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
-                    <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
-                    <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
-                    <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
-                    <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
-                    <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
-                    <SelectItem value="PLM">PLM</SelectItem>
-                    <SelectItem value="Suntory">Suntory</SelectItem>
-                    <SelectItem value="Sazerac">Sazerac</SelectItem>
-                    <SelectItem value="SGWS">SGWS</SelectItem>
-                    <SelectItem value="Reyes">Reyes</SelectItem>
-                    <SelectItem value="RNDC">RNDC</SelectItem>
+                    <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
+                    <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
+                    <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
+                    <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
-                <Label className="text-xs font-medium">Category Validator</Label>
-                <Select 
-                  value={banner.categoryAdvisor || 'none'} 
-                  onValueChange={(value) => onUpdateField(banner.id, 'categoryAdvisor', value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select Category Validator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Diageo">Diageo</SelectItem>
-                    <SelectItem value="AB-InBev">AB-InBev</SelectItem>
-                    <SelectItem value="Bacardi">Bacardi</SelectItem>
-                    <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
-                    <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
-                    <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
-                    <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
-                    <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
-                    <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
-                    <SelectItem value="PLM">PLM</SelectItem>
-                    <SelectItem value="Suntory">Suntory</SelectItem>
-                    <SelectItem value="Sazerac">Sazerac</SelectItem>
-                    <SelectItem value="SGWS">SGWS</SelectItem>
-                    <SelectItem value="Reyes">Reyes</SelectItem>
-                    <SelectItem value="RNDC">RNDC</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs font-medium">% of Sales Coming From E-Commerce:</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={banner.ecommerceSalesPercentage}
+                    onChange={(e) => onUpdateField(banner.id, 'ecommerceSalesPercentage', e.target.value)}
+                    placeholder="Enter percentage"
+                    className="w-32"
+                  />
+                  <span className="text-sm font-medium text-gray-600">%</span>
+                </div>
+              </div>
+
+              {/* Fulfillment Types */}
+              <div>
+                <Label className="text-xs font-medium mb-2 block">Available Fulfillment Types</Label>
+                <div className="p-3 border rounded-lg bg-gray-50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {fulfillmentTypes.map(type => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`banner-${banner.id}-fulfillment-${type}`}
+                          checked={banner.fulfillmentTypes.includes(type)}
+                          onCheckedChange={() => onToggleFulfillmentType(banner.id, type)}
+                        />
+                        <Label htmlFor={`banner-${banner.id}-fulfillment-${type}`} className="text-xs cursor-pointer font-medium">
+                          {type}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* E-Commerce Partners */}
+              <div>
+                <Label className="text-xs font-medium mb-2 block">Primary E-Commerce Partners</Label>
+                <div className="p-3 border rounded-lg bg-gray-50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {ecommercePartners.map(partner => (
+                      <div key={partner} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`banner-${banner.id}-partner-${partner}`}
+                          checked={banner.ecommercePartners.includes(partner)}
+                          onCheckedChange={() => onToggleEcommercePartner(banner.id, partner)}
+                        />
+                        <Label htmlFor={`banner-${banner.id}-partner-${partner}`} className="text-xs cursor-pointer font-medium">
+                          {partner}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Advisory Roles Section Header */}
+              <div className="pt-4 border-t">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Category Advisory Roles
+                </Label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-medium">Category Captain</Label>
+                  <Select 
+                    value={banner.categoryCaptain || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'categoryCaptain', value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select Category Captain" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="Diageo">Diageo</SelectItem>
+                      <SelectItem value="AB-InBev">AB-InBev</SelectItem>
+                      <SelectItem value="Bacardi">Bacardi</SelectItem>
+                      <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
+                      <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
+                      <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
+                      <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
+                      <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
+                      <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
+                      <SelectItem value="PLM">PLM</SelectItem>
+                      <SelectItem value="Suntory">Suntory</SelectItem>
+                      <SelectItem value="Sazerac">Sazerac</SelectItem>
+                      <SelectItem value="SGWS">SGWS</SelectItem>
+                      <SelectItem value="Reyes">Reyes</SelectItem>
+                      <SelectItem value="RNDC">RNDC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium">Category Validator</Label>
+                  <Select 
+                    value={banner.categoryAdvisor || 'none'} 
+                    onValueChange={(value) => onUpdateField(banner.id, 'categoryAdvisor', value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select Category Validator" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="Diageo">Diageo</SelectItem>
+                      <SelectItem value="AB-InBev">AB-InBev</SelectItem>
+                      <SelectItem value="Bacardi">Bacardi</SelectItem>
+                      <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
+                      <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
+                      <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
+                      <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
+                      <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
+                      <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
+                      <SelectItem value="PLM">PLM</SelectItem>
+                      <SelectItem value="Suntory">Suntory</SelectItem>
+                      <SelectItem value="Sazerac">Sazerac</SelectItem>
+                      <SelectItem value="SGWS">SGWS</SelectItem>
+                      <SelectItem value="Reyes">Reyes</SelectItem>
+                      <SelectItem value="RNDC">RNDC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
