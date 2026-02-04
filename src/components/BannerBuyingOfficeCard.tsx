@@ -189,6 +189,15 @@ export default function BannerBuyingOfficeCard({
     return [];
   });
 
+  // Initialize custom days from banner data on mount
+  useEffect(() => {
+    const customOption = (banner.nextJBPAlertOptions || []).find(opt => opt.startsWith('custom_'));
+    if (customOption) {
+      const days = customOption.replace('custom_', '');
+      setJbpCustomDays(days);
+    }
+  }, []);
+
   // Sync selectedKeyCompetitors with banner.keyCompetitors
   useEffect(() => {
     onUpdateField(banner.id, 'keyCompetitors', selectedKeyCompetitors);
@@ -265,6 +274,16 @@ export default function BannerBuyingOfficeCard({
       ? currentOptions.filter(o => o !== option)
       : [...currentOptions, option];
     onUpdateField(banner.id, 'nextJBPAlertOptions', newOptions);
+  };
+
+  const handleJBPCustomCheckboxToggle = (checked: boolean) => {
+    if (!checked) {
+      // Unchecking - clear the days and remove custom option
+      setJbpCustomDays('');
+      const filteredOptions = (banner.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+      onUpdateField(banner.id, 'nextJBPAlertOptions', filteredOptions);
+    }
+    // When checking, we don't need to do anything - the input will be enabled and user can enter days
   };
 
   const handleJBPCustomDaysChange = (value: string) => {
@@ -947,13 +966,7 @@ export default function BannerBuyingOfficeCard({
                           <Checkbox
                             id={`banner-${banner.id}-jbp-custom`}
                             checked={isJBPCustomChecked}
-                            onCheckedChange={(checked) => {
-                              if (!checked) {
-                                setJbpCustomDays('');
-                                const filteredOptions = (banner.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
-                                onUpdateField(banner.id, 'nextJBPAlertOptions', filteredOptions);
-                              }
-                            }}
+                            onCheckedChange={handleJBPCustomCheckboxToggle}
                           />
                           <Label htmlFor={`banner-${banner.id}-jbp-custom`} className="text-sm font-normal cursor-pointer">
                             Custom:
