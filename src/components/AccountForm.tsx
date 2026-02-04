@@ -149,16 +149,16 @@ const MONTHS = [
 // UPDATED: Added Instacart, Doordash, UberEats, and GoPuff to the list
 const KEY_COMPETITORS = [
   '7-Eleven',
-  'Aafes',
-  'Abc',
-  'Albsco',
-  'Bevmo/Go-Puff',
-  'Bjs',
-  "Casey's",
+  'AAFES',
+  'ABC',
+  'ALBSCO',
+  'BEVMO/GO-PUFF',
+  'BJs',
+  'CASEYS',
   'Circle K',
   'Coast Guard',
   'Coborns',
-  'Costco',
+  'COSTCO',
   'Cub',
   'CVS',
   'Doordash',
@@ -167,33 +167,33 @@ const KEY_COMPETITORS = [
   'Food Maxx',
   'Giant Eagle',
   'Goody Goody',
-  'Gopuff',
-  'Hyvee',
+  'GoPuff',
+  'HyVee',
   'Instacart',
-  'Kroger',
+  'KROGER',
   'Kum & Go',
-  "Lee's Discount Liquor",
+  'LEE\'S DISCOUNT LIQUOR',
   'Lucky',
-  "Marine's",
+  'MARINE\'S',
   'Meijer',
-  'Nexcom',
-  "Raley's",
+  'NEXCOM',
+  'Raley\'s',
   'Rouses',
-  "Sam's Club",
+  'SAMS CLUB',
   'Save Mart',
-  "Schnuck's",
+  'SCHNUCK\'S',
   'Smart & Final',
-  "Spec's",
+  'SPEC\'S',
   'Stater Bros',
   'Target',
   'Total Wine & More',
   'Twin Liquors',
-  'Ubereats',
+  'UberEats',
   'Walgreens',
   'Walmart',
   'Wegmans',
-  'Wfm',
-  'Winn Dixie (Seg)'
+  'WFM',
+  'WINN DIXIE (SEG)'
 ];
 
 const getAlertOptionLabel = (option: string): string => {
@@ -222,7 +222,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     operatingStates: '',
     allSpiritsOutlets: '',
     fullProofOutlets: '',
-    displayMandates: '',
+    displayMandates: 'none',
     currentPrice: '',
     percentChange: '',
     highPrice: '',
@@ -286,7 +286,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     influenceEcommerce: 'none',
     influenceInStoreEvents: 'none',
     influenceShrinkManagement: 'none',
-    influenceBuyingPOOwnership: '',
+    influenceBuyingPOOwnership: 'none',
     createdAt: account?.createdAt || currentTime,
     lastModified: currentTime,
     accountOwnerName: '',
@@ -441,7 +441,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       influenceEcommerce: 'none',
       influenceInStoreEvents: 'none',
       influenceShrinkManagement: 'none',
-      influenceBuyingPOOwnership: '',
+      influenceBuyingPOOwnership: 'none',
       isJBP: false,
       lastJBPDate: '',
       nextJBPDate: '',
@@ -449,7 +449,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       nextJBPAlertOptions: [],
       pricingStrategy: 'none',
       privateLabel: 'none',
-      displayMandates: '',
+      displayMandates: 'none',
       ecommerceMaturityLevel: 'none',
       ecommerceSalesPercentage: '',
       fulfillmentTypes: [],
@@ -813,7 +813,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       pricingStrategy: formData.pricingStrategy === 'none' ? '' : formData.pricingStrategy,
       privateLabel: formData.privateLabel === 'none' ? '' : formData.privateLabel,
       innovationAppetite: formData.innovationAppetite === 'none' ? '' : formData.innovationAppetite,
-      displayMandates: formData.displayMandates,
+      displayMandates: formData.displayMandates === 'none' ? '' : formData.displayMandates,
       ecommerceMaturityLevel: formData.ecommerceMaturityLevel === 'none' ? '' : formData.ecommerceMaturityLevel,
       influenceAssortmentShelf: formData.influenceAssortmentShelf === 'none' ? '' : formData.influenceAssortmentShelf,
       influencePricePromo: formData.influencePricePromo === 'none' ? '' : formData.influencePricePromo,
@@ -822,7 +822,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       influenceEcommerce: formData.influenceEcommerce === 'none' ? '' : formData.influenceEcommerce,
       influenceInStoreEvents: formData.influenceInStoreEvents === 'none' ? '' : formData.influenceInStoreEvents,
       influenceShrinkManagement: formData.influenceShrinkManagement === 'none' ? '' : formData.influenceShrinkManagement,
-      influenceBuyingPOOwnership: formData.influenceBuyingPOOwnership
+      influenceBuyingPOOwnership: formData.influenceBuyingPOOwnership === 'none' ? '' : formData.influenceBuyingPOOwnership
     };
 
     const hasNewTickerSymbol = 
@@ -1508,14 +1508,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               <div>
                 <Label className="text-xs font-medium">Are Displays Mandated</Label>
                 <Select 
-                  value={formData.displayMandates || ''} 
-                  onValueChange={(value) => updateField('displayMandates', value === 'clear' ? '' : value)}
+                  value={formData.displayMandates || 'none'} 
+                  onValueChange={(value) => updateField('displayMandates', value)}
                 >
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select One" />
+                    <SelectValue placeholder="Select display mandate level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
                     <SelectItem value="Fully Mandated">
                       <div className="flex flex-col">
                         <span className="font-medium">Fully Mandated</span>
@@ -1624,18 +1623,18 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Row 5: Buying/PO Ownership + Shrink Management */}
+              {/* Row 5: Buying/PO Ownership + Shrink Management - UPDATED OPTIONS */}
               <div>
                 <Label className="text-xs font-medium">Buying / PO Ownership</Label>
                 <Select 
-                  value={formData.influenceBuyingPOOwnership || ''} 
-                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value === 'clear' ? '' : value)}
+                  value={formData.influenceBuyingPOOwnership || 'none'} 
+                  onValueChange={(value) => updateField('influenceBuyingPOOwnership', value)}
                 >
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select One" />
+                    <SelectValue placeholder="Select level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="Yes">Yes</SelectItem>
                     <SelectItem value="No">No</SelectItem>
                     <SelectItem value="Hybrid">Hybrid</SelectItem>
@@ -1740,6 +1739,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           </div>
+        </CardContent>
 
           {/* E-Commerce & Digital Operating Model - Static Label */}
           <div className="pt-4 border-t">
@@ -1748,67 +1748,571 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               E-Commerce & Digital Operating Model
             </Label>
           </div>
+
+          {/* Business Strategy Section - Moved Here */}
+          <div className="pt-4 space-y-4">
+            <div>
+              <Label className="text-xs font-medium">E-Commerce Maturity Level</Label>
+              <Select 
+                value={formData.ecommerceMaturityLevel || 'none'} 
+                onValueChange={(value) => updateField('ecommerceMaturityLevel', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select e-commerce maturity level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
+                  <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
+                  <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
+                  <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium">% of Sales Coming From E-Commerce:</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={formData.ecommerceSalesPercentage}
+                  onChange={(e) => updateField('ecommerceSalesPercentage', e.target.value)}
+                  placeholder="Enter percentage"
+                  className="w-32"
+                />
+                <span className="text-sm font-medium text-gray-600">%</span>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium mb-2 block">Available Fulfillment Types</Label>
+              <div className="p-3 border rounded-lg bg-gray-50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {FULFILLMENT_TYPES.map(type => (
+                    <div key={type} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`fulfillment-${type}`}
+                        checked={selectedFulfillmentTypes.includes(type)}
+                        onCheckedChange={() => toggleFulfillmentType(type)}
+                      />
+                      <Label htmlFor={`fulfillment-${type}`} className="text-xs cursor-pointer">
+                        {type}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium mb-2 block">Primary E-Commerce Partners</Label>
+              <div className="p-3 border rounded-lg bg-gray-50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {ECOMMERCE_PARTNERS.map(partner => (
+                    <div key={partner} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`partner-${partner}`}
+                        checked={selectedEcommercePartners.includes(partner)}
+                        onCheckedChange={() => toggleEcommercePartner(partner)}
+                      />
+                      <Label htmlFor={`partner-${partner}`} className="text-xs cursor-pointer">
+                        {partner}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs font-medium">Category Captain</Label>
+                <Select 
+                  value={formData.categoryCaptain || 'none'} 
+                  onValueChange={(value) => updateField('categoryCaptain', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select Category Captain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="Diageo">Diageo</SelectItem>
+                    <SelectItem value="AB-InBev">AB-InBev</SelectItem>
+                    <SelectItem value="Bacardi">Bacardi</SelectItem>
+                    <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
+                    <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
+                    <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
+                    <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
+                    <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
+                    <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
+                    <SelectItem value="PLM">PLM</SelectItem>
+                    <SelectItem value="Suntory">Suntory</SelectItem>
+                    <SelectItem value="Sazerac">Sazerac</SelectItem>
+                    <SelectItem value="SGWS">SGWS</SelectItem>
+                    <SelectItem value="Reyes">Reyes</SelectItem>
+                    <SelectItem value="RNDC">RNDC</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs font-medium">Category Validator</Label>
+                <Select 
+                  value={formData.categoryAdvisor || 'none'} 
+                  onValueChange={(value) => updateField('categoryAdvisor', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select Category Validator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="Diageo">Diageo</SelectItem>
+                    <SelectItem value="AB-InBev">AB-InBev</SelectItem>
+                    <SelectItem value="Bacardi">Bacardi</SelectItem>
+                    <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
+                    <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
+                    <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
+                    <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
+                    <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
+                    <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
+                    <SelectItem value="PLM">PLM</SelectItem>
+                    <SelectItem value="Suntory">Suntory</SelectItem>
+                    <SelectItem value="Sazerac">Sazerac</SelectItem>
+                    <SelectItem value="SGWS">SGWS</SelectItem>
+                    <SelectItem value="Reyes">Reyes</SelectItem>
+                    <SelectItem value="RNDC">RNDC</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
+      {/* PLANOGRAM INFORMATION - NEW SEPARATE CARD */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Package className="w-4 h-4 sm:w-5 sm:h-5" />
+              Planogram Information
+            </CardTitle>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasPlanograms"
+                checked={formData.hasPlanograms}
+                onCheckedChange={(checked) => updateField('hasPlanograms', checked as boolean)}
+              />
+              <Label htmlFor="hasPlanograms" className="text-sm font-medium cursor-pointer">
+                Has Planogram
+              </Label>
+            </div>
+          </div>
+        </CardHeader>
+        {formData.hasPlanograms && (
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="text-xs font-medium mb-2 block">Affected Segments</Label>
+              <div className="p-3 border rounded-lg bg-gray-50">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {AFFECTED_CATEGORIES.map(category => (
+                    <div key={category} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`category-${category}`}
+                        checked={selectedAffectedCategories.includes(category)}
+                        onCheckedChange={() => toggleAffectedCategory(category)}
+                      />
+                      <Label htmlFor={`category-${category}`} className="text-xs cursor-pointer">
+                        {category}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-      {/* BUSINESS STRATEGY - SEPARATE CARD */}
+            <div>
+              <Label className="text-xs font-medium">Reset Frequency</Label>
+              <Select 
+                value={formData.resetFrequency || ''} 
+                onValueChange={(value) => updateField('resetFrequency', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select reset frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  {RESET_FREQUENCY_OPTIONS.map(option => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium">Reset Window Lead Time Requirement</Label>
+              <Select 
+                value={formData.resetWindowLeadTime || ''} 
+                onValueChange={(value) => updateField('resetWindowLeadTime', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select lead time requirement" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  {RESET_LEAD_TIME_OPTIONS.map(option => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium">
+                Are there different reset windows for different categories?
+              </Label>
+              <Select 
+                value={formData.hasDifferentResetWindows || ""} 
+                onValueChange={(value) => updateField("hasDifferentResetWindows", value === "clear" ? "" : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select yes or no" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.hasDifferentResetWindows !== 'Yes' && (
+              <div>
+                <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
+                <div className="p-3 border rounded-lg bg-gray-50">
+                  <div className="grid grid-cols-6 gap-2">
+                    {MONTHS.map(month => (
+                      <div key={month} className="flex items-center space-x-1">
+                        <Checkbox
+                          id={`month-${month}`}
+                          checked={selectedResetMonths.includes(month)}
+                          onCheckedChange={() => toggleResetMonth(month)}
+                        />
+                        <Label htmlFor={`month-${month}`} className="text-xs cursor-pointer">
+                          {month}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {formData.hasDifferentResetWindows === 'Yes' && (
+              <div className="space-y-3 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium">Category-Specific Reset Windows</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addCategoryResetWindow}
+                    className="flex items-center gap-1 h-7"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Add
+                  </Button>
+                </div>
+
+                {categoryResetWindows.map((crw, idx) => (
+                  <div key={crw.id} className="p-3 border border-gray-200 rounded-lg bg-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-xs font-medium text-gray-600">Window #{idx + 1}</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCategoryResetWindow(crw.id)}
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">Category</Label>
+                        <Select 
+                          value={crw.category} 
+                          onValueChange={(value) => updateCategoryResetWindow(crw.id, 'category', value === 'clear' ? '' : value)}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                            {selectedAffectedCategories.length > 0 ? (
+                              selectedAffectedCategories.map(category => (
+                                <SelectItem key={category} value={category}>{category}</SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="" disabled>No categories selected</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 mb-1 block">Reset Window Months</Label>
+                        <div className="p-2 border rounded-lg bg-gray-50">
+                          <div className="grid grid-cols-6 gap-1">
+                            {MONTHS.map(month => (
+                              <div key={month} className="flex items-center space-x-1">
+                                <Checkbox
+                                  id={`crw-${crw.id}-${month}`}
+                                  checked={crw.months.includes(month)}
+                                  onCheckedChange={() => toggleCategoryMonth(crw.id, month)}
+                                />
+                                <Label htmlFor={`crw-${crw.id}-${month}`} className="text-xs cursor-pointer">
+                                  {month}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+
+      {/* SIMPLIFIED JBP SECTION */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+              JBP (Joint Business Plan)
+            </CardTitle>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isJBP"
+                checked={formData.isJBP}
+                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
+              />
+              <Label htmlFor="isJBP" className="text-sm font-medium cursor-pointer">
+                JBP Customer
+              </Label>
+            </div>
+          </div>
+        </CardHeader>
+        {formData.isJBP && (
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Last JBP</Label>
+                <Input
+                  type="date"
+                  value={formatDateForInput(formData.lastJBPDate || '')}
+                  onChange={(e) => updateField('lastJBPDate', e.target.value)}
+                  placeholder="mm/dd/yyyy"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Next JBP *</Label>
+                <Input
+                  type="date"
+                  value={formatDateForInput(formData.nextJBPDate || '')}
+                  onChange={(e) => updateField('nextJBPDate', e.target.value)}
+                  placeholder="mm/dd/yyyy"
+                  className="mt-1"
+                />
+                {jbpValidationError && (
+                  <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-3 pt-2 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-orange-600" />
+                  <Label htmlFor="nextjbp-alert" className="text-sm font-medium cursor-pointer">
+                    Enable Alert
+                  </Label>
+                </div>
+                <Switch
+                  id="nextjbp-alert"
+                  checked={formData.nextJBPAlert || false}
+                  onCheckedChange={(checked) => updateField('nextJBPAlert', checked)}
+                />
+              </div>
+              
+              {formData.nextJBPAlert && (
+                <div className="space-y-2 pl-6">
+                  <Label className="text-sm text-gray-600">
+                    Alert me:
+                  </Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="jbp-30-days"
+                        checked={(formData.nextJBPAlertOptions || []).includes('30_days_before')}
+                        onCheckedChange={() => handleToggleJBPAlertOption('30_days_before')}
+                      />
+                      <Label htmlFor="jbp-30-days" className="text-sm font-normal cursor-pointer">
+                        30 Days Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="jbp-7-days"
+                        checked={(formData.nextJBPAlertOptions || []).includes('7_days_before')}
+                        onCheckedChange={() => handleToggleJBPAlertOption('7_days_before')}
+                      />
+                      <Label htmlFor="jbp-7-days" className="text-sm font-normal cursor-pointer">
+                        7 Days Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="jbp-1-day"
+                        checked={(formData.nextJBPAlertOptions || []).includes('1_day_before')}
+                        onCheckedChange={() => handleToggleJBPAlertOption('1_day_before')}
+                      />
+                      <Label htmlFor="jbp-1-day" className="text-sm font-normal cursor-pointer">
+                        1 Day Before
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="jbp-custom"
+                        checked={isJBPCustomChecked}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            // Set a default value of 1 to enable the input
+                            setJbpCustomDays('1');
+                            handleJBPCustomDaysChange('1');
+                          } else {
+                            // When unchecking, clear everything
+                            setJbpCustomDays('');
+                            const filteredOptions = (formData.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                            updateField('nextJBPAlertOptions', filteredOptions);
+                          }
+                        }}
+                      />
+                      <Label htmlFor="jbp-custom" className="text-sm font-normal cursor-pointer">
+                        Custom:
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="days"
+                        value={jbpCustomDays}
+                        onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
+                        className="w-20 h-7 text-xs"
+                        disabled={!isJBPCustomChecked}
+                        onClick={() => {
+                          // Auto-check the checkbox when clicking the input
+                          if (!isJBPCustomChecked) {
+                            // Trigger checkbox programmatically - this is handled by the disabled state
+                          }
+                        }}
+                      />
+                      <span className="text-sm text-gray-600">days before</span>
+                    </div>
+                  </div>
+                  {(formData.nextJBPAlertOptions || []).length > 0 && (
+                    <p className="text-xs text-gray-500">
+                      You'll receive {(formData.nextJBPAlertOptions || []).length} alert{(formData.nextJBPAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Target className="w-4 h-4 sm:w-5 sm:h-5" />
-            Business Strategy
+            <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+            Additional Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label className="text-xs font-medium">E-Commerce Maturity Level</Label>
-            <Select 
-              value={formData.ecommerceMaturityLevel || 'none'} 
-              onValueChange={(value) => updateField('ecommerceMaturityLevel', value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select e-commerce maturity level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising">Basic Online Presence — Offers limited product listings online with inconsistent content and minimal digital merchandising</SelectItem>
-                <SelectItem value="Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery">Growing Digital Capability — Has a functional online shelf, participates in occasional eCommerce programs, and supports basic pickup or third-party delivery</SelectItem>
-                <SelectItem value="Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features">Strong Omni Execution — Executes reliably across search, content, promotions, and fulfillment with integrated pickup, delivery, and digital features</SelectItem>
-                <SelectItem value="Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms">Leading Digital Innovator — Delivers a fully optimized digital shelf with personalization, strong data sharing, and seamless multi-method fulfillment across platforms</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="text-xs font-medium">Customer Strategic Priorities</Label>
+            <Textarea
+              value={formData.strategicPriorities}
+              onChange={(e) => updateField('strategicPriorities', e.target.value)}
+              placeholder="Enter strategic priorities"
+              rows={3}
+              className="mt-1"
+            />
           </div>
-
+          
+          {/* UPDATED: Key Competitors - Now Multi-Select with Checkboxes */}
           <div>
-            <Label className="text-xs font-medium">% of Sales Coming From E-Commerce:</Label>
-            <div className="flex items-center gap-2 mt-1">
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                value={formData.ecommerceSalesPercentage}
-                onChange={(e) => updateField('ecommerceSalesPercentage', e.target.value)}
-                placeholder="Enter percentage"
-                className="w-32"
-              />
-              <span className="text-sm font-medium text-gray-600">%</span>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-xs font-medium">Key Competitors</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAllKeyCompetitors}
+                  className="flex items-center gap-1 text-xs h-7"
+                >
+                  {isAllKeyCompetitorsSelected ? (
+                    <>
+                      <CheckSquare className="w-3 h-3" />
+                      Deselect All
+                    </>
+                  ) : (
+                    <>
+                      <Square className="w-3 h-3" />
+                      Select All
+                    </>
+                  )}
+                </Button>
+                {selectedKeyCompetitors.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllKeyCompetitors}
+                    className="flex items-center gap-1 text-xs h-7"
+                  >
+                    <X className="w-3 h-3" />
+                    Clear
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-
-          <div>
-            <Label className="text-xs font-medium mb-2 block">Available Fulfillment Types</Label>
-            <div className="p-3 border rounded-lg bg-gray-50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {FULFILLMENT_TYPES.map(type => (
-                  <div key={type} className="flex items-center space-x-2">
+            {selectedKeyCompetitors.length > 0 && (
+              <p className="text-xs text-gray-600 mb-2">
+                Selected: {selectedKeyCompetitors.length} competitor{selectedKeyCompetitors.length !== 1 ? 's' : ''}
+              </p>
+            )}
+            <div className="p-3 border rounded-lg bg-gray-50 max-h-64 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {KEY_COMPETITORS.map(competitor => (
+                  <div key={competitor} className="flex items-center space-x-2">
                     <Checkbox
-                      id={`fulfillment-${type}`}
-                      checked={selectedFulfillmentTypes.includes(type)}
-                      onCheckedChange={() => toggleFulfillmentType(type)}
+                      id={`competitor-${competitor}`}
+                      checked={selectedKeyCompetitors.includes(competitor)}
+                      onCheckedChange={() => toggleKeyCompetitor(competitor)}
                     />
-                    <Label htmlFor={`fulfillment-${type}`} className="text-xs cursor-pointer">
-                      {type}
+                    <Label htmlFor={`competitor-${competitor}`} className="text-xs cursor-pointer">
+                      {competitor}
                     </Label>
                   </div>
                 ))}
@@ -1817,90 +2321,387 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
 
           <div>
-            <Label className="text-xs font-medium mb-2 block">Primary E-Commerce Partners</Label>
-            <div className="p-3 border rounded-lg bg-gray-50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {ECOMMERCE_PARTNERS.map(partner => (
-                  <div key={partner} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`partner-${partner}`}
-                      checked={selectedEcommercePartners.includes(partner)}
-                      onCheckedChange={() => toggleEcommercePartner(partner)}
-                    />
-                    <Label htmlFor={`partner-${partner}`} className="text-xs cursor-pointer">
-                      {partner}
-                    </Label>
+            <Label className="text-xs font-medium">Designated Charities</Label>
+            <Textarea
+              value={formData.designatedCharities || ''}
+              onChange={(e) => updateField('designatedCharities', e.target.value)}
+              placeholder="Enter designated charities"
+              rows={3}
+              className="mt-1"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-xs font-medium flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Key Customer Events
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addCustomerEvent}
+                className="flex items-center gap-1 h-7"
+              >
+                <Plus className="w-3 h-3" />
+                Add Event
+              </Button>
+            </div>
+            
+            {customerEvents.length === 0 ? (
+              <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500">
+                <Calendar className="w-6 h-6 mx-auto mb-1 text-gray-400" />
+                <p className="text-xs">No customer events added yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {customerEvents.map((event, eventIdx) => (
+                  <div key={event.id} className="p-2 border border-gray-200 rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-xs font-medium text-gray-600">Event #{eventIdx + 1}</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCustomerEvent(event.id)}
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">Event Title</Label>
+                        <Input
+                          value={event.title}
+                          onChange={(e) => updateCustomerEvent(event.id, 'title', e.target.value)}
+                          placeholder="e.g., Annual Review Meeting"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">Event Date</Label>
+                        <Input
+                          type="date"
+                          value={formatDateForInput(event.date)}
+                          onChange={(e) => updateCustomerEvent(event.id, 'date', e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Bell className="w-4 h-4 text-orange-600" />
+                            <Label htmlFor={`event-alert-${event.id}`} className="text-sm font-medium cursor-pointer">
+                              Enable Alert
+                            </Label>
+                          </div>
+                          <Switch
+                            id={`event-alert-${event.id}`}
+                            checked={event.alertEnabled || false}
+                            onCheckedChange={() => toggleEventAlert(event.id)}
+                          />
+                        </div>
+                        
+                        {event.alertEnabled && (
+                          <div className="space-y-2 pl-6">
+                            <Label className="text-sm text-gray-600">
+                              Alert me:
+                            </Label>
+                            <div className="space-y-2">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-30-days`}
+                                  checked={(event.alertOptions || []).includes('30_days_before')}
+                                  onCheckedChange={() => handleToggleEventAlertOption(event.id, '30_days_before')}
+                                />
+                                <Label htmlFor={`event-${event.id}-30-days`} className="text-sm font-normal cursor-pointer">
+                                  30 Days Before
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-7-days`}
+                                  checked={(event.alertOptions || []).includes('7_days_before')}
+                                  onCheckedChange={() => handleToggleEventAlertOption(event.id, '7_days_before')}
+                                />
+                                <Label htmlFor={`event-${event.id}-7-days`} className="text-sm font-normal cursor-pointer">
+                                  7 Days Before
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-1-day`}
+                                  checked={(event.alertOptions || []).includes('1_day_before')}
+                                  onCheckedChange={() => handleToggleEventAlertOption(event.id, '1_day_before')}
+                                />
+                                <Label htmlFor={`event-${event.id}-1-day`} className="text-sm font-normal cursor-pointer">
+                                  1 Day Before
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}-custom`}
+                                  checked={getEventCustomChecked(event)}
+                                  onCheckedChange={(checked) => {
+                                    if (!checked) {
+                                      setEventCustomDays(prev => {
+                                        const newState = { ...prev };
+                                        delete newState[event.id];
+                                        return newState;
+                                      });
+                                      const filteredOptions = (event.alertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                                      setCustomerEvents(prev =>
+                                        prev.map(e => e.id === event.id ? { ...e, alertOptions: filteredOptions } : e)
+                                      );
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor={`event-${event.id}-custom`} className="text-sm font-normal cursor-pointer">
+                                  Custom:
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  placeholder="days"
+                                  value={eventCustomDays[event.id] || ''}
+                                  onChange={(e) => handleEventCustomDaysChange(event.id, e.target.value)}
+                                  className="w-20 h-7 text-xs"
+                                  disabled={!getEventCustomChecked(event)}
+                                />
+                                <span className="text-sm text-gray-600">days before</span>
+                              </div>
+                            </div>
+                            {(event.alertOptions || []).length > 0 && (
+                              <p className="text-xs text-gray-500">
+                                You'll receive {(event.alertOptions || []).length} alert{(event.alertOptions || []).length !== 1 ? 's' : ''} for this event
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-xs font-medium">Category Captain</Label>
-              <Select 
-                value={formData.categoryCaptain || 'none'} 
-                onValueChange={(value) => updateField('categoryCaptain', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select Category Captain" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="Diageo">Diageo</SelectItem>
-                  <SelectItem value="AB-InBev">AB-InBev</SelectItem>
-                  <SelectItem value="Bacardi">Bacardi</SelectItem>
-                  <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
-                  <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
-                  <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
-                  <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
-                  <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
-                  <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
-                  <SelectItem value="PLM">PLM</SelectItem>
-                  <SelectItem value="Suntory">Suntory</SelectItem>
-                  <SelectItem value="Sazerac">Sazerac</SelectItem>
-                  <SelectItem value="SGWS">SGWS</SelectItem>
-                  <SelectItem value="Reyes">Reyes</SelectItem>
-                  <SelectItem value="RNDC">RNDC</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs font-medium">Category Validator</Label>
-              <Select 
-                value={formData.categoryAdvisor || 'none'} 
-                onValueChange={(value) => updateField('categoryAdvisor', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select Category Validator" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="Diageo">Diageo</SelectItem>
-                  <SelectItem value="AB-InBev">AB-InBev</SelectItem>
-                  <SelectItem value="Bacardi">Bacardi</SelectItem>
-                  <SelectItem value="Breakthru Beverage">Breakthru Beverage</SelectItem>
-                  <SelectItem value="Brown-Forman">Brown-Forman</SelectItem>
-                  <SelectItem value="Customer-Owned">Customer-Owned</SelectItem>
-                  <SelectItem value="E&J Gallo">E&J Gallo</SelectItem>
-                  <SelectItem value="Johnson Bros.">Johnson Bros.</SelectItem>
-                  <SelectItem value="Pernod Ricard">Pernod Ricard</SelectItem>
-                  <SelectItem value="PLM">PLM</SelectItem>
-                  <SelectItem value="Suntory">Suntory</SelectItem>
-                  <SelectItem value="Sazerac">Sazerac</SelectItem>
-                  <SelectItem value="SGWS">SGWS</SelectItem>
-                  <SelectItem value="Reyes">Reyes</SelectItem>
-                  <SelectItem value="RNDC">RNDC</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Rest of the form continues with other sections... */}
-      
+      <Card className="border-2 border-purple-200 bg-purple-50">
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Building className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              Banner/Buying Offices ({bannerBuyingOffices.length})
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddBannerBuyingOffice}
+                className="flex items-center gap-2"
+              >
+                <Building className="w-4 h-4" />
+                Add a Banner/Buying Office
+              </Button>
+              {bannerBuyingOffices.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowBannerSection(!showBannerSection)}
+                  className="flex items-center gap-1"
+                >
+                  {showBannerSection ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Collapse All
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      Expand All
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        {showBannerSection && bannerBuyingOffices.length > 0 && (
+          <CardContent className="space-y-4">
+            {bannerBuyingOffices.map((banner, index) => {
+              const isExpanded = expandedBanners.has(banner.id);
+              
+              return (
+                <div key={banner.id}>
+                  {isExpanded ? (
+                    <BannerBuyingOfficeCard
+                      banner={banner}
+                      index={index}
+                      parentAccountName={formData.accountName}
+                      usStates={US_STATES}
+                      fulfillmentTypes={FULFILLMENT_TYPES}
+                      ecommercePartners={ECOMMERCE_PARTNERS}
+                      affectedCategories={AFFECTED_CATEGORIES}
+                      resetFrequencyOptions={RESET_FREQUENCY_OPTIONS}
+                      resetLeadTimeOptions={RESET_LEAD_TIME_OPTIONS}
+                      months={MONTHS}
+                      onUpdateField={updateBannerField}
+                      onToggleState={toggleBannerState}
+                      onToggleFulfillmentType={toggleBannerFulfillmentType}
+                      onToggleEcommercePartner={toggleBannerEcommercePartner}
+                      onToggleResetMonth={toggleBannerResetMonth}
+                      onToggleAffectedCategory={toggleBannerAffectedCategory}
+                      onAddCategoryResetWindow={addBannerCategoryResetWindow}
+                      onUpdateCategoryResetWindow={updateBannerCategoryResetWindow}
+                      onToggleCategoryMonth={toggleBannerCategoryMonth}
+                      onRemoveCategoryResetWindow={removeBannerCategoryResetWindow}
+                      onAddCustomerEvent={addBannerCustomerEvent}
+                      onUpdateCustomerEvent={updateBannerCustomerEvent}
+                      onRemoveCustomerEvent={removeBannerCustomerEvent}
+                      onSave={saveBannerBuyingOffice}
+                      onRemove={removeBannerBuyingOffice}
+                      formatDateForInput={formatDateForInput}
+                    />
+                  ) : (
+                    <Card className="bg-white border-purple-200 hover:border-purple-300 transition-colors">
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <Building className="w-5 h-5 text-purple-600" />
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {banner.accountName || `Banner/Buying Office #${index + 1}`}
+                              </p>
+                              {banner.subChannel && (
+                                <p className="text-sm text-gray-600">{banner.subChannel}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleBannerExpanded(banner.id)}
+                              className="flex items-center gap-1"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeBannerBuyingOffice(banner.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleBannerExpanded(banner.id)}
+                              className="flex items-center gap-1"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              );
+            })}
+          </CardContent>
+        )}
+      </Card>
+
+      {account && accountContacts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+              Contacts ({accountContacts.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {accountContacts.map((contact) => (
+                <div key={contact.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div>
+                      <Label className="text-xs font-medium text-gray-600">Name</Label>
+                      <p className="text-sm font-medium text-gray-900">
+                        {contact.firstName} {contact.lastName}
+                        {contact.isPrimaryContact && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Primary</span>
+                        )}
+                      </p>
+                    </div>
+                    {contact.title && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Briefcase className="w-3 h-3" />
+                          Title
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.title}</p>
+                      </div>
+                    )}
+                    {contact.email && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          Email
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.email}</p>
+                      </div>
+                    )}
+                    {contact.mobilePhone && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          Mobile
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.mobilePhone}</p>
+                      </div>
+                    )}
+                    {contact.officePhone && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          Office
+                        </Label>
+                        <p className="text-sm text-gray-900">{contact.officePhone}</p>
+                      </div>
+                    )}
+                    {contact.relationshipStatus && (
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">Relationship Status</Label>
+                        <p className="text-sm text-gray-900">{contact.relationshipStatus}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Note: To add, edit, or remove contacts, please use the Contacts section in the main view.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
         <Button type="submit" className="flex items-center justify-center gap-2 w-full sm:w-auto">
           <Save className="w-4 h-4" />
