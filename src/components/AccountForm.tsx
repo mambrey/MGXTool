@@ -1739,7 +1739,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
           </div>
-        </CardContent>
 
           {/* E-Commerce & Digital Operating Model - Static Label */}
           <div className="pt-4 border-t">
@@ -1890,6 +1889,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           </div>
         </CardContent>
       </Card>
+
       {/* PLANOGRAM INFORMATION - NEW SEPARATE CARD */}
       <Card>
         <CardHeader>
