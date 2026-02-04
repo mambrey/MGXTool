@@ -115,7 +115,7 @@ export default function WelcomeScreen({
                 <img 
                   src={diageoLogo} 
                   alt="Diageo Logo" 
-                  className="h-16 w-auto object-contain"
+                  className="h-32 w-auto object-contain"
                 />
               </div>
               <div>
