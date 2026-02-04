@@ -112,54 +112,15 @@ interface BannerBuyingOfficeCardProps {
   formatDateForInput: (dateString: string) => string;
 }
 
-// Key Competitors list - same as in AccountForm
+// Key Competitors list - UPDATED to match the exact names from the provided HTML
 const KEY_COMPETITORS = [
-  '7-Eleven',
-  'AAFES',
-  'ABC',
-  'ALBSCO',
-  'BEVMO/GO-PUFF',
-  'BJs',
-  'CASEYS',
-  'Circle K',
-  'Coast Guard',
-  'Coborns',
-  'COSTCO',
-  'Cub',
-  'CVS',
-  'Doordash',
-  'El Super',
-  'Festival Foods',
-  'Food Maxx',
-  'Giant Eagle',
-  'Goody Goody',
-  'GoPuff',
-  'HyVee',
-  'Instacart',
-  'KROGER',
-  'Kum & Go',
-  'LEE\'S DISCOUNT LIQUOR',
-  'Lucky',
-  'MARINE\'S',
-  'Meijer',
-  'NEXCOM',
-  'Raley\'s',
-  'Rouses',
-  'SAMS CLUB',
-  'Save Mart',
-  'SCHNUCK\'S',
-  'Smart & Final',
-  'SPEC\'S',
-  'Stater Bros',
-  'Target',
-  'Total Wine & More',
-  'Twin Liquors',
-  'UberEats',
-  'Walgreens',
-  'Walmart',
-  'Wegmans',
-  'WFM',
-  'WINN DIXIE (SEG)'
+  '7-eleven', 'Aafes', 'Abc', 'ALBSCO', 'Bevmo/Go-Puff', 'Bjs', 'Caseys', 'Circle k',
+  'Coast guard', 'Coborns', 'Costco', 'Cub', 'CVS', 'Doordash', 'El super',
+  'Festival foods', 'Food maxx', 'Giant eagle', 'Goody goody', 'Gopuff', 'Hyvee',
+  'Instacart', 'Kroger', 'Kum & go', "Lee's discount liquor", 'Lucky', "Marine's",
+  'Meijer', 'Nexcom', "Raley's", 'Rouses', 'Sams club', 'Save mart', "Schnuck's",
+  'Smart & final', "Spec's", 'Stater bros', 'Target', 'Total wine & more',
+  'Twin liquors', 'Ubereats', 'Walgreens', 'Walmart', 'Wegmans', 'Wfm', 'Winn dixie (seg)'
 ];
 
 // Helper function to get alert option label
@@ -1357,7 +1318,7 @@ export default function BannerBuyingOfficeCard({
               />
             </div>
             
-            {/* UPDATED: Key Competitors - Now Multi-Select with Checkboxes */}
+            {/* UPDATED: Key Competitors - Now with consistent grid layout */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-xs font-medium">Key Competitors</Label>
@@ -1401,7 +1362,7 @@ export default function BannerBuyingOfficeCard({
                 </p>
               )}
               <div className="p-3 border rounded-lg bg-gray-50 max-h-64 overflow-y-auto">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {KEY_COMPETITORS.map(competitor => (
                     <div key={competitor} className="flex items-center space-x-2">
                       <Checkbox
