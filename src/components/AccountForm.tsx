@@ -1826,6 +1826,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
             </div>
 
+          <div className="pt-4 border-t">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Category Advisory Roles
+            </Label>
+          </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs font-medium">Category Captain</Label>
