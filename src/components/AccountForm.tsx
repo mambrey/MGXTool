@@ -146,7 +146,7 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-// UPDATED: Added Instacart, Doordash, UberEats, and GoPuff to the list
+// UPDATED: Key Competitors list with internal values
 const KEY_COMPETITORS = [
   '7-eleven', 'Aafes', 'Abc', 'ALBSCO', 'Bevmo/Go-Puff', 'Bjs', 'Caseys', 'Circle k',
   'Coast guard', 'Coborns', 'Costco', 'Cub', 'CVS', 'Doordash', 'El super',
@@ -156,6 +156,47 @@ const KEY_COMPETITORS = [
   'Smart & final', "Spec's", 'Stater bros', 'Target', 'Total wine & more',
   'Twin liquors', 'Ubereats', 'Walgreens', 'Walmart', 'Wegmans', 'Wfm', 'Winn dixie (seg)'
 ];
+
+// Helper function to get display name for Key Competitors
+const getCompetitorDisplayName = (competitor: string): string => {
+  // Specific name mappings
+  const specificMappings: Record<string, string> = {
+    'Bjs': 'BJs',
+    'Ubereats': 'UberEats',
+    'ALBSCO': 'Albertsons / Safeway',
+    'Gopuff': 'GoPuff',
+    'Winn dixie (seg)': 'Winn Dixie',
+    'Aafes': 'AAFES',
+    'Abc': 'ABC',
+    'Doordash': 'DoorDash',
+  };
+
+  // Check if there's a specific mapping
+  if (specificMappings[competitor]) {
+    return specificMappings[competitor];
+  }
+
+  // For two-word names, capitalize the first letter of the second word
+  // and make the rest lowercase
+  const words = competitor.split(' ');
+  if (words.length >= 2) {
+    return words.map((word, index) => {
+      if (index === 0) {
+        // Keep first word as-is (it's already properly capitalized)
+        return word;
+      }
+      // For subsequent words, capitalize first letter, lowercase the rest
+      // Handle special characters like & and /
+      if (word === '&' || word === '/') {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
+  }
+
+  // Single word - return as-is
+  return competitor;
+};
 
 const getAlertOptionLabel = (option: string): string => {
   if (option === '30_days_before') return '30 Days Before';
@@ -2287,7 +2328,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                       onCheckedChange={() => toggleKeyCompetitor(competitor)}
                     />
                     <Label htmlFor={`competitor-${competitor}`} className="text-xs cursor-pointer">
-                      {competitor}
+                      {getCompetitorDisplayName(competitor)}
                     </Label>
                   </div>
                 ))}
