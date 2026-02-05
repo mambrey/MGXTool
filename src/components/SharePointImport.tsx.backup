@@ -66,10 +66,6 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
       'Publicly Traded', 'Primary Contact ID', 'Total Buying Offices',
       'Percent of General Market', 'Sales 52 Weeks', 'Sales 12 Weeks', 'Sales 4 Weeks',
       
-      // Market Snapshot
-      'Current Price', 'Percent Change', 'High Price', 'Low Price', 'Open Price', 'Previous Close',
-      'Market Cap', 'PEG Ratio', 'Annual Sales', 'Dividend Yield', '52 Week Low', '52 Week High',
-      
       // Timestamps
       'Created At', 'Last Modified'
     ];
@@ -215,20 +211,6 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
         escapeCSV(account.sales52Weeks),
         escapeCSV(account.sales12Weeks),
         escapeCSV(account.sales4Weeks),
-        
-        // Market Snapshot
-        escapeCSV(account.currentPrice),
-        escapeCSV(account.percentChange),
-        escapeCSV(account.highPrice),
-        escapeCSV(account.lowPrice),
-        escapeCSV(account.openPrice),
-        escapeCSV(account.previousClose),
-        escapeCSV(account.marketCap),
-        escapeCSV(account.pegRatio),
-        escapeCSV(account.annualSales),
-        escapeCSV(account.dividendYield),
-        escapeCSV(account.fiftyTwoWeekLow),
-        escapeCSV(account.fiftyTwoWeekHigh),
         
         // Timestamps
         escapeCSV(account.createdAt),
@@ -463,20 +445,6 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
           sales12Weeks: getCell('Sales 12 Weeks') || undefined,
           sales4Weeks: getCell('Sales 4 Weeks') || undefined,
           
-          // Market Snapshot
-          currentPrice: getCell('Current Price') || undefined,
-          percentChange: getCell('Percent Change') || undefined,
-          highPrice: getCell('High Price') || undefined,
-          lowPrice: getCell('Low Price') || undefined,
-          openPrice: getCell('Open Price') || undefined,
-          previousClose: getCell('Previous Close') || undefined,
-          marketCap: getCell('Market Cap') || undefined,
-          pegRatio: getCell('PEG Ratio') || undefined,
-          annualSales: getCell('Annual Sales') || undefined,
-          dividendYield: getCell('Dividend Yield') || undefined,
-          fiftyTwoWeekLow: getCell('52 Week Low') || undefined,
-          fiftyTwoWeekHigh: getCell('52 Week High') || undefined,
-          
           // Default values for required fields
           industry: 'Not Specified',
           accountStatus: 'Prospect' as 'Active' | 'Inactive' | 'Prospect',
@@ -602,7 +570,6 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
             <p><strong>JBP:</strong> Is JBP, Last JBP Date, Next JBP Date, Next JBP Alert, Next JBP Alert Options</p>
             <p><strong>Additional:</strong> Strategic Priorities, Key Competitors, Designated Charities, Customer Events (JSON)</p>
             <p><strong>Complex Data:</strong> Spirits Outlets By State (JSON), Banner Buying Offices (JSON)</p>
-            <p><strong>Market Snapshot:</strong> Current Price, Percent Change, High Price, Low Price, Open Price, Previous Close, Market Cap, PEG Ratio, Annual Sales, Dividend Yield, 52 Week Low, 52 Week High</p>
             <p><strong>Legacy:</strong> Account Owner, VP, Revenue, Employees, Phone, Email, Description, Publicly Traded, Primary Contact ID, Total Buying Offices, Sales Data</p>
           </div>
         </div>
