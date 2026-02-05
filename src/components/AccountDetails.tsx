@@ -931,6 +931,12 @@ export default function AccountDetails({
                               {contact.email && (
                                 <p className="text-xs text-blue-600 mt-1">{contact.email}</p>
                               )}
+                              {contact.officePhone && (
+                                <p className="text-xs text-gray-600 mt-1">Office: {contact.officePhone}</p>
+                              )}
+                              {contact.mobilePhone && (
+                                <p className="text-xs text-gray-600 mt-1">Mobile: {contact.mobilePhone}</p>
+                              )}
                               {contact.phone && (
                                 <p className="text-xs text-gray-600 mt-1">{contact.phone}</p>
                               )}
