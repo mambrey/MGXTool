@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Trash2, Calendar, Target, Plus, Bell, Building2, CheckSquare, Square, X, Sparkles, Users } from 'lucide-react';
+import { Save, Trash2, Calendar, Target, Plus, Bell, Building2, CheckSquare, Square, X, Sparkles, Users, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -902,140 +902,8 @@ export default function BannerBuyingOfficeCard({
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* Has Planogram */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`banner-${banner.id}-hasPlanograms`}
-                    checked={banner.hasPlanograms}
-                    onCheckedChange={(checked) => onUpdateField(banner.id, 'hasPlanograms', checked as boolean)}
-                  />
-                  <Label htmlFor={`banner-${banner.id}-hasPlanograms`} className="text-sm font-medium">Has Planogram</Label>
-                </div>
-
-                {/* JBP Customer */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`banner-${banner.id}-isJBP`}
-                    checked={banner.isJBP}
-                    onCheckedChange={(checked) => onUpdateField(banner.id, 'isJBP', checked as boolean)}
-                  />
-                  <Label htmlFor={`banner-${banner.id}-isJBP`} className="text-sm font-medium">JBP Customer</Label>
-                </div>
               </div>
             </div>
-
-            <div className="border-t pt-4"></div>
-
-            {banner.isJBP && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs font-medium">Last JBP</Label>
-                    <Input
-                      type="date"
-                      value={formatDateForInput(banner.lastJBPDate || '')}
-                      onChange={(e) => onUpdateField(banner.id, 'lastJBPDate', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-medium">Next JBP *</Label>
-                    <Input
-                      type="date"
-                      value={formatDateForInput(banner.nextJBPDate || '')}
-                      onChange={(e) => onUpdateField(banner.id, 'nextJBPDate', e.target.value)}
-                      className="mt-1"
-                    />
-                    {jbpValidationError && (
-                      <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Alert Section */}
-                <div className="space-y-3 pt-2 border-t border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-orange-600" />
-                      <Label htmlFor={`banner-${banner.id}-nextjbp-alert`} className="text-sm font-medium cursor-pointer">
-                        Enable Alert
-                      </Label>
-                    </div>
-                    <Switch
-                      id={`banner-${banner.id}-nextjbp-alert`}
-                      checked={banner.nextJBPAlert || false}
-                      onCheckedChange={(checked) => onUpdateField(banner.id, 'nextJBPAlert', checked)}
-                    />
-                  </div>
-                  
-                  {banner.nextJBPAlert && (
-                    <div className="space-y-2 pl-6">
-                      <Label className="text-sm text-gray-600">
-                        Alert me:
-                      </Label>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`banner-${banner.id}-jbp-30-days`}
-                            checked={(banner.nextJBPAlertOptions || []).includes('30_days_before')}
-                            onCheckedChange={() => handleToggleJBPAlertOption('30_days_before')}
-                          />
-                          <Label htmlFor={`banner-${banner.id}-jbp-30-days`} className="text-sm font-normal cursor-pointer">
-                            30 Days Before
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`banner-${banner.id}-jbp-7-days`}
-                            checked={(banner.nextJBPAlertOptions || []).includes('7_days_before')}
-                            onCheckedChange={() => handleToggleJBPAlertOption('7_days_before')}
-                          />
-                          <Label htmlFor={`banner-${banner.id}-jbp-7-days`} className="text-sm font-normal cursor-pointer">
-                            7 Days Before
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`banner-${banner.id}-jbp-1-day`}
-                            checked={(banner.nextJBPAlertOptions || []).includes('1_day_before')}
-                            onCheckedChange={() => handleToggleJBPAlertOption('1_day_before')}
-                          />
-                          <Label htmlFor={`banner-${banner.id}-jbp-1-day`} className="text-sm font-normal cursor-pointer">
-                            1 Day Before
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`banner-${banner.id}-jbp-custom`}
-                            checked={isJBPCustomChecked}
-                            onCheckedChange={handleJBPCustomCheckboxToggle}
-                          />
-                          <Label htmlFor={`banner-${banner.id}-jbp-custom`} className="text-sm font-normal cursor-pointer">
-                            Custom:
-                          </Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            placeholder="days"
-                            value={jbpCustomDays}
-                            onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
-                            className="w-20 h-7 text-xs"
-                            disabled={!isJBPCustomChecked}
-                          />
-                          <span className="text-sm text-gray-600">days before</span>
-                        </div>
-                      </div>
-                      {(banner.nextJBPAlertOptions || []).length > 0 && (
-                        <p className="text-xs text-gray-500">
-                          You'll receive {(banner.nextJBPAlertOptions || []).length} alert{(banner.nextJBPAlertOptions || []).length !== 1 ? 's' : ''} for this date
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* E-Commerce & Digital Operating Model Section Header */}
             <div className="pt-4 border-t">
@@ -1193,196 +1061,344 @@ export default function BannerBuyingOfficeCard({
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Planogram Section */}
-            {banner.hasPlanograms && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
-                <Label className="text-sm font-medium block flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Planogram Information
+        {/* PLANOGRAM INFORMATION - SEPARATE SECTION */}
+        <Card className="border-gray-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Package className="w-4 h-4" />
+                Planogram Information
+              </CardTitle>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`banner-${banner.id}-hasPlanograms`}
+                  checked={banner.hasPlanograms}
+                  onCheckedChange={(checked) => onUpdateField(banner.id, 'hasPlanograms', checked as boolean)}
+                />
+                <Label htmlFor={`banner-${banner.id}-hasPlanograms`} className="text-sm font-medium cursor-pointer">
+                  Has Planogram
                 </Label>
-                
-                {/* Affected Segments */}
+              </div>
+            </div>
+          </CardHeader>
+          {banner.hasPlanograms && (
+            <CardContent className="space-y-4">
+              {/* Affected Segments */}
+              <div>
+                <Label className="text-xs font-medium mb-2 block">Affected Segments</Label>
+                <div className="p-3 border rounded-lg bg-gray-50">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {affectedCategories.map(category => (
+                      <div key={category} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`banner-${banner.id}-category-${category}`}
+                          checked={banner.affectedCategories.includes(category)}
+                          onCheckedChange={() => onToggleAffectedCategory(banner.id, category)}
+                        />
+                        <Label htmlFor={`banner-${banner.id}-category-${category}`} className="text-xs cursor-pointer">
+                          {category}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium">Reset Frequency</Label>
+                <Select 
+                  value={banner.resetFrequency || ''} 
+                  onValueChange={(value) => onUpdateField(banner.id, 'resetFrequency', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select reset frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    {resetFrequencyOptions.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium">Reset Window Lead Time Requirement</Label>
+                <Select 
+                  value={banner.resetWindowLeadTime || ''} 
+                  onValueChange={(value) => onUpdateField(banner.id, 'resetWindowLeadTime', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select lead time requirement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    {resetLeadTimeOptions.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium">
+                  Are there different reset windows for different categories?
+                </Label>
+                <Select 
+                  value={banner.hasDifferentResetWindows || ''} 
+                  onValueChange={(value) => onUpdateField(banner.id, 'hasDifferentResetWindows', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select yes or no" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Reset Window Months - Only show when NOT using different reset windows per category */}
+              {banner.hasDifferentResetWindows !== 'Yes' && (
                 <div>
-                  <Label className="text-xs font-medium mb-2 block">Affected Segments</Label>
-                  <div className="p-3 border rounded-lg bg-white">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {affectedCategories.map(category => (
-                        <div key={category} className="flex items-center space-x-2">
+                  <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
+                  <div className="p-3 border rounded-lg bg-gray-50">
+                    <div className="grid grid-cols-6 gap-2">
+                      {months.map(month => (
+                        <div key={month} className="flex items-center space-x-1">
                           <Checkbox
-                            id={`banner-${banner.id}-category-${category}`}
-                            checked={banner.affectedCategories.includes(category)}
-                            onCheckedChange={() => onToggleAffectedCategory(banner.id, category)}
+                            id={`banner-${banner.id}-month-${month}`}
+                            checked={banner.resetWindowMonths.includes(month)}
+                            onCheckedChange={() => onToggleResetMonth(banner.id, month)}
                           />
-                          <Label htmlFor={`banner-${banner.id}-category-${category}`} className="text-xs cursor-pointer">
-                            {category}
+                          <Label htmlFor={`banner-${banner.id}-month-${month}`} className="text-xs cursor-pointer">
+                            {month}
                           </Label>
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
+              )}
 
-                <div>
-                  <Label className="text-xs font-medium">Reset Frequency</Label>
-                  <Select 
-                    value={banner.resetFrequency || ''} 
-                    onValueChange={(value) => onUpdateField(banner.id, 'resetFrequency', value === 'clear' ? '' : value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select reset frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                      {resetFrequencyOptions.map(option => (
-                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-medium">Reset Window Lead Time Requirement</Label>
-                  <Select 
-                    value={banner.resetWindowLeadTime || ''} 
-                    onValueChange={(value) => onUpdateField(banner.id, 'resetWindowLeadTime', value === 'clear' ? '' : value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select lead time requirement" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                      {resetLeadTimeOptions.map(option => (
-                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-medium">
-                    Are there different reset windows for different categories?
-                  </Label>
-                  <Select 
-                    value={banner.hasDifferentResetWindows || ''} 
-                    onValueChange={(value) => onUpdateField(banner.id, 'hasDifferentResetWindows', value === 'clear' ? '' : value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select yes or no" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                      <SelectItem value="Yes">Yes</SelectItem>
-                      <SelectItem value="No">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Reset Window Months - Only show when NOT using different reset windows per category */}
-                {banner.hasDifferentResetWindows !== 'Yes' && (
-                  <div>
-                    <Label className="text-xs font-medium mb-2 block">Reset Window</Label>
-                    <div className="p-3 border rounded-lg bg-white">
-                      <div className="grid grid-cols-6 gap-2">
-                        {months.map(month => (
-                          <div key={month} className="flex items-center space-x-1">
-                            <Checkbox
-                              id={`banner-${banner.id}-month-${month}`}
-                              checked={banner.resetWindowMonths.includes(month)}
-                              onCheckedChange={() => onToggleResetMonth(banner.id, month)}
-                            />
-                            <Label htmlFor={`banner-${banner.id}-month-${month}`} className="text-xs cursor-pointer">
-                              {month}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+              {banner.hasDifferentResetWindows === 'Yes' && (
+                <div className="space-y-3 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium">Category-Specific Reset Windows</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onAddCategoryResetWindow(banner.id)}
+                      className="flex items-center gap-1 h-7"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Add
+                    </Button>
                   </div>
-                )}
 
-                {banner.hasDifferentResetWindows === 'Yes' && (
-                  <div className="space-y-3 p-3 bg-white border border-gray-300 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-medium">Category-Specific Reset Windows</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onAddCategoryResetWindow(banner.id)}
-                        className="flex items-center gap-1 h-7"
-                      >
-                        <Plus className="w-3 h-3" />
-                        Add
-                      </Button>
-                    </div>
+                  {banner.categoryResetWindows.map((crw, idx) => (
+                    <div key={crw.id} className="p-3 border border-gray-200 rounded-lg bg-white">
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="text-xs font-medium text-gray-600">Window #{idx + 1}</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onRemoveCategoryResetWindow(banner.id, crw.id)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
 
-                    {banner.categoryResetWindows.map((crw, idx) => (
-                      <div key={crw.id} className="p-3 border border-gray-200 rounded-lg bg-gray-50">
-                        <div className="flex items-center justify-between mb-2">
-                          <Label className="text-xs font-medium text-gray-600">Window #{idx + 1}</Label>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onRemoveCategoryResetWindow(banner.id, crw.id)}
-                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                      <div className="space-y-2">
+                        <div>
+                          <Label className="text-xs font-medium text-gray-600">Category</Label>
+                          <Select 
+                            value={crw.category} 
+                            onValueChange={(value) => onUpdateCategoryResetWindow(banner.id, crw.id, 'category', value === 'clear' ? '' : value)}
                           >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                              {banner.affectedCategories.length > 0 ? (
+                                banner.affectedCategories.map(category => (
+                                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="" disabled>No categories selected</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
                         </div>
 
-                        <div className="space-y-2">
-                          <div>
-                            <Label className="text-xs font-medium text-gray-600">Category</Label>
-                            <Select 
-                              value={crw.category} 
-                              onValueChange={(value) => onUpdateCategoryResetWindow(banner.id, crw.id, 'category', value === 'clear' ? '' : value)}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue placeholder="Select category" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                                {banner.affectedCategories.length > 0 ? (
-                                  banner.affectedCategories.map(category => (
-                                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                                  ))
-                                ) : (
-                                  <SelectItem value="" disabled>No categories selected</SelectItem>
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label className="text-xs font-medium text-gray-600 mb-1 block">Reset Window Months</Label>
-                            <div className="p-2 border rounded-lg bg-white">
-                              <div className="grid grid-cols-6 gap-1">
-                                {months.map(month => (
-                                  <div key={month} className="flex items-center space-x-1">
-                                    <Checkbox
-                                      id={`banner-${banner.id}-crw-${crw.id}-${month}`}
-                                      checked={crw.months.includes(month)}
-                                      onCheckedChange={() => onToggleCategoryMonth(banner.id, crw.id, month)}
-                                    />
-                                    <Label htmlFor={`banner-${banner.id}-crw-${crw.id}-${month}`} className="text-xs cursor-pointer">
-                                      {month}
-                                    </Label>
-                                  </div>
-                                ))}
-                              </div>
+                        <div>
+                          <Label className="text-xs font-medium text-gray-600 mb-1 block">Reset Window Months</Label>
+                          <div className="p-2 border rounded-lg bg-gray-50">
+                            <div className="grid grid-cols-6 gap-1">
+                              {months.map(month => (
+                                <div key={month} className="flex items-center space-x-1">
+                                  <Checkbox
+                                    id={`banner-${banner.id}-crw-${crw.id}-${month}`}
+                                    checked={crw.months.includes(month)}
+                                    onCheckedChange={() => onToggleCategoryMonth(banner.id, crw.id, month)}
+                                  />
+                                  <Label htmlFor={`banner-${banner.id}-crw-${crw.id}-${month}`} className="text-xs cursor-pointer">
+                                    {month}
+                                  </Label>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          )}
+        </Card>
+
+        {/* JBP (Joint Business Plan) - SEPARATE SECTION */}
+        <Card className="border-gray-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Calendar className="w-4 h-4" />
+                JBP (Joint Business Plan)
+              </CardTitle>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`banner-${banner.id}-isJBP`}
+                  checked={banner.isJBP}
+                  onCheckedChange={(checked) => onUpdateField(banner.id, 'isJBP', checked as boolean)}
+                />
+                <Label htmlFor={`banner-${banner.id}-isJBP`} className="text-sm font-medium cursor-pointer">
+                  JBP Customer
+                </Label>
+              </div>
+            </div>
+          </CardHeader>
+          {banner.isJBP && (
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Last JBP</Label>
+                  <Input
+                    type="date"
+                    value={formatDateForInput(banner.lastJBPDate || '')}
+                    onChange={(e) => onUpdateField(banner.id, 'lastJBPDate', e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Next JBP *</Label>
+                  <Input
+                    type="date"
+                    value={formatDateForInput(banner.nextJBPDate || '')}
+                    onChange={(e) => onUpdateField(banner.id, 'nextJBPDate', e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    className="mt-1"
+                  />
+                  {jbpValidationError && (
+                    <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Alert Section */}
+              <div className="space-y-3 pt-2 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-orange-600" />
+                    <Label htmlFor={`banner-${banner.id}-nextjbp-alert`} className="text-sm font-medium cursor-pointer">
+                      Enable Alert
+                    </Label>
+                  </div>
+                  <Switch
+                    id={`banner-${banner.id}-nextjbp-alert`}
+                    checked={banner.nextJBPAlert || false}
+                    onCheckedChange={(checked) => onUpdateField(banner.id, 'nextJBPAlert', checked)}
+                  />
+                </div>
+                
+                {banner.nextJBPAlert && (
+                  <div className="space-y-2 pl-6">
+                    <Label className="text-sm text-gray-600">
+                      Alert me:
+                    </Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`banner-${banner.id}-jbp-30-days`}
+                          checked={(banner.nextJBPAlertOptions || []).includes('30_days_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('30_days_before')}
+                        />
+                        <Label htmlFor={`banner-${banner.id}-jbp-30-days`} className="text-sm font-normal cursor-pointer">
+                          30 Days Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`banner-${banner.id}-jbp-7-days`}
+                          checked={(banner.nextJBPAlertOptions || []).includes('7_days_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('7_days_before')}
+                        />
+                        <Label htmlFor={`banner-${banner.id}-jbp-7-days`} className="text-sm font-normal cursor-pointer">
+                          7 Days Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`banner-${banner.id}-jbp-1-day`}
+                          checked={(banner.nextJBPAlertOptions || []).includes('1_day_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('1_day_before')}
+                        />
+                        <Label htmlFor={`banner-${banner.id}-jbp-1-day`} className="text-sm font-normal cursor-pointer">
+                          1 Day Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`banner-${banner.id}-jbp-custom`}
+                          checked={isJBPCustomChecked}
+                          onCheckedChange={handleJBPCustomCheckboxToggle}
+                        />
+                        <Label htmlFor={`banner-${banner.id}-jbp-custom`} className="text-sm font-normal cursor-pointer">
+                          Custom:
+                        </Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="days"
+                          value={jbpCustomDays}
+                          onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
+                          className="w-20 h-7 text-xs"
+                          disabled={!isJBPCustomChecked}
+                        />
+                        <span className="text-sm text-gray-600">days before</span>
+                      </div>
+                    </div>
+                    {(banner.nextJBPAlertOptions || []).length > 0 && (
+                      <p className="text-xs text-gray-500">
+                        You'll receive {(banner.nextJBPAlertOptions || []).length} alert{(banner.nextJBPAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
+            </CardContent>
+          )}
+        </Card>
 
         {/* Additional Information Section */}
         <div className="border-t pt-6">
