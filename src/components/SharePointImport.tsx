@@ -15,22 +15,79 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
   const [importResult, setImportResult] = useState<{ success: boolean; message: string; count?: number } | null>(null);
 
   const downloadTemplate = () => {
-    // Generate CSV with current account data - removed Industry, Account Status, and Market Snapshot fields
+    // Generate CSV with ALL account form fields
     const headers = [
-      'Account Name', 'Account Owner', 'VP', 'Revenue', 'Employees',
-      'Website', 'Address', 'Phone', 'Email', 'Description', 'Channel', 'Footprint',
-      'Operating States', 'Publicly Traded', 'Ticker Symbol', 'Parent Company', 'Primary Contact ID',
-      'Total Buying Offices', 'Percent of General Market', 'Sales 52 Weeks', 'Sales 12 Weeks',
-      'Sales 4 Weeks', 'Category Captain', 'Category Validator', 'Pricing Strategy', 'Private Label',
-      'Innovation Appetite', 'Has Ecommerce', 'Is JBP', 'Last JBP Date', 'Next JBP Date',
-      'Has Planograms', 'HQ Influence', 'Display Mandates', 'Fulfillment Types', 'Spirits Outlets',
-      'Reset Window Q1', 'Reset Window Q2', 'Reset Window Q3', 'Reset Window Q4',
-      'Reset Window Spring', 'Reset Window Summer', 'Reset Window Fall', 'Reset Window Winter',
-      'Strategic Priorities', 'Key Competitors', 'Created At', 'Last Modified'
+      // Basic Information
+      'Account Name', 'Parent Company', 'Ticker Symbol', 'Channel', 'Sub Channel',
+      'Geographic Scope', 'Operating States', 'All Spirits Outlets', 'Full Proof Outlets',
+      
+      // Execution Reliability
+      'Execution Reliability Score', 'Execution Reliability Rationale',
+      
+      // Parent Information
+      'Address', 'Website',
+      
+      // HQ Level of Influence
+      'Influence Assortment Shelf', 'Private Label', 'Influence Display Merchandising',
+      'Display Mandates', 'Influence Price Promo', 'Pricing Strategy',
+      'Influence Ecommerce', 'Influence Digital', 'Influence Buying PO Ownership',
+      'Influence Shrink Management',
+      
+      // Sampling & Innovation
+      'Influence In Store Events', 'Allows Wet Sampling', 'Innovation Appetite',
+      'Innovation Lead Time',
+      
+      // E-Commerce & Digital
+      'Ecommerce Maturity Level', 'Ecommerce Sales Percentage', 'Fulfillment Types',
+      'Ecommerce Partners',
+      
+      // Category Advisory Roles
+      'Category Captain', 'Category Validator',
+      
+      // Planogram Information
+      'Has Planograms', 'Planogram Written By', 'Affected Categories', 'Reset Frequency',
+      'Reset Window Lead Time', 'Has Different Reset Windows', 'Reset Window Months',
+      'Category Reset Windows',
+      
+      // JBP Information
+      'Is JBP', 'Last JBP Date', 'Next JBP Date', 'Next JBP Alert', 'Next JBP Alert Options',
+      
+      // Additional Information
+      'Strategic Priorities', 'Key Competitors', 'Designated Charities', 'Customer Events',
+      
+      // Spirits Outlets by State (JSON format)
+      'Spirits Outlets By State',
+      
+      // Banner/Buying Offices (JSON format)
+      'Banner Buying Offices',
+      
+      // Legacy/Other fields
+      'Account Owner', 'VP', 'Revenue', 'Employees', 'Phone', 'Email', 'Description',
+      'Publicly Traded', 'Primary Contact ID', 'Total Buying Offices',
+      'Percent of General Market', 'Sales 52 Weeks', 'Sales 12 Weeks', 'Sales 4 Weeks',
+      
+      // Timestamps
+      'Created At', 'Last Modified'
     ];
 
-    const escapeCSV = (value: string | number | boolean | undefined | null): string => {
+    const escapeCSV = (value: string | number | boolean | undefined | null | string[] | object): string => {
       if (value === null || value === undefined) return '';
+      
+      // Handle arrays
+      if (Array.isArray(value)) {
+        const arrayStr = value.join('; ');
+        if (arrayStr.includes(',') || arrayStr.includes('"') || arrayStr.includes('\n')) {
+          return `"${arrayStr.replace(/"/g, '""')}"`;
+        }
+        return arrayStr;
+      }
+      
+      // Handle objects (JSON stringify)
+      if (typeof value === 'object') {
+        const jsonStr = JSON.stringify(value);
+        return `"${jsonStr.replace(/"/g, '""')}"`;
+      }
+      
       const stringValue = String(value);
       if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
@@ -46,59 +103,116 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
       let operatingStatesStr = '';
       if (account.operatingStates) {
         if (Array.isArray(account.operatingStates)) {
-          operatingStatesStr = account.operatingStates.join(', ');
+          operatingStatesStr = account.operatingStates.join('; ');
         } else if (typeof account.operatingStates === 'string') {
           operatingStatesStr = account.operatingStates;
         }
       }
+
+      // Handle keyCompetitors - might be string or array
+      let keyCompetitorsStr = '';
+      if (account.keyCompetitors) {
+        if (Array.isArray(account.keyCompetitors)) {
+          keyCompetitorsStr = account.keyCompetitors.join('; ');
+        } else if (typeof account.keyCompetitors === 'string') {
+          keyCompetitorsStr = account.keyCompetitors;
+        }
+      }
       
       const row = [
+        // Basic Information
         escapeCSV(account.accountName),
+        escapeCSV(account.parentCompany),
+        escapeCSV(account.tickerSymbol),
+        escapeCSV(account.channel),
+        escapeCSV(account.subChannel),
+        escapeCSV(account.footprint),
+        escapeCSV(operatingStatesStr),
+        escapeCSV(account.allSpiritsOutlets),
+        escapeCSV(account.fullProofOutlets),
+        
+        // Execution Reliability
+        escapeCSV(account.executionReliabilityScore),
+        escapeCSV(account.executionReliabilityRationale),
+        
+        // Parent Information
+        escapeCSV(account.address),
+        escapeCSV(account.website),
+        
+        // HQ Level of Influence
+        escapeCSV(account.influenceAssortmentShelf),
+        escapeCSV(account.privateLabel),
+        escapeCSV(account.influenceDisplayMerchandising),
+        escapeCSV(account.displayMandates),
+        escapeCSV(account.influencePricePromo),
+        escapeCSV(account.pricingStrategy),
+        escapeCSV(account.influenceEcommerce),
+        escapeCSV(account.influenceDigital),
+        escapeCSV(account.influenceBuyingPOOwnership),
+        escapeCSV(account.influenceShrinkManagement),
+        
+        // Sampling & Innovation
+        escapeCSV(account.influenceInStoreEvents),
+        escapeCSV(account.allowsWetSampling),
+        escapeCSV(account.innovationAppetite),
+        escapeCSV(account.innovationLeadTime),
+        
+        // E-Commerce & Digital
+        escapeCSV(account.ecommerceMaturityLevel),
+        escapeCSV(account.ecommerceSalesPercentage),
+        escapeCSV(account.fulfillmentTypes),
+        escapeCSV(account.ecommercePartners),
+        
+        // Category Advisory Roles
+        escapeCSV(account.categoryCaptain),
+        escapeCSV(account.categoryAdvisor),
+        
+        // Planogram Information
+        escapeCSV(account.hasPlanograms),
+        escapeCSV(account.planogramWrittenBy),
+        escapeCSV(account.affectedCategories),
+        escapeCSV(account.resetFrequency),
+        escapeCSV(account.resetWindowLeadTime),
+        escapeCSV(account.hasDifferentResetWindows),
+        escapeCSV(account.resetWindowMonths),
+        escapeCSV(account.categoryResetWindows),
+        
+        // JBP Information
+        escapeCSV(account.isJBP),
+        escapeCSV(account.lastJBPDate),
+        escapeCSV(account.nextJBPDate),
+        escapeCSV(account.nextJBPAlert),
+        escapeCSV(account.nextJBPAlertOptions),
+        
+        // Additional Information
+        escapeCSV(account.strategicPriorities),
+        escapeCSV(keyCompetitorsStr),
+        escapeCSV(account.designatedCharities),
+        escapeCSV(account.customerEvents),
+        
+        // Spirits Outlets by State
+        escapeCSV(account.spiritsOutletsByState),
+        
+        // Banner/Buying Offices
+        escapeCSV(account.bannerBuyingOffices),
+        
+        // Legacy/Other fields
         escapeCSV(account.accountOwner),
         escapeCSV(account.vp),
         escapeCSV(account.revenue),
         escapeCSV(account.employees),
-        escapeCSV(account.website),
-        escapeCSV(account.address),
         escapeCSV(account.phone),
         escapeCSV(account.email),
         escapeCSV(account.description),
-        escapeCSV(account.channel),
-        escapeCSV(account.footprint),
-        escapeCSV(operatingStatesStr),
         escapeCSV(account.publiclyTraded),
-        escapeCSV(account.tickerSymbol),
-        escapeCSV(account.parentCompany),
         escapeCSV(account.primaryContactId),
         escapeCSV(account.totalBuyingOffices),
         escapeCSV(account.percentOfGeneralMarket),
         escapeCSV(account.sales52Weeks),
         escapeCSV(account.sales12Weeks),
         escapeCSV(account.sales4Weeks),
-        escapeCSV(account.categoryCaptain),
-        escapeCSV(account.categoryAdvisor),
-        escapeCSV(account.pricingStrategy),
-        escapeCSV(account.privateLabel),
-        escapeCSV(account.innovationAppetite),
-        escapeCSV(account.hasEcommerce),
-        escapeCSV(account.isJBP),
-        escapeCSV(account.lastJBPDate),
-        escapeCSV(account.nextJBPDate),
-        escapeCSV(account.hasPlanograms),
-        escapeCSV(account.hqInfluence),
-        escapeCSV(account.displayMandates),
-        escapeCSV(account.fulfillmentTypes),
-        escapeCSV(account.spiritsOutlets),
-        escapeCSV(account.resetWindowQ1),
-        escapeCSV(account.resetWindowQ2),
-        escapeCSV(account.resetWindowQ3),
-        escapeCSV(account.resetWindowQ4),
-        escapeCSV(account.resetWindowSpring),
-        escapeCSV(account.resetWindowSummer),
-        escapeCSV(account.resetWindowFall),
-        escapeCSV(account.resetWindowWinter),
-        escapeCSV(account.strategicPriorities),
-        escapeCSV(account.keyCompetitors),
+        
+        // Timestamps
         escapeCSV(account.createdAt),
         escapeCSV(account.lastModified)
       ];
@@ -213,73 +327,129 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
           return isNaN(num) ? undefined : num;
         };
 
+        const getArrayCell = (columnName: string): string[] | undefined => {
+          const value = getCell(columnName);
+          if (!value) return undefined;
+          return value.split(';').map(s => s.trim()).filter(Boolean);
+        };
+
+        const getJSONCell = (columnName: string): unknown => {
+          const value = getCell(columnName);
+          if (!value) return undefined;
+          try {
+            return JSON.parse(value);
+          } catch {
+            return undefined;
+          }
+        };
+
         const accountName = getCell('Account Name');
         if (!accountName) {
           throw new Error(`Row ${index + 2}: Account Name is required`);
         }
 
-        const operatingStatesStr = getCell('Operating States');
-        const operatingStates = operatingStatesStr 
-          ? operatingStatesStr.split(',').map(s => s.trim()).filter(Boolean)
-          : undefined;
-
         const now = new Date().toISOString();
 
         return {
           id: `imported-${Date.now()}-${index}`,
+          
+          // Basic Information
           accountName,
-          industry: 'Not Specified', // Default value since Industry column is removed
-          accountStatus: 'Prospect' as 'Active' | 'Inactive' | 'Prospect', // Default value since Account Status column is removed
+          parentCompany: getCell('Parent Company') || undefined,
+          tickerSymbol: getCell('Ticker Symbol') || undefined,
+          channel: getCell('Channel') || undefined,
+          subChannel: getCell('Sub Channel') || undefined,
+          footprint: getCell('Geographic Scope') || undefined,
+          operatingStates: getArrayCell('Operating States'),
+          allSpiritsOutlets: getCell('All Spirits Outlets') || undefined,
+          fullProofOutlets: getCell('Full Proof Outlets') || undefined,
+          
+          // Execution Reliability
+          executionReliabilityScore: getCell('Execution Reliability Score') || undefined,
+          executionReliabilityRationale: getCell('Execution Reliability Rationale') || undefined,
+          
+          // Parent Information
+          address: getCell('Address') || undefined,
+          website: getCell('Website') || undefined,
+          
+          // HQ Level of Influence
+          influenceAssortmentShelf: getCell('Influence Assortment Shelf') || undefined,
+          privateLabel: getCell('Private Label') || undefined,
+          influenceDisplayMerchandising: getCell('Influence Display Merchandising') || undefined,
+          displayMandates: getCell('Display Mandates') || undefined,
+          influencePricePromo: getCell('Influence Price Promo') || undefined,
+          pricingStrategy: getCell('Pricing Strategy') || undefined,
+          influenceEcommerce: getCell('Influence Ecommerce') || undefined,
+          influenceDigital: getCell('Influence Digital') || undefined,
+          influenceBuyingPOOwnership: getCell('Influence Buying PO Ownership') || undefined,
+          influenceShrinkManagement: getCell('Influence Shrink Management') || undefined,
+          
+          // Sampling & Innovation
+          influenceInStoreEvents: getCell('Influence In Store Events') || undefined,
+          allowsWetSampling: getCell('Allows Wet Sampling') || undefined,
+          innovationAppetite: getCell('Innovation Appetite') || undefined,
+          innovationLeadTime: getCell('Innovation Lead Time') || undefined,
+          
+          // E-Commerce & Digital
+          ecommerceMaturityLevel: getCell('Ecommerce Maturity Level') || undefined,
+          ecommerceSalesPercentage: getCell('Ecommerce Sales Percentage') || undefined,
+          fulfillmentTypes: getArrayCell('Fulfillment Types'),
+          ecommercePartners: getArrayCell('Ecommerce Partners'),
+          
+          // Category Advisory Roles
+          categoryCaptain: getCell('Category Captain') || undefined,
+          categoryAdvisor: getCell('Category Validator') || undefined,
+          
+          // Planogram Information
+          hasPlanograms: getBooleanCell('Has Planograms'),
+          planogramWrittenBy: getCell('Planogram Written By') || undefined,
+          affectedCategories: getArrayCell('Affected Categories'),
+          resetFrequency: getCell('Reset Frequency') || undefined,
+          resetWindowLeadTime: getCell('Reset Window Lead Time') || undefined,
+          hasDifferentResetWindows: getCell('Has Different Reset Windows') || undefined,
+          resetWindowMonths: getArrayCell('Reset Window Months'),
+          categoryResetWindows: getJSONCell('Category Reset Windows') as Account['categoryResetWindows'],
+          
+          // JBP Information
+          isJBP: getBooleanCell('Is JBP'),
+          lastJBPDate: getCell('Last JBP Date') || undefined,
+          nextJBPDate: getCell('Next JBP Date') || undefined,
+          nextJBPAlert: getBooleanCell('Next JBP Alert'),
+          nextJBPAlertOptions: getArrayCell('Next JBP Alert Options'),
+          
+          // Additional Information
+          strategicPriorities: getCell('Strategic Priorities') || undefined,
+          keyCompetitors: getArrayCell('Key Competitors'),
+          designatedCharities: getCell('Designated Charities') || undefined,
+          customerEvents: getJSONCell('Customer Events') as Account['customerEvents'] || [],
+          
+          // Spirits Outlets by State
+          spiritsOutletsByState: getJSONCell('Spirits Outlets By State') as Account['spiritsOutletsByState'],
+          
+          // Banner/Buying Offices
+          bannerBuyingOffices: getJSONCell('Banner Buying Offices') as Account['bannerBuyingOffices'],
+          
+          // Legacy/Other fields
           accountOwner: getCell('Account Owner') || 'Unassigned',
           vp: getCell('VP') || undefined,
           revenue: getNumberCell('Revenue'),
           employees: getNumberCell('Employees'),
-          website: getCell('Website') || undefined,
-          address: getCell('Address') || undefined,
           phone: getCell('Phone') || undefined,
           email: getCell('Email') || undefined,
           description: getCell('Description') || undefined,
-          channel: getCell('Channel') || undefined,
-          footprint: getCell('Footprint') || undefined,
-          operatingStates,
           publiclyTraded: getBooleanCell('Publicly Traded'),
-          tickerSymbol: getCell('Ticker Symbol') || undefined,
-          parentCompany: getCell('Parent Company') || undefined,
           primaryContactId: getCell('Primary Contact ID') || undefined,
           totalBuyingOffices: getCell('Total Buying Offices') || undefined,
-          // Sales Data
           percentOfGeneralMarket: getCell('Percent of General Market') || undefined,
           sales52Weeks: getCell('Sales 52 Weeks') || undefined,
           sales12Weeks: getCell('Sales 12 Weeks') || undefined,
           sales4Weeks: getCell('Sales 4 Weeks') || undefined,
-          // Strategy & Capabilities
-          categoryCaptain: getCell('Category Captain') || undefined,
-          categoryAdvisor: getCell('Category Validator') || undefined,
-          pricingStrategy: getBooleanCell('Pricing Strategy'),
-          privateLabel: getBooleanCell('Private Label'),
-          innovationAppetite: getNumberCell('Innovation Appetite'),
-          hasEcommerce: getBooleanCell('Has Ecommerce'),
-          isJBP: getBooleanCell('Is JBP'),
-          lastJBPDate: getCell('Last JBP Date') || undefined,
-          nextJBPDate: getCell('Next JBP Date') || undefined,
-          hasPlanograms: getBooleanCell('Has Planograms'),
-          hqInfluence: getBooleanCell('HQ Influence'),
-          displayMandates: getBooleanCell('Display Mandates'),
-          fulfillmentTypes: getCell('Fulfillment Types') || undefined,
-          spiritsOutlets: getCell('Spirits Outlets') || undefined,
-          // Reset Windows
-          resetWindowQ1: getCell('Reset Window Q1') || undefined,
-          resetWindowQ2: getCell('Reset Window Q2') || undefined,
-          resetWindowQ3: getCell('Reset Window Q3') || undefined,
-          resetWindowQ4: getCell('Reset Window Q4') || undefined,
-          resetWindowSpring: getCell('Reset Window Spring') || undefined,
-          resetWindowSummer: getCell('Reset Window Summer') || undefined,
-          resetWindowFall: getCell('Reset Window Fall') || undefined,
-          resetWindowWinter: getCell('Reset Window Winter') || undefined,
-          // Strategic Information
-          strategicPriorities: getCell('Strategic Priorities') || undefined,
-          keyCompetitors: getCell('Key Competitors') || undefined,
-          customerEvents: [],
+          
+          // Default values for required fields
+          industry: 'Not Specified',
+          accountStatus: 'Prospect' as 'Active' | 'Inactive' | 'Prospect',
+          
+          // Timestamps
           createdAt: getCell('Created At') || now,
           lastModified: getCell('Last Modified') || now
         };
@@ -317,7 +487,7 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Step 1: Download Template</h4>
           <p className="text-sm text-gray-600">
-            Download the CSV template with all your current account data pre-populated. Any accounts you've added (like Albertsons Safeway) will be included in the download.
+            Download the CSV template with all your current account data pre-populated. This includes ALL fields from the Account Form.
           </p>
           <Button
             variant="outline"
@@ -337,9 +507,9 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
           <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
             <li>Account Name is required</li>
             <li>Use TRUE/FALSE for Yes/No columns</li>
-            <li>Use comma-separated values for Operating States (e.g., "CA, NY, TX")</li>
+            <li>Use semicolon-separated values for multi-select fields (e.g., "CA; NY; TX")</li>
+            <li>Complex fields like Banner/Buying Offices use JSON format</li>
             <li>Leave cells blank if data is not available</li>
-            <li>Industry and Account Status will be set to default values ("Not Specified" and "Prospect")</li>
           </ul>
         </div>
 
@@ -387,15 +557,20 @@ export default function SharePointImport({ onImport, existingAccounts = [] }: Sh
         )}
 
         <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium mb-2">Column Mapping Reference</h4>
-          <div className="text-xs text-gray-600 space-y-1">
-            <p><strong>Required:</strong> Account Name, Account Owner</p>
-            <p><strong>Optional:</strong> VP, Revenue, Employees, Website, Address, Phone, Email, Description, Channel, Footprint, Operating States, Publicly Traded, Ticker Symbol, Parent Company, Total Buying Offices</p>
-            <p><strong>Sales Data:</strong> Percent of General Market, Sales 52 Weeks, Sales 12 Weeks, Sales 4 Weeks</p>
-            <p><strong>Strategy:</strong> Category Captain, Category Validator, Pricing Strategy, Private Label, Innovation Appetite, Has Ecommerce, Is JBP, Last JBP Date, Next JBP Date, Has Planograms, HQ Influence, Display Mandates, Fulfillment Types, Spirits Outlets</p>
-            <p><strong>Reset Windows:</strong> Q1, Q2, Q3, Q4, Spring, Summer, Fall, Winter</p>
-            <p><strong>Strategic Info:</strong> Strategic Priorities, Key Competitors</p>
-            <p><strong>Note:</strong> Industry, Account Status, and Market Snapshot fields have been removed. Imported accounts will default to "Not Specified" for Industry and "Prospect" for Account Status.</p>
+          <h4 className="text-sm font-medium mb-2">Column Reference</h4>
+          <div className="text-xs text-gray-600 space-y-1 max-h-64 overflow-y-auto">
+            <p><strong>Basic Info:</strong> Account Name*, Parent Company, Ticker Symbol, Channel, Sub Channel, Geographic Scope, Operating States, All Spirits Outlets, Full Proof Outlets</p>
+            <p><strong>Execution:</strong> Execution Reliability Score (1-5), Execution Reliability Rationale</p>
+            <p><strong>Parent Info:</strong> Address, Website</p>
+            <p><strong>HQ Influence:</strong> Influence Assortment Shelf, Private Label, Influence Display Merchandising, Display Mandates, Influence Price Promo, Pricing Strategy, Influence Ecommerce, Influence Digital, Influence Buying PO Ownership, Influence Shrink Management</p>
+            <p><strong>Sampling & Innovation:</strong> Influence In Store Events, Allows Wet Sampling, Innovation Appetite, Innovation Lead Time</p>
+            <p><strong>E-Commerce:</strong> Ecommerce Maturity Level, Ecommerce Sales Percentage, Fulfillment Types, Ecommerce Partners</p>
+            <p><strong>Category Roles:</strong> Category Captain, Category Validator</p>
+            <p><strong>Planogram:</strong> Has Planograms, Planogram Written By, Affected Categories, Reset Frequency, Reset Window Lead Time, Has Different Reset Windows, Reset Window Months, Category Reset Windows (JSON)</p>
+            <p><strong>JBP:</strong> Is JBP, Last JBP Date, Next JBP Date, Next JBP Alert, Next JBP Alert Options</p>
+            <p><strong>Additional:</strong> Strategic Priorities, Key Competitors, Designated Charities, Customer Events (JSON)</p>
+            <p><strong>Complex Data:</strong> Spirits Outlets By State (JSON), Banner Buying Offices (JSON)</p>
+            <p><strong>Legacy:</strong> Account Owner, VP, Revenue, Employees, Phone, Email, Description, Publicly Traded, Primary Contact ID, Total Buying Offices, Sales Data</p>
           </div>
         </div>
       </CardContent>
