@@ -166,18 +166,6 @@ const getCompetitorDisplayName = (competitor: string): string => {
   return competitor;
 };
 
-// Helper function to get alert option label
-const getAlertOptionLabel = (option: string): string => {
-  if (option === '30_days_before') return '30 Days Before';
-  if (option === '7_days_before') return '7 Days Before';
-  if (option === '1_day_before') return '1 Day Before';
-  if (option.startsWith('custom_')) {
-    const days = option.replace('custom_', '');
-    return `${days} Days Before`;
-  }
-  return option;
-};
-
 export default function BannerBuyingOfficeCard({
   banner,
   index,
@@ -213,6 +201,20 @@ export default function BannerBuyingOfficeCard({
   const [jbpCustomDays, setJbpCustomDays] = useState<string>('');
   const [eventCustomDays, setEventCustomDays] = useState<{[key: string]: string}>({});
 
+  // State to track if JBP custom checkbox is enabled (separate from having a value)
+  const [isJBPCustomEnabled, setIsJBPCustomEnabled] = useState<boolean>(() => {
+    return (banner.nextJBPAlertOptions || []).some(opt => opt.startsWith('custom_'));
+  });
+
+  // State to track if event custom checkboxes are enabled
+  const [eventCustomEnabled, setEventCustomEnabled] = useState<{[key: string]: boolean}>(() => {
+    const initial: {[key: string]: boolean} = {};
+    banner.customerEvents.forEach(event => {
+      initial[event.id] = (event.alertOptions || []).some(opt => opt.startsWith('custom_'));
+    });
+    return initial;
+  });
+
   // State outlets by state for multiple states
   const [stateOutlets, setStateOutlets] = useState<StateOutlet[]>(() => {
     if (banner.spiritsOutletsByState && Array.isArray(banner.spiritsOutletsByState)) {
@@ -238,8 +240,28 @@ export default function BannerBuyingOfficeCard({
     if (customOption) {
       const days = customOption.replace('custom_', '');
       setJbpCustomDays(days);
+      setIsJBPCustomEnabled(true);
     }
   }, []);
+
+  // Initialize event custom days from banner data
+  useEffect(() => {
+    const newEventCustomDays: {[key: string]: string} = {};
+    const newEventCustomEnabled: {[key: string]: boolean} = {};
+    
+    banner.customerEvents.forEach(event => {
+      const customOption = (event.alertOptions || []).find(opt => opt.startsWith('custom_'));
+      if (customOption) {
+        newEventCustomDays[event.id] = customOption.replace('custom_', '');
+        newEventCustomEnabled[event.id] = true;
+      } else {
+        newEventCustomEnabled[event.id] = false;
+      }
+    });
+    
+    setEventCustomDays(prev => ({ ...prev, ...newEventCustomDays }));
+    setEventCustomEnabled(prev => ({ ...prev, ...newEventCustomEnabled }));
+  }, [banner.customerEvents.length]);
 
   // Sync selectedKeyCompetitors with banner.keyCompetitors
   useEffect(() => {
@@ -320,13 +342,15 @@ export default function BannerBuyingOfficeCard({
   };
 
   const handleJBPCustomCheckboxToggle = (checked: boolean) => {
+    setIsJBPCustomEnabled(checked);
+    
     if (!checked) {
       // Unchecking - clear the days and remove custom option
       setJbpCustomDays('');
       const filteredOptions = (banner.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
       onUpdateField(banner.id, 'nextJBPAlertOptions', filteredOptions);
     }
-    // When checking, we don't need to do anything - the input will be enabled and user can enter days
+    // When checking, we just enable the input - user will enter days
   };
 
   const handleJBPCustomDaysChange = (value: string) => {
@@ -341,6 +365,25 @@ export default function BannerBuyingOfficeCard({
     } else {
       onUpdateField(banner.id, 'nextJBPAlertOptions', filteredOptions);
     }
+  };
+
+  const handleEventCustomCheckboxToggle = (eventId: string, checked: boolean) => {
+    setEventCustomEnabled(prev => ({ ...prev, [eventId]: checked }));
+    
+    if (!checked) {
+      // Unchecking - clear the days and remove custom option
+      setEventCustomDays(prev => {
+        const newState = { ...prev };
+        delete newState[eventId];
+        return newState;
+      });
+      const filteredOptions = (banner.customerEvents.find(e => e.id === eventId)?.alertOptions || []).filter(opt => !opt.startsWith('custom_'));
+      const updatedEvents = banner.customerEvents.map(e => 
+        e.id === eventId ? { ...e, alertOptions: filteredOptions } : e
+      );
+      onUpdateField(banner.id, 'customerEvents', updatedEvents);
+    }
+    // When checking, we just enable the input - user will enter days
   };
 
   const handleEventCustomDaysChange = (eventId: string, value: string) => {
@@ -361,12 +404,6 @@ export default function BannerBuyingOfficeCard({
       return event;
     });
     onUpdateField(banner.id, 'customerEvents', updatedEvents);
-  };
-
-  const isJBPCustomChecked = (banner.nextJBPAlertOptions || []).some(opt => opt.startsWith('custom_'));
-  
-  const getEventCustomChecked = (event: CustomerEvent) => {
-    return (event.alertOptions || []).some(opt => opt.startsWith('custom_'));
   };
 
   // Key Competitors multi-select functions
@@ -1370,8 +1407,8 @@ export default function BannerBuyingOfficeCard({
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id={`banner-${banner.id}-jbp-custom`}
-                          checked={isJBPCustomChecked}
-                          onCheckedChange={handleJBPCustomCheckboxToggle}
+                          checked={isJBPCustomEnabled}
+                          onCheckedChange={(checked) => handleJBPCustomCheckboxToggle(checked as boolean)}
                         />
                         <Label htmlFor={`banner-${banner.id}-jbp-custom`} className="text-sm font-normal cursor-pointer">
                           Custom:
@@ -1383,7 +1420,7 @@ export default function BannerBuyingOfficeCard({
                           value={jbpCustomDays}
                           onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
                           className="w-20 h-7 text-xs"
-                          disabled={!isJBPCustomChecked}
+                          disabled={!isJBPCustomEnabled}
                         />
                         <span className="text-sm text-gray-600">days before</span>
                       </div>
@@ -1607,21 +1644,8 @@ export default function BannerBuyingOfficeCard({
                                 <div className="flex items-center space-x-2">
                                   <Checkbox
                                     id={`banner-${banner.id}-event-${event.id}-custom`}
-                                    checked={getEventCustomChecked(event)}
-                                    onCheckedChange={(checked) => {
-                                      if (!checked) {
-                                        setEventCustomDays(prev => {
-                                          const newState = { ...prev };
-                                          delete newState[event.id];
-                                          return newState;
-                                        });
-                                        const filteredOptions = (event.alertOptions || []).filter(opt => !opt.startsWith('custom_'));
-                                        const updatedEvents = banner.customerEvents.map(e => 
-                                          e.id === event.id ? { ...e, alertOptions: filteredOptions } : e
-                                        );
-                                        onUpdateField(banner.id, 'customerEvents', updatedEvents);
-                                      }
-                                    }}
+                                    checked={eventCustomEnabled[event.id] || false}
+                                    onCheckedChange={(checked) => handleEventCustomCheckboxToggle(event.id, checked as boolean)}
                                   />
                                   <Label htmlFor={`banner-${banner.id}-event-${event.id}-custom`} className="text-sm font-normal cursor-pointer">
                                     Custom:
@@ -1633,7 +1657,7 @@ export default function BannerBuyingOfficeCard({
                                     value={eventCustomDays[event.id] || ''}
                                     onChange={(e) => handleEventCustomDaysChange(event.id, e.target.value)}
                                     className="w-20 h-7 text-xs"
-                                    disabled={!getEventCustomChecked(event)}
+                                    disabled={!eventCustomEnabled[event.id]}
                                   />
                                   <span className="text-sm text-gray-600">days before</span>
                                 </div>
