@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase, Building, MapPin } from 'lucide-react';
+import diageoLogo from '@/assets/diageo-logo.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -1149,7 +1150,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
       {/* Mobile Header - Made Sticky */}
       <div className="lg:hidden sticky top-0 z-50 bg-white border-b px-4 py-3 flex items-center justify-between shadow-sm">
         <div className="flex flex-col items-center">
-          <img src="/MGXTool/src/assets/diageo-logo.png" alt="Diageo Logo" className="max-h-12 w-auto object-contain mb-1" />
+          <img src={diageoLogo} alt="Diageo Logo" className="max-h-12 w-auto object-contain mb-1" />
           <h1 className="text-xl font-bold">Account IQ</h1>
         </div>
         <Button
@@ -1166,7 +1167,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
         <div className="hidden lg:block w-64 bg-white border-r min-h-screen">
           <div className="p-6">
             <div className="flex flex-col items-center mb-6">
-              <img src="/MGXTool/src/assets/diageo-logo.png" alt="Diageo Logo" className="max-h-12 w-auto object-contain mb-2" />
+              <img src={diageoLogo} alt="Diageo Logo" className="max-h-12 w-auto object-contain mb-2" />
               <h1 className="text-xl font-bold">Account IQ</h1>
             </div>
             {renderNavigation()}
@@ -1180,7 +1181,7 @@ export default function CRMTool({ userName }: CRMToolProps) {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex flex-col items-center flex-1">
-                    <img src="/MGXTool/src/assets/diageo-logo.png" alt="Diageo Logo" className="max-h-12 w-auto object-contain mb-1" />
+                    <img src={diageoLogo} alt="Diageo Logo" className="max-h-12 w-auto object-contain mb-1" />
                     <h1 className="text-xl font-bold">Account IQ</h1>
                   </div>
                   <Button
