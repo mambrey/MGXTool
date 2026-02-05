@@ -1662,16 +1662,18 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          </div>
 
-              {/* Row 6: In Store Events + Allows Wet Sampling */}
-              <div>
+          {/* Sampling & Innovation Section - FIXED: Now outside the grid */}
           <div className="pt-4 border-t">
-            <Label className="text-sm font-medium flex items-center gap-2">
+            <Label className="text-sm font-medium flex items-center gap-2 mb-4">
               <Sparkles className="w-4 h-4" />
               Sampling & Innovation
             </Label>
-          </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* In Store Events */}
+              <div>
                 <Label className="text-xs font-medium">In Store Events</Label>
                 <Select 
                   value={formData.influenceInStoreEvents || 'none'} 
@@ -1689,6 +1691,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Allows Wet Sampling */}
               <div>
                 <Label className="text-xs font-medium">Allows Wet Sampling</Label>
                 <Select 
@@ -1707,7 +1710,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Row 7: Innovation Appetite + Innovation Information Lead Time */}
+              {/* Innovation Appetite */}
               <div>
                 <Label className="text-xs font-medium">Innovation Appetite</Label>
                 <Select 
@@ -1728,6 +1731,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Innovation Information Lead Time */}
               <div>
                 <Label className="text-xs font-medium">Innovation Information Lead Time</Label>
                 <Select 
