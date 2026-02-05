@@ -11,28 +11,62 @@ interface ContactImportProps {
   existingAccounts: Account[];
 }
 
-interface ExtendedContact extends Contact {
-  director?: string;
-  seniorVicePresident?: string;
-}
-
 export default function ContactImport({ onImport, existingContacts = [], existingAccounts = [] }: ContactImportProps) {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ success: boolean; message: string; count?: number } | null>(null);
 
   const downloadTemplate = () => {
-    // Generate CSV with current contact data
+    // Generate CSV with ALL contact form fields
     const headers = [
-      'First Name', 'Last Name', 'Email', 'Office Phone', 'Mobile Phone', 'Preferred Contact Method',
-      'Title', 'Account Name', 'Contact Type', 'Influence', 'Birthday', 'Birthday Alert',
-      'Relationship Status', 'Last Contact Date', 'Next Contact Date', 'Next Contact Alert',
-      'Social Handles', 'Known Preferences', 'Notes', 'Relationship Owner Name',
-      'Relationship Owner Email', 'Director', 'Vice President', 'Senior Vice President', 
+      // Basic Information
+      'First Name', 'Preferred First Name', 'Last Name', 'Email', 'Headshot',
+      'Title', 'Current Role Tenure', 'Account Name', 'Banner Buying Office Name',
+      'Manager Name', 'Is Primary Contact', 'Contact Active Status',
+      
+      // Contact Information
+      'Office Phone', 'Mobile Phone', 'Preferred Contact Method', 'Preferred Shipping Address',
+      
+      // Ways of Working
+      'Advocacy Style', 'Category Segment Ownership', 'Responsibility Levels',
+      
+      // Important Dates
+      'Birthday', 'Birthday Alert', 'Birthday Alert Options',
+      'Next Contact Date', 'Next Contact Alert', 'Next Contact Alert Options',
+      'Last Contact Date', 'Contact Events',
+      
+      // LinkedIn
+      'LinkedIn Profile',
+      
+      // Preferences & Notes
+      'Known Preferences', 'Entertainment', 'Decision Bias Profile', 'Follow Through',
+      'Values', 'Pain Points', 'Notes', 'Uploaded Notes',
+      
+      // Diageo Relationship Owners
+      'Primary Owner Name', 'Primary Owner Title', 'Primary Owner Email', 'SVP',
+      'Sales Roles', 'Support Roles', 'Sales Last Check In', 'Support Last Check In',
+      
+      // Timestamps
       'Created At', 'Last Modified'
     ];
 
-    const escapeCSV = (value: string | number | boolean | undefined | null): string => {
+    const escapeCSV = (value: string | number | boolean | undefined | null | string[] | object): string => {
       if (value === null || value === undefined) return '';
+      
+      // Handle arrays
+      if (Array.isArray(value)) {
+        const arrayStr = value.join('; ');
+        if (arrayStr.includes(',') || arrayStr.includes('"') || arrayStr.includes('\n')) {
+          return `"${arrayStr.replace(/"/g, '""')}"`;
+        }
+        return arrayStr;
+      }
+      
+      // Handle objects (JSON stringify)
+      if (typeof value === 'object') {
+        const jsonStr = JSON.stringify(value);
+        return `"${jsonStr.replace(/"/g, '""')}"`;
+      }
+      
       const stringValue = String(value);
       if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
@@ -44,40 +78,108 @@ export default function ContactImport({ onImport, existingContacts = [], existin
 
     // Add existing contacts to the template
     existingContacts.forEach(contact => {
-      const extendedContact = contact as ExtendedContact;
-      // Handle socialHandles array
-      const socialHandlesStr = contact.socialHandles ? contact.socialHandles.join('; ') : '';
-      
       // Find account name from accountId
-      const accountName = contact.accountId 
-        ? existingAccounts.find(acc => acc.id === contact.accountId)?.accountName || ''
-        : '';
+      const account = contact.accountId 
+        ? existingAccounts.find(acc => acc.id === contact.accountId)
+        : null;
+      const accountName = account?.accountName || '';
+      
+      // Find banner/buying office name
+      let bannerName = '';
+      if (contact.bannerBuyingOfficeId && account?.bannerBuyingOffices) {
+        const banner = account.bannerBuyingOffices.find(b => b.id === contact.bannerBuyingOfficeId);
+        bannerName = banner?.accountName || '';
+      }
+      
+      // Find manager name from managerId
+      let managerName = '';
+      if (contact.managerId) {
+        const manager = existingContacts.find(c => c.id === contact.managerId);
+        if (manager) {
+          managerName = `${manager.firstName} ${manager.lastName}`;
+        }
+      }
+
+      // Handle categorySegmentOwnership - might be string or array
+      let categorySegmentStr = '';
+      if (contact.categorySegmentOwnership) {
+        if (Array.isArray(contact.categorySegmentOwnership)) {
+          categorySegmentStr = contact.categorySegmentOwnership.join('; ');
+        } else if (typeof contact.categorySegmentOwnership === 'string') {
+          categorySegmentStr = contact.categorySegmentOwnership;
+        }
+      }
+
+      // Handle decisionBiasProfile - might be string or array
+      let decisionBiasStr = '';
+      if (contact.decisionBiasProfile) {
+        if (Array.isArray(contact.decisionBiasProfile)) {
+          decisionBiasStr = contact.decisionBiasProfile.join('; ');
+        } else if (typeof contact.decisionBiasProfile === 'string') {
+          decisionBiasStr = contact.decisionBiasProfile;
+        }
+      }
       
       const row = [
+        // Basic Information
         escapeCSV(contact.firstName),
+        escapeCSV(contact.preferredFirstName),
         escapeCSV(contact.lastName),
         escapeCSV(contact.email),
+        escapeCSV(contact.headshot ? '[Base64 Image Data]' : ''), // Don't export full base64
+        escapeCSV(contact.title),
+        escapeCSV(contact.currentRoleTenure),
+        escapeCSV(accountName),
+        escapeCSV(bannerName),
+        escapeCSV(managerName),
+        escapeCSV(contact.isPrimaryContact),
+        escapeCSV(contact.contactActiveStatus),
+        
+        // Contact Information
         escapeCSV(contact.officePhone),
         escapeCSV(contact.mobilePhone),
         escapeCSV(contact.preferredContactMethod),
-        escapeCSV(contact.title),
-        escapeCSV(accountName),
-        escapeCSV(contact.contactType),
-        escapeCSV(contact.influence),
+        escapeCSV(contact.preferredShippingAddress),
+        
+        // Ways of Working
+        escapeCSV(contact.relationshipStatus), // This is "Advocacy Style" in the form
+        escapeCSV(categorySegmentStr),
+        escapeCSV(contact.responsibilityLevels),
+        
+        // Important Dates
         escapeCSV(contact.birthday),
         escapeCSV(contact.birthdayAlert),
-        escapeCSV(contact.relationshipStatus),
-        escapeCSV(contact.lastContactDate),
+        escapeCSV(contact.birthdayAlertOptions),
         escapeCSV(contact.nextContactDate),
         escapeCSV(contact.nextContactAlert),
-        escapeCSV(socialHandlesStr),
+        escapeCSV(contact.nextContactAlertOptions),
+        escapeCSV(contact.lastContactDate),
+        escapeCSV(contact.contactEvents),
+        
+        // LinkedIn
+        escapeCSV(contact.linkedinProfile),
+        
+        // Preferences & Notes
         escapeCSV(contact.knownPreferences),
+        escapeCSV(contact.entertainment),
+        escapeCSV(decisionBiasStr),
+        escapeCSV(contact.followThrough),
+        escapeCSV(contact.values),
+        escapeCSV(contact.painPoints),
         escapeCSV(contact.notes),
-        escapeCSV(contact.relationshipOwner?.name),
-        escapeCSV(contact.relationshipOwner?.email),
-        escapeCSV(extendedContact.director),
-        escapeCSV(contact.relationshipOwner?.vicePresident),
-        escapeCSV(extendedContact.seniorVicePresident),
+        escapeCSV(contact.uploadedNotes),
+        
+        // Diageo Relationship Owners
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.ownerName),
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.ownerTitle),
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.ownerEmail),
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.svp),
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.sales),
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.support),
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.salesLastCheckIn),
+        escapeCSV(contact.primaryDiageoRelationshipOwners?.supportLastCheckIn),
+        
+        // Timestamps
         escapeCSV(contact.createdAt),
         escapeCSV(contact.lastModified)
       ];
@@ -171,7 +273,7 @@ export default function ContactImport({ onImport, existingContacts = [], existin
       const headers = rows[0].map(h => h.trim());
       const dataRows = rows.slice(1).filter(row => row.some(cell => cell.trim()));
 
-      const contacts: ExtendedContact[] = [];
+      const contacts: Contact[] = [];
       const unmatchedAccounts: string[] = [];
       let linkedCount = 0;
 
@@ -190,6 +292,22 @@ export default function ContactImport({ onImport, existingContacts = [], existin
           return undefined;
         };
 
+        const getArrayCell = (columnName: string): string[] | undefined => {
+          const value = getCell(columnName);
+          if (!value) return undefined;
+          return value.split(';').map(s => s.trim()).filter(Boolean);
+        };
+
+        const getJSONCell = (columnName: string): unknown => {
+          const value = getCell(columnName);
+          if (!value) return undefined;
+          try {
+            return JSON.parse(value);
+          } catch {
+            return undefined;
+          }
+        };
+
         const firstName = getCell('First Name');
         const lastName = getCell('Last Name');
         const email = getCell('Email');
@@ -198,30 +316,12 @@ export default function ContactImport({ onImport, existingContacts = [], existin
           throw new Error(`Row ${index + 2}: First Name, Last Name, and Email are required`);
         }
 
-        // Parse social handles
-        const socialHandlesStr = getCell('Social Handles');
-        const socialHandles = socialHandlesStr 
-          ? socialHandlesStr.split(';').map(s => s.trim()).filter(Boolean)
-          : undefined;
-
         const now = new Date().toISOString();
-
-        // Parse relationship owner with new hierarchy fields
-        const ownerName = getCell('Relationship Owner Name');
-        const ownerEmail = getCell('Relationship Owner Email');
-        const director = getCell('Director');
-        const vicePresident = getCell('Vice President');
-        const seniorVicePresident = getCell('Senior Vice President');
-        
-        const relationshipOwner = (ownerName || ownerEmail || vicePresident) ? {
-          name: ownerName || '',
-          email: ownerEmail || '',
-          vicePresident: vicePresident || ''
-        } : undefined;
 
         // Match account name to account ID (case-insensitive)
         const accountName = getCell('Account Name');
         let accountId: string | undefined = undefined;
+        let bannerBuyingOfficeId: string | undefined = undefined;
         
         if (accountName) {
           const matchedAccount = existingAccounts.find(
@@ -231,39 +331,112 @@ export default function ContactImport({ onImport, existingContacts = [], existin
           if (matchedAccount) {
             accountId = matchedAccount.id;
             linkedCount++;
+            
+            // Try to match banner/buying office
+            const bannerName = getCell('Banner Buying Office Name');
+            if (bannerName && matchedAccount.bannerBuyingOffices) {
+              const matchedBanner = matchedAccount.bannerBuyingOffices.find(
+                b => b.accountName.toLowerCase() === bannerName.toLowerCase()
+              );
+              if (matchedBanner) {
+                bannerBuyingOfficeId = matchedBanner.id;
+              }
+            }
           } else {
-            // Track unmatched account names
             if (!unmatchedAccounts.includes(accountName)) {
               unmatchedAccounts.push(accountName);
             }
           }
         }
 
+        // Match manager name to manager ID
+        const managerName = getCell('Manager Name');
+        let managerId: string | undefined = undefined;
+        if (managerName) {
+          const matchedManager = existingContacts.find(c => 
+            `${c.firstName} ${c.lastName}`.toLowerCase() === managerName.toLowerCase()
+          );
+          if (matchedManager) {
+            managerId = matchedManager.id;
+          }
+        }
+
+        // Build primaryDiageoRelationshipOwners object
+        const ownerName = getCell('Primary Owner Name');
+        const ownerTitle = getCell('Primary Owner Title');
+        const ownerEmail = getCell('Primary Owner Email');
+        const svp = getCell('SVP');
+        const salesRoles = getJSONCell('Sales Roles') as Record<string, string> | undefined;
+        const supportRoles = getJSONCell('Support Roles') as Record<string, string> | undefined;
+        const salesLastCheckIn = getJSONCell('Sales Last Check In') as Record<string, string> | undefined;
+        const supportLastCheckIn = getJSONCell('Support Last Check In') as Record<string, string> | undefined;
+
+        const primaryDiageoRelationshipOwners = (ownerName || ownerTitle || ownerEmail || svp) ? {
+          ownerName: ownerName || '',
+          ownerTitle: ownerTitle || '',
+          ownerEmail: ownerEmail || '',
+          svp: svp || '',
+          sales: salesRoles || {},
+          support: supportRoles || {},
+          salesLastCheckIn: salesLastCheckIn || {},
+          supportLastCheckIn: supportLastCheckIn || {}
+        } : undefined;
+
         contacts.push({
           id: `imported-${Date.now()}-${index}`,
+          
+          // Basic Information
           firstName,
+          preferredFirstName: getCell('Preferred First Name') || undefined,
           lastName,
           email,
+          headshot: undefined, // Don't import headshot from CSV
+          title: getCell('Title') || undefined,
+          currentRoleTenure: getCell('Current Role Tenure') || undefined,
+          accountId,
+          bannerBuyingOfficeId,
+          managerId,
+          isPrimaryContact: getBooleanCell('Is Primary Contact') || false,
+          contactActiveStatus: getCell('Contact Active Status') || 'Active',
+          
+          // Contact Information
           officePhone: getCell('Office Phone') || undefined,
           mobilePhone: getCell('Mobile Phone') || undefined,
-          preferredContactMethod: (getCell('Preferred Contact Method') || undefined) as 'email' | 'mobile phone' | 'office phone' | undefined,
-          title: getCell('Title') || undefined,
-          accountId,
-          contactType: (getCell('Contact Type') || undefined) as 'Primary' | 'Secondary' | undefined,
-          influence: (getCell('Influence') || undefined) as 'Decision Maker' | 'Influencer' | 'User' | 'Gatekeeper' | undefined,
+          preferredContactMethod: getCell('Preferred Contact Method') || undefined,
+          preferredShippingAddress: getCell('Preferred Shipping Address') || undefined,
+          
+          // Ways of Working
+          relationshipStatus: getCell('Advocacy Style') || undefined,
+          categorySegmentOwnership: getArrayCell('Category Segment Ownership') || [],
+          responsibilityLevels: getJSONCell('Responsibility Levels') as Record<string, string> || {},
+          
+          // Important Dates
           birthday: getCell('Birthday') || undefined,
-          birthdayAlert: getBooleanCell('Birthday Alert'),
-          relationshipStatus: getCell('Relationship Status') || undefined,
-          lastContactDate: getCell('Last Contact Date') || undefined,
+          birthdayAlert: getBooleanCell('Birthday Alert') || false,
+          birthdayAlertOptions: getArrayCell('Birthday Alert Options') || [],
           nextContactDate: getCell('Next Contact Date') || undefined,
-          nextContactAlert: getBooleanCell('Next Contact Alert'),
-          socialHandles,
+          nextContactAlert: getBooleanCell('Next Contact Alert') || false,
+          nextContactAlertOptions: getArrayCell('Next Contact Alert Options') || [],
+          lastContactDate: getCell('Last Contact Date') || undefined,
+          contactEvents: getJSONCell('Contact Events') as Contact['contactEvents'] || [],
+          
+          // LinkedIn
+          linkedinProfile: getCell('LinkedIn Profile') || undefined,
+          
+          // Preferences & Notes
           knownPreferences: getCell('Known Preferences') || undefined,
+          entertainment: getCell('Entertainment') || undefined,
+          decisionBiasProfile: getArrayCell('Decision Bias Profile') || [],
+          followThrough: getCell('Follow Through') || undefined,
+          values: getCell('Values') || undefined,
+          painPoints: getCell('Pain Points') || undefined,
           notes: getCell('Notes') || undefined,
-          uploadedNotes: [],
-          relationshipOwner,
-          director: director || undefined,
-          seniorVicePresident: seniorVicePresident || undefined,
+          uploadedNotes: getJSONCell('Uploaded Notes') as Contact['uploadedNotes'] || [],
+          
+          // Diageo Relationship Owners
+          primaryDiageoRelationshipOwners,
+          
+          // Timestamps
           createdAt: getCell('Created At') || now,
           lastModified: getCell('Last Modified') || now
         });
@@ -311,7 +484,7 @@ export default function ContactImport({ onImport, existingContacts = [], existin
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Step 1: Download Template</h4>
           <p className="text-sm text-gray-600">
-            Download the CSV template with all your current contact data pre-populated. Any contacts you've added will be included in the download.
+            Download the CSV template with all your current contact data pre-populated. This includes ALL fields from the Contact Form.
           </p>
           <Button
             variant="outline"
@@ -330,11 +503,10 @@ export default function ContactImport({ onImport, existingContacts = [], existin
           </p>
           <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
             <li>First Name, Last Name, and Email are required</li>
-            <li>Use TRUE/FALSE for Yes/No columns (Birthday Alert, Next Contact Alert)</li>
-            <li>Use semicolon-separated values for Social Handles (e.g., "@twitter; @linkedin")</li>
-            <li>Contact Type: Primary or Secondary</li>
-            <li>Influence: Decision Maker, Influencer, User, or Gatekeeper</li>
-            <li>Preferred Contact Method: email, mobile phone, or office phone</li>
+            <li>Use TRUE/FALSE for Yes/No columns (Is Primary Contact, Birthday Alert, etc.)</li>
+            <li>Use semicolon-separated values for multi-select fields (e.g., "Vodka; Whiskey; Tequila")</li>
+            <li>Complex fields like Responsibility Levels use JSON format</li>
+            <li>Account Name must match an existing account exactly to link</li>
             <li>Leave cells blank if data is not available</li>
           </ul>
         </div>
@@ -383,16 +555,16 @@ export default function ContactImport({ onImport, existingContacts = [], existin
         )}
 
         <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium mb-2">Column Mapping Reference</h4>
-          <div className="text-xs text-gray-600 space-y-1">
-            <p><strong>Required:</strong> First Name, Last Name, Email</p>
-            <p><strong>Contact Info:</strong> Office Phone, Mobile Phone, Preferred Contact Method, Title</p>
-            <p><strong>Account Link:</strong> Account Name (use the exact account name to link this contact)</p>
-            <p><strong>Classification:</strong> Contact Type (Primary/Secondary), Influence (Decision Maker/Influencer/User/Gatekeeper)</p>
-            <p><strong>Dates & Alerts:</strong> Birthday, Birthday Alert, Last Contact Date, Next Contact Date, Next Contact Alert</p>
-            <p><strong>Relationship:</strong> Relationship Status, Known Preferences, Notes</p>
-            <p><strong>Social:</strong> Social Handles (semicolon-separated, e.g., "@twitter; @linkedin")</p>
-            <p><strong>Owner Info:</strong> Relationship Owner Name, Relationship Owner Email, Director, Vice President, Senior Vice President</p>
+          <h4 className="text-sm font-medium mb-2">Column Reference</h4>
+          <div className="text-xs text-gray-600 space-y-1 max-h-64 overflow-y-auto">
+            <p><strong>Basic Info:</strong> First Name*, Last Name*, Email*, Preferred First Name, Headshot, Title, Current Role Tenure, Account Name, Banner Buying Office Name, Manager Name, Is Primary Contact, Contact Active Status</p>
+            <p><strong>Contact Info:</strong> Office Phone, Mobile Phone, Preferred Contact Method (mobile phone/text/email/office phone), Preferred Shipping Address</p>
+            <p><strong>Ways of Working:</strong> Advocacy Style (Promoter/Supporter/Neutral/Detractor/Adversarial), Category Segment Ownership (semicolon-separated), Responsibility Levels (JSON)</p>
+            <p><strong>Important Dates:</strong> Birthday (MM-DD), Birthday Alert, Birthday Alert Options, Next Contact Date, Next Contact Alert, Next Contact Alert Options, Last Contact Date, Contact Events (JSON)</p>
+            <p><strong>LinkedIn:</strong> LinkedIn Profile (URL)</p>
+            <p><strong>Preferences:</strong> Known Preferences, Entertainment (Yes/Yes with Restrictions/No), Decision Bias Profile (semicolon-separated), Follow Through (High/Medium/Low), Values, Pain Points, Notes</p>
+            <p><strong>Diageo Owners:</strong> Primary Owner Name, Primary Owner Title, Primary Owner Email, SVP, Sales Roles (JSON), Support Roles (JSON), Sales Last Check In (JSON), Support Last Check In (JSON)</p>
+            <p><strong>Timestamps:</strong> Created At, Last Modified</p>
           </div>
         </div>
       </CardContent>
