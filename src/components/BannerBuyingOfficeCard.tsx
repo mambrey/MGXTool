@@ -127,6 +127,7 @@ const KEY_COMPETITORS = [
 const getCompetitorDisplayName = (competitor: string): string => {
   // Specific name mappings
   const specificMappings: Record<string, string> = {
+    '7-eleven': '7-Eleven',
     'Bjs': 'BJs',
     'Ubereats': 'UberEats',
     'ALBSCO': 'Albertsons / Safeway',
