@@ -169,6 +169,7 @@ const getCompetitorDisplayName = (competitor: string): string => {
     'Aafes': 'AAFES',
     'Abc': 'ABC',
     'Doordash': 'DoorDash',
+    'Wfm': 'WFM',
   };
 
   // Check if there's a specific mapping
