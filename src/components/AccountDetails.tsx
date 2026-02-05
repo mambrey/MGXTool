@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare, Building, BarChart3, RefreshCw } from 'lucide-react';
+import { Building2, Users, Edit, Trash2, Plus, Phone, Mail, Calendar, CheckSquare, User, Printer, MapPin, Globe, X, ChevronDown, ChevronUp, DollarSign, TrendingUp, Package, FileText, Target, Briefcase, ShoppingCart, Truck, Bell, BellOff, MessageSquare, Building, BarChart3, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -606,7 +606,7 @@ export default function AccountDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Collapsible Sections */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'hq-influence', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
+          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'planogram', 'jbp', 'strategy', 'additional-info', 'banners', 'events', 'tasks'] : undefined}>
             
             {/* Customer Overview */}
             <AccordionItem value="overview">
@@ -907,33 +907,7 @@ export default function AccountDetails({
               </AccordionItem>
             )}
 
-            {/* HQ Level of Influence */}
-            <AccordionItem value="hq-influence">
-              <AccordionTrigger className="text-lg font-semibold">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  HQ Level of Influence
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <InfoItem label="Assortment / Shelf" value={account.influenceAssortmentShelf} />
-                      <InfoItem label="Price / Promo" value={account.influencePricePromo} />
-                      <InfoItem label="Display / Merchandising" value={account.influenceDisplayMerchandising} />
-                      <InfoItem label="Digital" value={account.influenceDigital} />
-                      <InfoItem label="eCommerce" value={account.influenceEcommerce} />
-                      <InfoItem label="In Store Events" value={account.influenceInStoreEvents} />
-                      <InfoItem label="Shrink Management" value={account.influenceShrinkManagement} />
-                      <InfoItem label="Buying / PO Ownership" value={account.influenceBuyingPOOwnership} />
-                    </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Planogram Information - NEW SEPARATE SECTION */}
+            {/* Planogram Information */}
             <AccordionItem value="planogram">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -990,7 +964,7 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* JBP Information - SEPARATE SECTION */}
+            {/* JBP Information */}
             <AccordionItem value="jbp">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -1036,32 +1010,7 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-
-            {/* Business Strategy - NEW SEPARATE ACCORDION */}
-            <AccordionItem value="business-strategy">
-              <AccordionTrigger className="text-lg font-semibold">
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  Business Strategy
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <InfoItem label="E-commerce Maturity Level" value={account.ecommerceMaturityLevel} />
-                      <InfoItem label="% of Sales from E-Commerce" value={account.ecommerceSalesPercentage ? `${account.ecommerceSalesPercentage}%` : undefined} />
-                      <InfoItem label="Fulfillment Types" value={Array.isArray(account.fulfillmentTypes) ? account.fulfillmentTypes.join(', ') : account.fulfillmentTypes} />
-                      <InfoItem label="E-commerce Partners" value={Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : account.ecommercePartners} />
-                      <InfoItem label="Category Captain" value={account.categoryCaptain} />
-                      <InfoItem label="Category Validator" value={account.categoryAdvisor} />
-                    </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Strategy and Capabilities */}
+            {/* Strategy and Capabilities - UPDATED to match AccountForm structure */}
             <AccordionItem value="strategy">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -1073,13 +1022,69 @@ export default function AccountDetails({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
+                      {/* HQ Level of Influence */}
                       <div>
-                        <h4 className="font-semibold mb-3 text-sm text-gray-700">HQ Level of Influence</h4>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          HQ Level of Influence
+                        </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Assortment / Shelf" value={account.influenceAssortmentShelf} />
+                          <InfoItem label="Private Label Emphasis" value={account.privateLabel} />
+                          <InfoItem label="Display / Merchandising" value={account.influenceDisplayMerchandising} />
+                          <InfoItem label="Are Displays Mandated" value={account.displayMandates} />
+                          <InfoItem label="Price / Promo" value={account.influencePricePromo} />
                           <InfoItem label="Pricing Strategy" value={account.pricingStrategy} />
-                          <InfoItem label="Private Label" value={account.privateLabel} />
-                          <InfoItem label="Display Mandates" value={account.displayMandates} />
+                          <InfoItem label="Ecommerce" value={account.influenceEcommerce} />
+                          <InfoItem label="Digital / Social" value={account.influenceDigital} />
+                          <InfoItem label="Buying / PO Ownership" value={account.influenceBuyingPOOwnership} />
+                          <InfoItem label="Shrink Management" value={account.influenceShrinkManagement} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Sampling & Innovation */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4" />
+                          Sampling & Innovation
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="In Store Events" value={account.influenceInStoreEvents} />
+                          <InfoItem label="Allows Wet Sampling" value={account.allowsWetSampling} />
                           <InfoItem label="Innovation Appetite" value={account.innovationAppetite} />
+                          <InfoItem label="Innovation Information Lead Time" value={account.innovationLeadTime} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* E-Commerce & Digital Operating Model */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          E-Commerce & Digital Operating Model
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="E-Commerce Maturity Level" value={account.ecommerceMaturityLevel} />
+                          <InfoItem label="% of Sales from E-Commerce" value={account.ecommerceSalesPercentage ? `${account.ecommerceSalesPercentage}%` : undefined} />
+                          <InfoItem label="Fulfillment Types" value={Array.isArray(account.fulfillmentTypes) ? account.fulfillmentTypes.join(', ') : account.fulfillmentTypes} />
+                          <InfoItem label="E-commerce Partners" value={Array.isArray(account.ecommercePartners) ? account.ecommercePartners.join(', ') : account.ecommercePartners} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Category Advisory Roles */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          Category Advisory Roles
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="Category Captain" value={account.categoryCaptain} />
+                          <InfoItem label="Category Validator" value={account.categoryAdvisor} />
                         </div>
                       </div>
                     </div>
