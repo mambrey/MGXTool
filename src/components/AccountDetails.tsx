@@ -282,6 +282,14 @@ export default function AccountDetails({
     return 1; // Default to 1 if no buying offices exist
   };
 
+  // Helper function to format ad type display - shows "Other: [custom text]" if Other is selected
+  const formatAdType = (adType: string): string => {
+    if (adType === 'Other' && account.adTypesOther) {
+      return `Other: ${account.adTypesOther}`;
+    }
+    return adType;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -740,21 +748,21 @@ export default function AccountDetails({
 
                       <Separator />
 
-                      {/* Advertising Section - NEW */}
+                      {/* Advertising Section - FIXED to use isAdvertiser and show Other custom text */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
                           <Megaphone className="w-4 h-4" />
                           Advertising
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="Advertiser" value={account.advertiser} />
+                          <InfoItem label="Advertiser" value={account.isAdvertiser} />
                           {account.adTypesDeployed && account.adTypesDeployed.length > 0 && (
                             <div className="md:col-span-2">
                               <label className="text-sm font-medium text-gray-600">Ad Types Deployed</label>
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {account.adTypesDeployed.map((adType, idx) => (
                                   <Badge key={idx} variant="secondary" className="text-xs">
-                                    {adType}
+                                    {formatAdType(adType)}
                                   </Badge>
                                 ))}
                               </div>
