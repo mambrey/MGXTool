@@ -147,19 +147,58 @@ const formatJBPAlertOptions = (options?: string[]) => {
   }).join(', ');
 };
 
+// Helper function to get display name for Key Competitors
+const getCompetitorDisplayName = (competitor: string): string => {
+  // Specific name mappings
+  const specificMappings: Record<string, string> = {
+    '7-eleven': '7-Eleven',
+    'Bjs': 'BJs',
+    'Ubereats': 'UberEats',
+    'ALBSCO': 'Albertsons / Safeway',
+    'Gopuff': 'GoPuff',
+    'Winn dixie (seg)': 'Winn Dixie',
+    'Aafes': 'AAFES',
+    'Abc': 'ABC',
+    'Doordash': 'DoorDash',
+    'Wfm': 'WFM',
+  };
+
+  // Check if there's a specific mapping
+  if (specificMappings[competitor]) {
+    return specificMappings[competitor];
+  }
+
+  // For two-word names, capitalize the first letter of the second word
+  const words = competitor.split(' ');
+  if (words.length >= 2) {
+    return words.map((word, index) => {
+      if (index === 0) {
+        return word;
+      }
+      if (word === '&' || word === '/') {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
+  }
+
+  return competitor;
+};
+
 // Helper function to format key competitors
 const formatKeyCompetitors = (competitors: string | string[] | undefined): string => {
   if (!competitors) return '';
   
-  // If it's already a string, return it as is
-  if (typeof competitors === 'string') return competitors;
-  
-  // If it's an array, join with comma and space
+  let competitorArray: string[];
   if (Array.isArray(competitors)) {
-    return competitors.join(', ');
+    competitorArray = competitors;
+  } else {
+    competitorArray = competitors.includes(',') 
+      ? competitors.split(',').map(c => c.trim())
+      : [competitors];
   }
   
-  return '';
+  return competitorArray.map(c => getCompetitorDisplayName(c)).join(', ');
 };
 
 export default function AccountDetails({ 
@@ -172,34 +211,26 @@ export default function AccountDetails({
   onViewContact,
   onUpdateAccount
 }: AccountDetailsProps) {
-  // Get primary contact for this account
   const primaryContact = account.primaryContactId 
     ? contacts.find(c => c.id === account.primaryContactId)
     : contacts.find(c => c.contactType === 'Primary');
 
-  // Find the relationship owner - look for any contact with primaryDiageoRelationshipOwners.ownerName set
   const relationshipOwnerContact = contacts.find(c => c.primaryDiageoRelationshipOwners?.ownerName);
   const relationshipOwnerName = relationshipOwnerContact?.primaryDiageoRelationshipOwners?.ownerName || 'Unassigned';
 
-  // Get preferred contact info for primary contact
   const primaryContactInfo = primaryContact ? getPreferredContactInfo(primaryContact) : null;
 
   const [expandAll, setExpandAll] = useState(false);
-  
-  // Selected contact state for highlighting in the sidebar
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-  // Market data state using Financial Modeling Prep hook
   const { marketData, loading: marketLoading, error: marketError, fetchMarketData } = useFinancialModelingPrep();
 
-  // Fetch market data when account has a ticker symbol
   useEffect(() => {
     if (account.tickerSymbol) {
       fetchMarketData(account.tickerSymbol);
     }
   }, [account.tickerSymbol]);
 
-  // Helper function to format large numbers
   const formatLargeNumber = (value: string | number) => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(num)) return 'N/A';
@@ -211,14 +242,12 @@ export default function AccountDetails({
     return `$${num.toFixed(2)}`;
   };
 
-  // Helper function to format percentage
   const formatPercentage = (value: string | number) => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(num)) return 'N/A';
     return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
 
-  // Helper function to safely format price - handles 'N/A' strings
   const formatPrice = (value: string) => {
     if (value === 'N/A') return 'N/A';
     const num = parseFloat(value);
@@ -226,7 +255,6 @@ export default function AccountDetails({
     return `$${num.toFixed(2)}`;
   };
 
-  // Helper function to format date for display
   const formatDateForDisplay = (dateString: string | undefined) => {
     if (!dateString) return 'Not set';
     try {
@@ -254,7 +282,6 @@ export default function AccountDetails({
     );
   };
 
-  // Helper to display spirits outlets by state
   const renderSpiritsOutletsByState = () => {
     if (!account.spiritsOutletsByState || account.spiritsOutletsByState.length === 0) return null;
     
@@ -274,15 +301,13 @@ export default function AccountDetails({
     );
   };
 
-  // Calculate the total buying offices count
   const getTotalBuyingOfficesCount = () => {
     if (account.bannerBuyingOffices && account.bannerBuyingOffices.length > 0) {
       return account.bannerBuyingOffices.length;
     }
-    return 1; // Default to 1 if no buying offices exist
+    return 1;
   };
 
-  // Helper function to format ad type display - shows "Other: [custom text]" if Other is selected
   const formatAdType = (adType: string): string => {
     if (adType === 'Other' && account.adTypesOther) {
       return `Other: ${account.adTypesOther}`;
@@ -451,7 +476,6 @@ export default function AccountDetails({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-4">
-                      {/* Address with embedded Google Map */}
                       {account.address && (
                         <div>
                           <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -463,7 +487,6 @@ export default function AccountDetails({
                         </div>
                       )}
                       
-                      {/* Clickable Company Website */}
                       {account.website && (
                         <div>
                           <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -487,7 +510,7 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Market Snapshot - SEPARATE ACCORDION SECTION */}
+            {/* Market Snapshot */}
             {account.tickerSymbol && (
               <AccordionItem value="market-snapshot">
                 <AccordionTrigger className="text-lg font-semibold">
@@ -518,23 +541,19 @@ export default function AccountDetails({
                         </div>
                       )}
 
-                      {/* Show error as warning banner if there's an error BUT still show data if available */}
                       {marketError && !marketLoading && (
                         <div className="p-3 mb-4 bg-yellow-50 rounded-lg border border-yellow-200">
                           <p className="text-xs text-yellow-800">{marketError}</p>
                         </div>
                       )}
 
-                      {/* Show data if available, regardless of error state */}
                       {marketData && !marketLoading && (
                         <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                          {/* Company Name and Symbol */}
                           <div className="mb-4">
                             <h5 className="text-lg font-semibold text-gray-900">{marketData.name}</h5>
                             <p className="text-sm text-gray-600">{marketData.symbol} • {marketData.currency}</p>
                           </div>
 
-                          {/* Current Price and Change */}
                           <div className="grid grid-cols-2 gap-4 mb-4">
                             <div>
                               <label className="text-xs font-medium text-gray-600 flex items-center gap-1">
@@ -556,7 +575,6 @@ export default function AccountDetails({
                             </div>
                           </div>
 
-                          {/* Additional Market Metrics */}
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-blue-200">
                             <div>
                               <label className="text-xs font-medium text-gray-600">Market Cap</label>
@@ -636,7 +654,6 @@ export default function AccountDetails({
                             )}
                           </div>
 
-                          {/* Last Updated */}
                           <div className="mt-3 pt-3 border-t border-blue-200">
                             <p className="text-xs text-gray-500">
                               Last updated: {new Date(marketData.lastUpdated).toLocaleString()}
@@ -689,7 +706,6 @@ export default function AccountDetails({
                               )}
                             </div>
 
-                            {/* Category-Specific Reset Windows */}
                             {account.hasDifferentResetWindows === 'Yes' && account.categoryResetWindows && account.categoryResetWindows.length > 0 && (
                               <div className="mt-4">
                                 <label className="text-sm font-medium text-gray-600 mb-2 block">Category-Specific Reset Windows</label>
@@ -714,7 +730,7 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Strategy and Capabilities - MOVED BEFORE Strategic Engagement Plan */}
+            {/* Strategy and Capabilities */}
             <AccordionItem value="strategy">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -748,7 +764,7 @@ export default function AccountDetails({
 
                       <Separator />
 
-                      {/* Advertising Section - FIXED to use isAdvertiser and show Other custom text */}
+                      {/* Advertising Section */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
                           <Megaphone className="w-4 h-4" />
@@ -822,7 +838,7 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Strategic Engagement Plan - RENAMED from JBP Information */}
+            {/* Strategic Engagement Plan */}
             <AccordionItem value="strategic-engagement">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -926,9 +942,6 @@ export default function AccountDetails({
                 </Card>
               </AccordionContent>
             </AccordionItem>
-
-            {/* Note: Banners/Buying Offices, Important Dates, and Account Tasks sections would continue here */}
-            {/* These sections remain unchanged from the original file */}
           </Accordion>
         </div>
 
