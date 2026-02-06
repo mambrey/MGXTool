@@ -348,7 +348,7 @@ export default function AccountDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Collapsible Sections */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'planogram', 'jbp', 'strategy', 'additional-info'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'planogram', 'jbp', 'strategy', 'additional-info'] : undefined}>
+          <Accordion type="multiple" defaultValue={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'planogram', 'strategic-engagement', 'strategy', 'additional-info'] : ['overview']} value={expandAll ? ['overview', 'parent-info', 'market-snapshot', 'planogram', 'strategic-engagement', 'strategy', 'additional-info'] : undefined}>
             
             {/* Customer Overview */}
             <AccordionItem value="overview">
@@ -706,46 +706,66 @@ export default function AccountDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* JBP Information */}
-            <AccordionItem value="jbp">
+            {/* Strategic Engagement Plan - RENAMED from JBP Information */}
+            <AccordionItem value="strategic-engagement">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  JBP Information
+                  Strategic Engagement Plan
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <InfoItem label="JBP Customer" value={account.isJBP ? 'Yes' : 'No'} />
-                      {account.isJBP && (
-                        <>
-                          <InfoItem label="Last JBP" value={formatDateForDisplay(account.lastJBPDate)} />
-                          <InfoItem label="Next JBP" value={formatDateForDisplay(account.nextJBPDate)} />
-                          {account.nextJBPDate && (
+                    <div className="space-y-6">
+                      {/* Engagement Type Section */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          Engagement Type
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="In-Person Visit" value={account.inPersonVisit} />
+                          <InfoItem label="Phone/Email Communication" value={account.phoneEmailCommunication} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* JBP Information Section */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="JBP Customer" value={account.isJBP ? 'Yes' : 'No'} />
+                          {account.isJBP && (
                             <>
-                              <div>
-                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                  <Bell className="w-4 h-4" />
-                                  Alert Status
-                                </label>
-                                <div className="mt-1">
-                                  <Badge variant={account.nextJBPAlert ? "default" : "secondary"}>
-                                    {account.nextJBPAlert ? "Enabled" : "Disabled"}
-                                  </Badge>
-                                </div>
-                              </div>
-                              {account.nextJBPAlert && account.nextJBPAlertOptions && account.nextJBPAlertOptions.length > 0 && (
-                                <div className="md:col-span-2">
-                                  <label className="text-sm font-medium text-gray-600">Alert Options</label>
-                                  <p className="text-sm mt-1">{formatJBPAlertOptions(account.nextJBPAlertOptions)}</p>
-                                </div>
+                              <InfoItem label="Last JBP" value={formatDateForDisplay(account.lastJBPDate)} />
+                              <InfoItem label="Next JBP" value={formatDateForDisplay(account.nextJBPDate)} />
+                              {account.nextJBPDate && (
+                                <>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                      <Bell className="w-4 h-4" />
+                                      Alert Status
+                                    </label>
+                                    <div className="mt-1">
+                                      <Badge variant={account.nextJBPAlert ? "default" : "secondary"}>
+                                        {account.nextJBPAlert ? "Enabled" : "Disabled"}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  {account.nextJBPAlert && account.nextJBPAlertOptions && account.nextJBPAlertOptions.length > 0 && (
+                                    <div className="md:col-span-2">
+                                      <label className="text-sm font-medium text-gray-600">Alert Options</label>
+                                      <p className="text-sm mt-1">{formatJBPAlertOptions(account.nextJBPAlertOptions)}</p>
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </>
                           )}
-                        </>
-                      )}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

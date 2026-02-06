@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, MapPin, Globe, Calendar, Target, Package, Truck, TrendingUp, ShoppingCart, FileText, User, Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
+import { Building, MapPin, Globe, Calendar, Target, Package, Truck, TrendingUp, ShoppingCart, FileText, User, Mail, Phone, MessageCircle, ExternalLink, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -244,22 +244,41 @@ export default function BannerBuyingOfficeDetails({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      {/* JBP Information */}
-                      {banner.isJBP && (
-                        <div>
-                          <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
+                      {/* Strategic Engagement Plan - RENAMED from JBP Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          Strategic Engagement Plan
+                        </h4>
+                        
+                        {/* Engagement Type Section */}
+                        <div className="mb-4">
+                          <h5 className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            Engagement Type
+                          </h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InfoItem label="JBP Customer" value="Yes" />
-                            {banner.lastJBPDate && <InfoItem label="Last JBP" value={banner.lastJBPDate} />}
-                            {banner.nextJBPDate && <InfoItem label="Next JBP" value={banner.nextJBPDate} />}
+                            <InfoItem label="In-Person Visit" value={banner.engagementInPersonVisit} />
+                            <InfoItem label="Phone/Email Communication" value={banner.engagementPhoneEmail} />
                           </div>
                         </div>
-                      )}
+
+                        {/* JBP Information */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="JBP Customer" value={banner.isJBP ? "Yes" : "No"} />
+                          {banner.isJBP && (
+                            <>
+                              {banner.lastJBPDate && <InfoItem label="Last JBP" value={banner.lastJBPDate} />}
+                              {banner.nextJBPDate && <InfoItem label="Next JBP" value={banner.nextJBPDate} />}
+                            </>
+                          )}
+                        </div>
+                      </div>
 
                       {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
                         banner.privateLabel || banner.innovationAppetite || banner.displayMandates) && (
                         <>
-                          {banner.isJBP && <Separator />}
+                          <Separator />
                           <div>
                             <h4 className="font-semibold mb-3 text-sm text-gray-700">Business Strategy</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
