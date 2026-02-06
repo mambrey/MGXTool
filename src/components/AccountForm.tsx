@@ -146,7 +146,6 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-// UPDATED: Key Competitors list with internal values
 const KEY_COMPETITORS = [
   '7-eleven', 'Aafes', 'Abc', 'ALBSCO', 'Bevmo/Go-Puff', 'Bjs', 'Caseys', 'Circle k',
   'Coast guard', 'Coborns', 'Costco', 'Cub', 'CVS', 'Doordash', 'El super',
@@ -167,9 +166,16 @@ const AD_TYPES = [
   'Mobile App Promotions'
 ];
 
-// Helper function to get display name for Key Competitors
+const ENGAGEMENT_FREQUENCY_OPTIONS = [
+  'Weekly',
+  'Biweekly',
+  'Monthly',
+  'Quarterly',
+  'Semi-Annually',
+  'Annually'
+];
+
 const getCompetitorDisplayName = (competitor: string): string => {
-  // Specific name mappings
   const specificMappings: Record<string, string> = {
     '7-eleven': '7-Eleven',
     'Bjs': 'BJs',
@@ -183,22 +189,16 @@ const getCompetitorDisplayName = (competitor: string): string => {
     'Wfm': 'WFM',
   };
 
-  // Check if there's a specific mapping
   if (specificMappings[competitor]) {
     return specificMappings[competitor];
   }
 
-  // For two-word names, capitalize the first letter of the second word
-  // and make the rest lowercase
   const words = competitor.split(' ');
   if (words.length >= 2) {
     return words.map((word, index) => {
       if (index === 0) {
-        // Keep first word as-is (it's already properly capitalized)
         return word;
       }
-      // For subsequent words, capitalize first letter, lowercase the rest
-      // Handle special characters like & and /
       if (word === '&' || word === '/') {
         return word;
       }
@@ -206,7 +206,6 @@ const getCompetitorDisplayName = (competitor: string): string => {
     }).join(' ');
   }
 
-  // Single word - return as-is
   return competitor;
 };
 
@@ -279,6 +278,8 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     nextJBPDate: '',
     nextJBPAlert: false,
     nextJBPAlertOptions: [],
+    inPersonVisit: '',
+    phoneEmailCommunication: '',
     pricingStrategy: 'none',
     privateLabel: 'none',
     innovationAppetite: '',
@@ -337,22 +338,18 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const accountContacts = account ? contacts.filter(contact => contact.accountId === account.id) : [];
   const [jbpValidationError, setJbpValidationError] = useState<string>('');
 
-  // State for custom alert days
   const [jbpCustomDays, setJbpCustomDays] = useState<string>('');
   const [eventCustomDays, setEventCustomDays] = useState<{[key: string]: string}>({});
 
-  // State for selected key competitors (multi-select)
   const [selectedKeyCompetitors, setSelectedKeyCompetitors] = useState<string[]>(() => {
     if (!formData.keyCompetitors) return [];
     if (Array.isArray(formData.keyCompetitors)) return formData.keyCompetitors;
-    // Handle legacy string format - convert to array
     if (typeof formData.keyCompetitors === 'string' && formData.keyCompetitors) {
       return [formData.keyCompetitors];
     }
     return [];
   });
 
-  // State for ad types deployed
   const [selectedAdTypes, setSelectedAdTypes] = useState<string[]>(() => {
     if (!formData.adTypesDeployed) return [];
     if (Array.isArray(formData.adTypesDeployed)) return formData.adTypesDeployed;
@@ -967,7 +964,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     }
   };
 
-  // Key Competitors multi-select functions
   const toggleKeyCompetitor = (competitor: string) => {
     setSelectedKeyCompetitors(prev => {
       if (prev.includes(competitor)) {
@@ -990,7 +986,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     setSelectedKeyCompetitors([]);
   };
 
-  // Ad Types multi-select functions
   const toggleAdType = (adType: string) => {
     setSelectedAdTypes(prev => {
       if (prev.includes(adType)) {
@@ -1133,7 +1128,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     );
   };
 
-    const isJBPCustomChecked = (formData.nextJBPAlertOptions || []).some(opt => opt.startsWith('custom_')) || jbpCustomDays !== '';
+  const isJBPCustomChecked = (formData.nextJBPAlertOptions || []).some(opt => opt.startsWith('custom_')) || jbpCustomDays !== '';
   
   const getEventCustomChecked = (event: CustomerEvent) => {
     return (event.alertOptions || []).some(opt => opt.startsWith('custom_'));
@@ -1182,7 +1177,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
   const isAllAffectedCategoriesSelected = selectedAffectedCategories.length === AFFECTED_CATEGORIES.length;
   const isAllKeyCompetitorsSelected = selectedKeyCompetitors.length === KEY_COMPETITORS.length;
 
-  // Filter subchannel options based on selected channel
   const getFilteredSubChannels = () => {
     const channel = formData.channel;
     
@@ -1196,7 +1190,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       return ['DoorDash', 'Instacart', 'UberEats', 'Other'];
     }
     
-    // If no channel selected, show all options
     return ['Bar', 'Casual Dining', 'Club', 'C-Store', 'DoorDash', 'Drug', 'Ecommerce', 
             'Fine Dining', 'Grocery', 'Hotel/Resort', 'Instacart', 'Liquor', 'Mass', 
             'Military', 'Night club', 'Regional Grocery', 'UberEats', 'Other'];
@@ -1204,7 +1197,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
   const filteredSubChannels = getFilteredSubChannels();
 
-  // Clear subchannel if it's not in the filtered list when channel changes
   useEffect(() => {
     if (formData.channel && formData.subChannel) {
       const validSubChannels = getFilteredSubChannels();
@@ -1485,7 +1477,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               HQ Level of Influence
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Row 1: Assortment/Shelf + Private Label Emphasis */}
               <div>
                 <Label className="text-xs font-medium">Assortment / Shelf</Label>
                 <Select 
@@ -1522,7 +1513,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Row 2: Display/Merchandising + Are Displays Mandated */}
               <div>
                 <Label className="text-xs font-medium">Display / Merchandising</Label>
                 <Select 
@@ -1585,7 +1575,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Row 3: Price/Promo + Pricing Strategy */}
               <div>
                 <Label className="text-xs font-medium">Price / Promo</Label>
                 <Select 
@@ -1622,7 +1611,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Row 4: Ecommerce + Digital/Social */}
               <div>
                 <Label className="text-xs font-medium">Ecommerce</Label>
                 <Select 
@@ -1659,7 +1647,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Row 5: Buying/PO Ownership + Shrink Management - UPDATED OPTIONS */}
               <div>
                 <Label className="text-xs font-medium">Buying / PO Ownership</Label>
                 <Select 
@@ -1698,14 +1685,12 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             </div>
           </div>
 
-          {/* Sampling & Innovation Section - FIXED: Now outside the grid */}
           <div className="pt-4 border-t">
             <Label className="text-sm font-medium flex items-center gap-2 mb-4">
               <Sparkles className="w-4 h-4" />
               Sampling & Innovation
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* In Store Events */}
               <div>
                 <Label className="text-xs font-medium">In Store Events</Label>
                 <Select 
@@ -1724,7 +1709,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Allows Wet Sampling */}
               <div>
                 <Label className="text-xs font-medium">Allows Wet Sampling</Label>
                 <Select 
@@ -1743,7 +1727,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Innovation Appetite */}
               <div>
                 <Label className="text-xs font-medium">Innovation Appetite</Label>
                 <Select 
@@ -1764,7 +1747,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Innovation Information Lead Time */}
               <div>
                 <Label className="text-xs font-medium">Innovation Information Lead Time</Label>
                 <Select 
@@ -1787,7 +1769,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             </div>
           </div>
 
-          {/* E-Commerce & Digital Operating Model - Static Label */}
           <div className="pt-4 border-t">
             <Label className="text-sm font-medium flex items-center gap-2">
               <Building2 className="w-4 h-4" />
@@ -1795,7 +1776,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             </Label>
           </div>
 
-          {/* Business Strategy Section - Moved Here */}
           <div className="pt-4 space-y-4">
             <div>
               <Label className="text-xs font-medium">E-Commerce Maturity Level</Label>
@@ -1944,7 +1924,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardContent>
       </Card>
 
-      {/* PLANOGRAM INFORMATION - NEW SEPARATE CARD */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -2145,7 +2124,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         )}
       </Card>
 
-      {/* SIMPLIFIED JBP SECTION */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -2167,9 +2145,52 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardHeader>
         {formData.isJBP && (
           <CardContent className="space-y-4">
-            {/* UPDATED: Horizontal Grid Layout for Advertiser and Ad Types */}
+            <div className="pt-4 border-t">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Engagement Type
+              </Label>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Advertiser Dropdown - Left Column */}
+              <div>
+                <Label className="text-xs font-medium">In-Person Visit</Label>
+                <Select 
+                  value={formData.inPersonVisit || ''} 
+                  onValueChange={(value) => updateField('inPersonVisit', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    {ENGAGEMENT_FREQUENCY_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium">Phone/Email Communication</Label>
+                <Select 
+                  value={formData.phoneEmailCommunication || ''} 
+                  onValueChange={(value) => updateField('phoneEmailCommunication', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    {ENGAGEMENT_FREQUENCY_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium">Advertiser</Label>
                 <Select 
@@ -2187,7 +2208,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {/* Ad Types Deployed - Right Column (Conditional) */}
               {formData.isAdvertiser === 'Yes' && (
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Ad Types Deployed (select all that apply)</Label>
@@ -2205,7 +2225,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                       </div>
                     ))}
                     
-                    {/* Other option with free text field */}
                     <div className="flex items-start space-x-2 pt-2 border-t">
                       <Checkbox
                         id="adtype-other"
@@ -2314,11 +2333,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                         checked={isJBPCustomChecked}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            // Set a default value of 1 to enable the input
                             setJbpCustomDays('1');
                             handleJBPCustomDaysChange('1');
                           } else {
-                            // When unchecking, clear everything
                             setJbpCustomDays('');
                             const filteredOptions = (formData.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
                             updateField('nextJBPAlertOptions', filteredOptions);
@@ -2336,12 +2353,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                         onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
                         className="w-20 h-7 text-xs"
                         disabled={!isJBPCustomChecked}
-                        onClick={() => {
-                          // Auto-check the checkbox when clicking the input
-                          if (!isJBPCustomChecked) {
-                            // Trigger checkbox programmatically - this is handled by the disabled state
-                          }
-                        }}
                       />
                       <span className="text-sm text-gray-600">days before</span>
                     </div>
@@ -2377,7 +2388,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
             />
           </div>
           
-          {/* UPDATED: Key Competitors - Now Multi-Select with Checkboxes */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label className="text-xs font-medium">Key Competitors</Label>

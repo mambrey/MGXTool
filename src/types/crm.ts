@@ -60,6 +60,8 @@ export interface Account {
   nextJBPDate?: string;
   nextJBPAlert?: boolean;
   nextJBPAlertOptions?: string[];
+  inPersonVisit?: string;
+  phoneEmailCommunication?: string;
   isAdvertiser?: string;
   adTypesDeployed?: string[];
   adTypesOther?: string;
