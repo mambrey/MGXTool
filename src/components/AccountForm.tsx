@@ -1478,6 +1478,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               HQ Level of Influence
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Row 1: Assortment / Shelf | Private Label Emphasis */}
               <div>
                 <Label className="text-xs font-medium">Assortment / Shelf</Label>
                 <Select 
@@ -1514,6 +1515,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Row 2: Display / Merchandising | Are Displays Mandated */}
               <div>
                 <Label className="text-xs font-medium">Display / Merchandising</Label>
                 <Select 
@@ -1576,6 +1578,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Row 3: Price / Promo | Pricing Strategy */}
               <div>
                 <Label className="text-xs font-medium">Price / Promo</Label>
                 <Select 
@@ -1612,8 +1615,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Row 4: Advertiser | Ad Types Deployed (MOVED HERE) */}
               <div>
-                <Label className="text-sm font-medium">Advertiser</Label>
+                <Label className="text-xs font-medium">Advertiser</Label>
                 <Select 
                   value={formData.isAdvertiser || ''} 
                   onValueChange={(value) => updateField('isAdvertiser', value === 'clear' ? '' : value)}
@@ -1629,9 +1633,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
-              {formData.isAdvertiser === 'Yes' && (
+              {formData.isAdvertiser === 'Yes' ? (
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Ad Types Deployed (select all that apply)</Label>
+                  <Label className="text-xs font-medium mb-2 block">Ad Types Deployed (select all that apply)</Label>
                   <div className="p-3 border rounded-lg bg-gray-50 space-y-2 max-h-64 overflow-y-auto">
                     {AD_TYPES.map(adType => (
                       <div key={adType} className="flex items-center space-x-2">
@@ -1668,8 +1672,11 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                     </div>
                   </div>
                 </div>
+              ) : (
+                <div></div>
               )}
 
+              {/* Row 5: Ecommerce | Digital / Social */}
               <div>
                 <Label className="text-xs font-medium">Ecommerce</Label>
                 <Select 
@@ -1706,6 +1713,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                 </Select>
               </div>
 
+              {/* Row 6: Buying / PO Ownership | Shrink Management */}
               <div>
                 <Label className="text-xs font-medium">Buying / PO Ownership</Label>
                 <Select 
