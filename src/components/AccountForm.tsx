@@ -2193,204 +2193,190 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-              Strategic Engagement Plan
-            </CardTitle>
-            <div className="flex items-center space-x-2">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+            Strategic Engagement Plan
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="pt-4 border-t">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Engagement Type
+            </Label>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs font-medium">In-Person Visit</Label>
+              <Select 
+                value={formData.inPersonVisit || ''} 
+                onValueChange={(value) => updateField('inPersonVisit', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  {ENGAGEMENT_FREQUENCY_OPTIONS.map(option => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium">Phone/Email Communication</Label>
+              <Select 
+                value={formData.phoneEmailCommunication || ''} 
+                onValueChange={(value) => updateField('phoneEmailCommunication', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  {ENGAGEMENT_FREQUENCY_OPTIONS.map(option => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t">
+            <div className="flex items-center space-x-2 mb-4">
               <Checkbox
-                id="hasAPlan"
-                checked={formData.hasAPlan}
-                onCheckedChange={(checked) => updateField('hasAPlan', checked as boolean)}
+                id="isJBP"
+                checked={formData.isJBP}
+                onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
               />
-              <Label htmlFor="hasAPlan" className="text-sm font-medium cursor-pointer">
-                Has a Plan
+              <Label htmlFor="isJBP" className="text-sm font-medium cursor-pointer">
+                JBP Customer
               </Label>
             </div>
           </div>
-        </CardHeader>
-        {formData.hasAPlan && (
-          <CardContent className="space-y-4">
-            <div className="pt-4 border-t">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Engagement Type
-              </Label>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs font-medium">In-Person Visit</Label>
-                <Select 
-                  value={formData.inPersonVisit || ''} 
-                  onValueChange={(value) => updateField('inPersonVisit', value === 'clear' ? '' : value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                    {ENGAGEMENT_FREQUENCY_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-medium">Phone/Email Communication</Label>
-                <Select 
-                  value={formData.phoneEmailCommunication || ''} 
-                  onValueChange={(value) => updateField('phoneEmailCommunication', value === 'clear' ? '' : value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                    {ENGAGEMENT_FREQUENCY_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t">
-              <div className="flex items-center space-x-2 mb-4">
-                <Checkbox
-                  id="isJBP"
-                  checked={formData.isJBP}
-                  onCheckedChange={(checked) => updateField('isJBP', checked as boolean)}
-                />
-                <Label htmlFor="isJBP" className="text-sm font-medium cursor-pointer">
-                  JBP Customer
-                </Label>
-              </div>
-            </div>
-
-            {formData.isJBP && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium">Last JBP</Label>
-                    <Input
-                      type="date"
-                      value={formatDateForInput(formData.lastJBPDate || '')}
-                      onChange={(e) => updateField('lastJBPDate', e.target.value)}
-                      placeholder="mm/dd/yyyy"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Next JBP *</Label>
-                    <Input
-                      type="date"
-                      value={formatDateForInput(formData.nextJBPDate || '')}
-                      onChange={(e) => updateField('nextJBPDate', e.target.value)}
-                      placeholder="mm/dd/yyyy"
-                      className="mt-1"
-                    />
-                    {jbpValidationError && (
-                      <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
-                    )}
-                  </div>
+          {formData.isJBP && (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Last JBP</Label>
+                  <Input
+                    type="date"
+                    value={formatDateForInput(formData.lastJBPDate || '')}
+                    onChange={(e) => updateField('lastJBPDate', e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    className="mt-1"
+                  />
                 </div>
-                
-                <div className="space-y-3 pt-2 border-t border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-orange-600" />
-                      <Label htmlFor="nextjbp-alert" className="text-sm font-medium cursor-pointer">
-                        Enable Alert
-                      </Label>
-                    </div>
-                    <Switch
-                      id="nextjbp-alert"
-                      checked={formData.nextJBPAlert || false}
-                      onCheckedChange={(checked) => updateField('nextJBPAlert', checked)}
-                    />
-                  </div>
-                  
-                  {formData.nextJBPAlert && (
-                    <div className="space-y-2 pl-6">
-                      <Label className="text-sm text-gray-600">
-                        Alert me:
-                      </Label>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="jbp-30-days"
-                            checked={(formData.nextJBPAlertOptions || []).includes('30_days_before')}
-                            onCheckedChange={() => handleToggleJBPAlertOption('30_days_before')}
-                          />
-                          <Label htmlFor="jbp-30-days" className="text-sm font-normal cursor-pointer">
-                            30 Days Before
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="jbp-7-days"
-                            checked={(formData.nextJBPAlertOptions || []).includes('7_days_before')}
-                            onCheckedChange={() => handleToggleJBPAlertOption('7_days_before')}
-                          />
-                          <Label htmlFor="jbp-7-days" className="text-sm font-normal cursor-pointer">
-                            7 Days Before
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="jbp-1-day"
-                            checked={(formData.nextJBPAlertOptions || []).includes('1_day_before')}
-                            onCheckedChange={() => handleToggleJBPAlertOption('1_day_before')}
-                          />
-                          <Label htmlFor="jbp-1-day" className="text-sm font-normal cursor-pointer">
-                            1 Day Before
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="jbp-custom"
-                            checked={isJBPCustomChecked}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setJbpCustomDays('1');
-                                handleJBPCustomDaysChange('1');
-                              } else {
-                                setJbpCustomDays('');
-                                const filteredOptions = (formData.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
-                                updateField('nextJBPAlertOptions', filteredOptions);
-                              }
-                            }}
-                          />
-                          <Label htmlFor="jbp-custom" className="text-sm font-normal cursor-pointer">
-                            Custom:
-                          </Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            placeholder="days"
-                            value={jbpCustomDays}
-                            onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
-                            className="w-20 h-7 text-xs"
-                            disabled={!isJBPCustomChecked}
-                          />
-                          <span className="text-sm text-gray-600">days before</span>
-                        </div>
-                      </div>
-                      {(formData.nextJBPAlertOptions || []).length > 0 && (
-                        <p className="text-xs text-gray-500">
-                          You'll receive {(formData.nextJBPAlertOptions || []).length} alert{(formData.nextJBPAlertOptions || []).length !== 1 ? 's' : ''} for this date
-                        </p>
-                      )}
-                    </div>
+                <div>
+                  <Label className="text-sm font-medium">Next JBP *</Label>
+                  <Input
+                    type="date"
+                    value={formatDateForInput(formData.nextJBPDate || '')}
+                    onChange={(e) => updateField('nextJBPDate', e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    className="mt-1"
+                  />
+                  {jbpValidationError && (
+                    <p className="text-xs text-red-600 mt-1">{jbpValidationError}</p>
                   )}
                 </div>
-              </>
-            )}
-          </CardContent>
-        )}
+              </div>
+              
+              <div className="space-y-3 pt-2 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-orange-600" />
+                    <Label htmlFor="nextjbp-alert" className="text-sm font-medium cursor-pointer">
+                      Enable Alert
+                    </Label>
+                  </div>
+                  <Switch
+                    id="nextjbp-alert"
+                    checked={formData.nextJBPAlert || false}
+                    onCheckedChange={(checked) => updateField('nextJBPAlert', checked)}
+                  />
+                </div>
+                
+                {formData.nextJBPAlert && (
+                  <div className="space-y-2 pl-6">
+                    <Label className="text-sm text-gray-600">
+                      Alert me:
+                    </Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-30-days"
+                          checked={(formData.nextJBPAlertOptions || []).includes('30_days_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('30_days_before')}
+                        />
+                        <Label htmlFor="jbp-30-days" className="text-sm font-normal cursor-pointer">
+                          30 Days Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-7-days"
+                          checked={(formData.nextJBPAlertOptions || []).includes('7_days_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('7_days_before')}
+                        />
+                        <Label htmlFor="jbp-7-days" className="text-sm font-normal cursor-pointer">
+                          7 Days Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-1-day"
+                          checked={(formData.nextJBPAlertOptions || []).includes('1_day_before')}
+                          onCheckedChange={() => handleToggleJBPAlertOption('1_day_before')}
+                        />
+                        <Label htmlFor="jbp-1-day" className="text-sm font-normal cursor-pointer">
+                          1 Day Before
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="jbp-custom"
+                          checked={isJBPCustomChecked}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setJbpCustomDays('1');
+                              handleJBPCustomDaysChange('1');
+                            } else {
+                              setJbpCustomDays('');
+                              const filteredOptions = (formData.nextJBPAlertOptions || []).filter(opt => !opt.startsWith('custom_'));
+                              updateField('nextJBPAlertOptions', filteredOptions);
+                            }
+                          }}
+                        />
+                        <Label htmlFor="jbp-custom" className="text-sm font-normal cursor-pointer">
+                          Custom:
+                        </Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="days"
+                          value={jbpCustomDays}
+                          onChange={(e) => handleJBPCustomDaysChange(e.target.value)}
+                          className="w-20 h-7 text-xs"
+                          disabled={!isJBPCustomChecked}
+                        />
+                        <span className="text-sm text-gray-600">days before</span>
+                      </div>
+                    </div>
+                    {(formData.nextJBPAlertOptions || []).length > 0 && (
+                      <p className="text-xs text-gray-500">
+                        You'll receive {(formData.nextJBPAlertOptions || []).length} alert{(formData.nextJBPAlertOptions || []).length !== 1 ? 's' : ''} for this date
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </CardContent>
       </Card>
 
       <Card>
