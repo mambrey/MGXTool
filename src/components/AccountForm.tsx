@@ -2119,7 +2119,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-              JBP (Joint Business Plan)
+              Strategic Engagement Plan
             </CardTitle>
             <div className="flex items-center space-x-2">
               <Checkbox

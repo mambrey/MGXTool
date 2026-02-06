@@ -115,7 +115,7 @@ The Alert System provides comprehensive notification management:
   - 🎂 Birthday alerts (7-90 days advance notice)
   - 📞 Next contact reminders (1-30 days advance notice)
   - ✅ Task due dates (1-14 days advance notice)
-  - 📊 JBP (Joint Business Plan) reminders (7-90 days advance notice)
+  - 📊 Strategic Engagement Plan reminders (7-90 days advance notice)
   - 👤 Contact event alerts (1-30 days advance notice)
   - 🏢 Account event alerts (1-30 days advance notice)
 

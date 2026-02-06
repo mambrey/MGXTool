@@ -171,7 +171,7 @@ interface WelcomeScreenProps {
 - Industry categorization
 - Revenue tracking
 - Account owner assignment
-- JBP (Joint Business Plan) tracking
+- Strategic Engagement Plan tracking
 - Customer event management with alerts
 
 ### 4. ContactForm.tsx

@@ -1,7 +1,7 @@
 # Account Form Multi-Selection Alert System Update
 
 ## Overview
-Successfully extended the multi-selection alert functionality to the Account Form, covering both Key Customer Events and JBP (Joint Business Plan) Alerts. This matches the implementation in the Contact Form.
+Successfully extended the multi-selection alert functionality to the Account Form, covering both Key Customer Events and Strategic Engagement Plan Alerts. This matches the implementation in the Contact Form.
 
 ## Changes Made
 
@@ -44,7 +44,7 @@ Successfully extended the multi-selection alert functionality to the Account For
 ## Alert Types Updated
 
 1. **Key Customer Events** - Account-level important dates with multi-select alerts
-2. **JBP (Joint Business Plan) Alerts** - Business planning date reminders (data structure ready, UI to be implemented separately if needed)
+2. **Strategic Engagement Plan Alerts** - Business planning date reminders (data structure ready, UI to be implemented separately if needed)
 
 ## User Experience
 
