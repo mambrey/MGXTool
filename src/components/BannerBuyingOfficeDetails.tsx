@@ -53,6 +53,68 @@ const formatJBPAlertOptions = (options?: string[]) => {
   }).join(', ');
 };
 
+// Helper function to get display name for Key Competitors
+const getCompetitorDisplayName = (competitor: string): string => {
+  // Specific name mappings
+  const specificMappings: Record<string, string> = {
+    '7-eleven': '7-Eleven',
+    'Bjs': 'BJs',
+    'Ubereats': 'UberEats',
+    'ALBSCO': 'Albertsons / Safeway',
+    'Gopuff': 'GoPuff',
+    'Winn dixie (seg)': 'Winn Dixie',
+    'Aafes': 'AAFES',
+    'Abc': 'ABC',
+    'Doordash': 'DoorDash',
+    'Wfm': 'WFM',
+  };
+
+  // Check if there's a specific mapping
+  if (specificMappings[competitor]) {
+    return specificMappings[competitor];
+  }
+
+  // For two-word names, capitalize the first letter of the second word
+  // and make the rest lowercase
+  const words = competitor.split(' ');
+  if (words.length >= 2) {
+    return words.map((word, index) => {
+      if (index === 0) {
+        // Keep first word as-is (it's already properly capitalized)
+        return word;
+      }
+      // For subsequent words, capitalize first letter, lowercase the rest
+      // Handle special characters like & and /
+      if (word === '&' || word === '/') {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
+  }
+
+  // Single word - return as-is
+  return competitor;
+};
+
+// Helper function to format key competitors - handles both string and array, applies display name formatting
+const formatKeyCompetitors = (competitors: string | string[] | undefined): string => {
+  if (!competitors) return '';
+  
+  // Convert to array if it's a string
+  let competitorArray: string[];
+  if (Array.isArray(competitors)) {
+    competitorArray = competitors;
+  } else {
+    // If it's a string, split by comma if it contains commas, otherwise treat as single value
+    competitorArray = competitors.includes(',') 
+      ? competitors.split(',').map(c => c.trim())
+      : [competitors];
+  }
+  
+  // Apply display name formatting to each competitor and join with commas
+  return competitorArray.map(c => getCompetitorDisplayName(c)).join(', ');
+};
+
 export default function BannerBuyingOfficeDetails({ 
   banner, 
   accountName, 
@@ -108,16 +170,6 @@ export default function BannerBuyingOfficeDetails({
       return `Other: ${banner.adTypesOther}`;
     }
     return adType;
-  };
-
-  // Helper function to format key competitors - handles both string and array
-  const formatKeyCompetitors = (competitors: string | string[] | undefined): string => {
-    if (!competitors) return '';
-    if (Array.isArray(competitors)) {
-      return competitors.join(', ');
-    }
-    // If it's a string, return as-is (it might already be comma-separated or a single value)
-    return competitors;
   };
 
   return (
