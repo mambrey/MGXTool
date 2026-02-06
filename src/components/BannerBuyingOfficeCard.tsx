@@ -1304,13 +1304,13 @@ export default function BannerBuyingOfficeCard({
           )}
         </Card>
 
-        {/* JBP (Joint Business Plan) - SEPARATE SECTION */}
+        {/* Strategic Engagement Plan - SEPARATE SECTION */}
         <Card className="border-gray-200">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Calendar className="w-4 h-4" />
-                JBP (Joint Business Plan)
+                Strategic Engagement Plan
               </CardTitle>
               <div className="flex items-center space-x-2">
                 <Checkbox
