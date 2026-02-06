@@ -110,6 +110,15 @@ export default function BannerBuyingOfficeDetails({
     return adType;
   };
 
+  // Helper function to format key competitors - handles both string and array
+  const formatKeyCompetitors = (competitors: string | string[] | undefined): string => {
+    if (!competitors) return '';
+    if (Array.isArray(competitors)) {
+      return competitors.join(', ');
+    }
+    return competitors;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -131,7 +140,7 @@ export default function BannerBuyingOfficeDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={['overview', 'location', 'influence', 'strategy', 'planogram', 'additional']}>
+          <Accordion type="multiple" defaultValue={['overview', 'location', 'influence', 'engagement', 'strategy', 'planogram', 'additional']}>
             
             {/* Overview */}
             <AccordionItem value="overview">
@@ -274,38 +283,35 @@ export default function BannerBuyingOfficeDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Strategy and Capabilities */}
-            <AccordionItem value="strategy">
+            {/* Strategic Engagement Plan - NOW ITS OWN ACCORDION SECTION */}
+            <AccordionItem value="engagement">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  Strategy and Capabilities
+                  <Calendar className="w-5 h-5" />
+                  Strategic Engagement Plan
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      {/* Strategic Engagement Plan - RENAMED from JBP Information */}
+                      {/* Engagement Type Section */}
                       <div>
                         <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          Strategic Engagement Plan
+                          <Users className="w-4 h-4" />
+                          Engagement Type
                         </h4>
-                        
-                        {/* Engagement Type Section */}
-                        <div className="mb-4">
-                          <h5 className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            Engagement Type
-                          </h5>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InfoItem label="In-Person Visit" value={banner.inPersonVisit} />
-                            <InfoItem label="Phone/Email Communication" value={banner.phoneEmailCommunication} />
-                          </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="In-Person Visit" value={banner.inPersonVisit} />
+                          <InfoItem label="Phone/Email Communication" value={banner.phoneEmailCommunication} />
                         </div>
+                      </div>
 
-                        {/* JBP Information */}
+                      <Separator />
+
+                      {/* JBP Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <InfoItem label="JBP Customer" value={banner.isJBP ? "Yes" : "No"} />
                           {banner.isJBP && (
@@ -337,39 +343,53 @@ export default function BannerBuyingOfficeDetails({
                           )}
                         </div>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
 
-                      {/* Advertising Section - NEW */}
+            {/* Strategy and Capabilities */}
+            <AccordionItem value="strategy">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Strategy and Capabilities
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-6">
+                      {/* Advertising Section */}
                       {(banner.isAdvertiser || (banner.adTypesDeployed && banner.adTypesDeployed.length > 0)) && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
-                              <Megaphone className="w-4 h-4" />
-                              Advertising
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <InfoItem label="Advertiser" value={banner.isAdvertiser} />
-                              {banner.adTypesDeployed && banner.adTypesDeployed.length > 0 && (
-                                <div className="md:col-span-2">
-                                  <label className="text-sm font-medium text-gray-600">Ad Types Deployed</label>
-                                  <div className="flex flex-wrap gap-1 mt-2">
-                                    {banner.adTypesDeployed.map((adType, idx) => (
-                                      <Badge key={idx} variant="secondary" className="text-xs">
-                                        {formatAdType(adType)}
-                                      </Badge>
-                                    ))}
-                                  </div>
+                        <div>
+                          <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                            <Megaphone className="w-4 h-4" />
+                            Advertising
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InfoItem label="Advertiser" value={banner.isAdvertiser} />
+                            {banner.adTypesDeployed && banner.adTypesDeployed.length > 0 && (
+                              <div className="md:col-span-2">
+                                <label className="text-sm font-medium text-gray-600">Ad Types Deployed</label>
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {banner.adTypesDeployed.map((adType, idx) => (
+                                    <Badge key={idx} variant="secondary" className="text-xs">
+                                      {formatAdType(adType)}
+                                    </Badge>
+                                  ))}
                                 </div>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
-                        </>
+                        </div>
                       )}
 
-                      {/* Sampling & Innovation Section - NEW */}
+                      {/* Sampling & Innovation Section */}
                       {(banner.allowsWetSampling || banner.innovationLeadTime || banner.innovationAppetite) && (
                         <>
-                          <Separator />
+                          {(banner.isAdvertiser || (banner.adTypesDeployed && banner.adTypesDeployed.length > 0)) && <Separator />}
                           <div>
                             <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
                               <Sparkles className="w-4 h-4" />
@@ -387,7 +407,8 @@ export default function BannerBuyingOfficeDetails({
                       {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
                         banner.privateLabel || banner.displayMandates) && (
                         <>
-                          <Separator />
+                          {(banner.isAdvertiser || (banner.adTypesDeployed && banner.adTypesDeployed.length > 0) || 
+                            banner.allowsWetSampling || banner.innovationLeadTime || banner.innovationAppetite) && <Separator />}
                           <div>
                             <h4 className="font-semibold mb-3 text-sm text-gray-700">Business Strategy</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -443,6 +464,17 @@ export default function BannerBuyingOfficeDetails({
                             </div>
                           </div>
                         </>
+                      )}
+
+                      {/* Show message if no strategy info available */}
+                      {!banner.isAdvertiser && (!banner.adTypesDeployed || banner.adTypesDeployed.length === 0) &&
+                       !banner.allowsWetSampling && !banner.innovationLeadTime && !banner.innovationAppetite &&
+                       !banner.categoryCaptain && !banner.categoryAdvisor && !banner.pricingStrategy &&
+                       !banner.privateLabel && !banner.displayMandates &&
+                       !banner.ecommerceMaturityLevel && !banner.ecommerceSalesPercentage &&
+                       (!banner.fulfillmentTypes || banner.fulfillmentTypes.length === 0) &&
+                       (!banner.ecommercePartners || banner.ecommercePartners.length === 0) && (
+                        <p className="text-gray-500 text-sm">No strategy and capabilities information available</p>
                       )}
                     </div>
                   </CardContent>
@@ -528,7 +560,7 @@ export default function BannerBuyingOfficeDetails({
                         {banner.keyCompetitors && (
                           <div>
                             <label className="text-sm font-medium text-gray-600">Key Competitors</label>
-                            <p className="text-sm mt-1 whitespace-pre-wrap">{banner.keyCompetitors}</p>
+                            <p className="text-sm mt-1">{formatKeyCompetitors(banner.keyCompetitors)}</p>
                           </div>
                         )}
                         {banner.designatedCharities && (
