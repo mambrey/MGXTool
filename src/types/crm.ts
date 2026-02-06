@@ -49,6 +49,7 @@ export interface Account {
   }>;
   categoryCaptain?: string;
   categoryAdvisor?: string;
+  hasAPlan?: boolean;
   isJBP?: boolean;
   jbpStatus?: string;
   jbpStartDate?: string;
