@@ -1636,7 +1636,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               {formData.isAdvertiser === 'Yes' ? (
                 <div>
                   <Label className="text-xs font-medium mb-2 block">Ad Types Deployed (select all that apply)</Label>
-                  <div className="p-3 border rounded-lg bg-gray-50 space-y-2 max-h-64 overflow-y-auto">
+                  <div className="p-3 border rounded-lg bg-gray-50 space-y-2">
                     {AD_TYPES.map(adType => (
                       <div key={adType} className="flex items-center space-x-2">
                         <Checkbox
