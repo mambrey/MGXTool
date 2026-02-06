@@ -116,6 +116,7 @@ export default function BannerBuyingOfficeDetails({
     if (Array.isArray(competitors)) {
       return competitors.join(', ');
     }
+    // If it's a string, return as-is (it might already be comma-separated or a single value)
     return competitors;
   };
 
@@ -140,7 +141,7 @@ export default function BannerBuyingOfficeDetails({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-4">
-          <Accordion type="multiple" defaultValue={['overview', 'location', 'influence', 'engagement', 'strategy', 'planogram', 'additional']}>
+          <Accordion type="multiple" defaultValue={['overview', 'location', 'influence', 'strategy', 'engagement', 'planogram', 'additional']}>
             
             {/* Overview */}
             <AccordionItem value="overview">
@@ -283,73 +284,7 @@ export default function BannerBuyingOfficeDetails({
               </AccordionContent>
             </AccordionItem>
 
-            {/* Strategic Engagement Plan - NOW ITS OWN ACCORDION SECTION */}
-            <AccordionItem value="engagement">
-              <AccordionTrigger className="text-lg font-semibold">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Strategic Engagement Plan
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      {/* Engagement Type Section */}
-                      <div>
-                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          Engagement Type
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="In-Person Visit" value={banner.inPersonVisit} />
-                          <InfoItem label="Phone/Email Communication" value={banner.phoneEmailCommunication} />
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      {/* JBP Information */}
-                      <div>
-                        <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoItem label="JBP Customer" value={banner.isJBP ? "Yes" : "No"} />
-                          {banner.isJBP && (
-                            <>
-                              {banner.lastJBPDate && <InfoItem label="Last JBP" value={banner.lastJBPDate} />}
-                              {banner.nextJBPDate && <InfoItem label="Next JBP" value={banner.nextJBPDate} />}
-                              {banner.nextJBPDate && (
-                                <>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                      <Bell className="w-4 h-4" />
-                                      Alert Status
-                                    </label>
-                                    <div className="mt-1">
-                                      <Badge variant={banner.nextJBPAlert ? "default" : "secondary"}>
-                                        {banner.nextJBPAlert ? "Enabled" : "Disabled"}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  {banner.nextJBPAlert && banner.nextJBPAlertOptions && banner.nextJBPAlertOptions.length > 0 && (
-                                    <div className="md:col-span-2">
-                                      <label className="text-sm font-medium text-gray-600">Alert Options</label>
-                                      <p className="text-sm mt-1">{formatJBPAlertOptions(banner.nextJBPAlertOptions)}</p>
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Strategy and Capabilities */}
+            {/* Strategy and Capabilities - MOVED BEFORE Strategic Engagement Plan */}
             <AccordionItem value="strategy">
               <AccordionTrigger className="text-lg font-semibold">
                 <div className="flex items-center gap-2">
@@ -476,6 +411,72 @@ export default function BannerBuyingOfficeDetails({
                        (!banner.ecommercePartners || banner.ecommercePartners.length === 0) && (
                         <p className="text-gray-500 text-sm">No strategy and capabilities information available</p>
                       )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Strategic Engagement Plan - MOVED AFTER Strategy and Capabilities */}
+            <AccordionItem value="engagement">
+              <AccordionTrigger className="text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Strategic Engagement Plan
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-6">
+                      {/* Engagement Type Section */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          Engagement Type
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="In-Person Visit" value={banner.inPersonVisit} />
+                          <InfoItem label="Phone/Email Communication" value={banner.phoneEmailCommunication} />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* JBP Information */}
+                      <div>
+                        <h4 className="font-semibold mb-3 text-sm text-gray-700">JBP Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InfoItem label="JBP Customer" value={banner.isJBP ? "Yes" : "No"} />
+                          {banner.isJBP && (
+                            <>
+                              {banner.lastJBPDate && <InfoItem label="Last JBP" value={banner.lastJBPDate} />}
+                              {banner.nextJBPDate && <InfoItem label="Next JBP" value={banner.nextJBPDate} />}
+                              {banner.nextJBPDate && (
+                                <>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                      <Bell className="w-4 h-4" />
+                                      Alert Status
+                                    </label>
+                                    <div className="mt-1">
+                                      <Badge variant={banner.nextJBPAlert ? "default" : "secondary"}>
+                                        {banner.nextJBPAlert ? "Enabled" : "Disabled"}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  {banner.nextJBPAlert && banner.nextJBPAlertOptions && banner.nextJBPAlertOptions.length > 0 && (
+                                    <div className="md:col-span-2">
+                                      <label className="text-sm font-medium text-gray-600">Alert Options</label>
+                                      <p className="text-sm mt-1">{formatJBPAlertOptions(banner.nextJBPAlertOptions)}</p>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
