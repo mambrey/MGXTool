@@ -1613,6 +1613,64 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
               </div>
 
               <div>
+                <Label className="text-sm font-medium">Advertiser</Label>
+                <Select 
+                  value={formData.isAdvertiser || ''} 
+                  onValueChange={(value) => updateField('isAdvertiser', value === 'clear' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select advertiser status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.isAdvertiser === 'Yes' && (
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Ad Types Deployed (select all that apply)</Label>
+                  <div className="p-3 border rounded-lg bg-gray-50 space-y-2 max-h-64 overflow-y-auto">
+                    {AD_TYPES.map(adType => (
+                      <div key={adType} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`adtype-${adType}`}
+                          checked={selectedAdTypes.includes(adType)}
+                          onCheckedChange={() => toggleAdType(adType)}
+                        />
+                        <Label htmlFor={`adtype-${adType}`} className="text-sm cursor-pointer">
+                          {adType}
+                        </Label>
+                      </div>
+                    ))}
+                    
+                    <div className="flex items-start space-x-2 pt-2 border-t">
+                      <Checkbox
+                        id="adtype-other"
+                        checked={selectedAdTypes.includes('Other')}
+                        onCheckedChange={() => toggleAdType('Other')}
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="adtype-other" className="text-sm cursor-pointer">
+                          Other:
+                        </Label>
+                        <Input
+                          type="text"
+                          value={formData.adTypesOther || ''}
+                          onChange={(e) => updateField('adTypesOther', e.target.value)}
+                          placeholder="Specify other ad types..."
+                          className="mt-1"
+                          disabled={!selectedAdTypes.includes('Other')}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div>
                 <Label className="text-xs font-medium">Ecommerce</Label>
                 <Select 
                   value={formData.influenceEcommerce || 'none'} 
@@ -2189,66 +2247,6 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium">Advertiser</Label>
-                <Select 
-                  value={formData.isAdvertiser || ''} 
-                  onValueChange={(value) => updateField('isAdvertiser', value === 'clear' ? '' : value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select advertiser status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.isAdvertiser === 'Yes' && (
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Ad Types Deployed (select all that apply)</Label>
-                  <div className="p-3 border rounded-lg bg-gray-50 space-y-2 max-h-64 overflow-y-auto">
-                    {AD_TYPES.map(adType => (
-                      <div key={adType} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`adtype-${adType}`}
-                          checked={selectedAdTypes.includes(adType)}
-                          onCheckedChange={() => toggleAdType(adType)}
-                        />
-                        <Label htmlFor={`adtype-${adType}`} className="text-sm cursor-pointer">
-                          {adType}
-                        </Label>
-                      </div>
-                    ))}
-                    
-                    <div className="flex items-start space-x-2 pt-2 border-t">
-                      <Checkbox
-                        id="adtype-other"
-                        checked={selectedAdTypes.includes('Other')}
-                        onCheckedChange={() => toggleAdType('Other')}
-                      />
-                      <div className="flex-1">
-                        <Label htmlFor="adtype-other" className="text-sm cursor-pointer">
-                          Other:
-                        </Label>
-                        <Input
-                          type="text"
-                          value={formData.adTypesOther || ''}
-                          onChange={(e) => updateField('adTypesOther', e.target.value)}
-                          placeholder="Specify other ad types..."
-                          className="mt-1"
-                          disabled={!selectedAdTypes.includes('Other')}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="pt-4 border-t">
