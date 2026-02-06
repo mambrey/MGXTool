@@ -60,6 +60,9 @@ export interface Account {
   nextJBPDate?: string;
   nextJBPAlert?: boolean;
   nextJBPAlertOptions?: string[];
+  isAdvertiser?: string;
+  adTypesDeployed?: string[];
+  adTypesOther?: string;
   pricingStrategy?: string;
   privateLabel?: string;
   innovationAppetite?: string;

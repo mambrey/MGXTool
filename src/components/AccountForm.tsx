@@ -157,6 +157,16 @@ const KEY_COMPETITORS = [
   'Twin liquors', 'Ubereats', 'Walgreens', 'Walmart', 'Wegmans', 'Wfm', 'Winn dixie (seg)'
 ];
 
+const AD_TYPES = [
+  'Print Circular / Flyer',
+  'Email / Newsletter',
+  'In-Store Signage / POS',
+  'Digital Display / Banner Ads',
+  'Social Media',
+  'Loyalty / Rewards Program Promotions',
+  'Mobile App Promotions'
+];
+
 // Helper function to get display name for Key Competitors
 const getCompetitorDisplayName = (competitor: string): string => {
   // Specific name mappings
@@ -291,6 +301,9 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     influenceInStoreEvents: 'none',
     influenceShrinkManagement: 'none',
     influenceBuyingPOOwnership: 'none',
+    isAdvertiser: '',
+    adTypesDeployed: [],
+    adTypesOther: '',
     createdAt: account?.createdAt || currentTime,
     lastModified: currentTime,
     accountOwnerName: '',
@@ -336,6 +349,13 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
     if (typeof formData.keyCompetitors === 'string' && formData.keyCompetitors) {
       return [formData.keyCompetitors];
     }
+    return [];
+  });
+
+  // State for ad types deployed
+  const [selectedAdTypes, setSelectedAdTypes] = useState<string[]>(() => {
+    if (!formData.adTypesDeployed) return [];
+    if (Array.isArray(formData.adTypesDeployed)) return formData.adTypesDeployed;
     return [];
   });
 
@@ -809,6 +829,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
       categoryResetWindows: categoryResetWindows,
       customerEvents: customerEvents,
       keyCompetitors: selectedKeyCompetitors,
+      adTypesDeployed: selectedAdTypes,
       nextJBPAlert: formData.nextJBPAlert,
       nextJBPAlertOptions: formData.nextJBPAlertOptions,
       lastModified: new Date().toISOString(),
@@ -967,6 +988,17 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
 
   const clearAllKeyCompetitors = () => {
     setSelectedKeyCompetitors([]);
+  };
+
+  // Ad Types multi-select functions
+  const toggleAdType = (adType: string) => {
+    setSelectedAdTypes(prev => {
+      if (prev.includes(adType)) {
+        return prev.filter(t => t !== adType);
+      } else {
+        return [...prev, adType];
+      }
+    });
   };
 
   const addCategoryResetWindow = () => {
@@ -2119,7 +2151,7 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-              Strategic Engagement Plan
+              JBP (Joint Business Plan)
             </CardTitle>
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -2135,6 +2167,67 @@ export default function AccountForm({ account, contacts = [], onSave, onCancel }
         </CardHeader>
         {formData.isJBP && (
           <CardContent className="space-y-4">
+            {/* NEW: Advertiser Dropdown */}
+            <div>
+              <Label className="text-sm font-medium">Advertiser</Label>
+              <Select 
+                value={formData.isAdvertiser || ''} 
+                onValueChange={(value) => updateField('isAdvertiser', value === 'clear' ? '' : value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select advertiser status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear" className="text-gray-500 italic">Clear selection</SelectItem>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* NEW: Ad Types Deployed - Conditional Multi-Select */}
+            {formData.isAdvertiser === 'Yes' && (
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Ad Types Deployed (select all that apply)</Label>
+                <div className="p-3 border rounded-lg bg-gray-50 space-y-2">
+                  {AD_TYPES.map(adType => (
+                    <div key={adType} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`adtype-${adType}`}
+                        checked={selectedAdTypes.includes(adType)}
+                        onCheckedChange={() => toggleAdType(adType)}
+                      />
+                      <Label htmlFor={`adtype-${adType}`} className="text-sm cursor-pointer">
+                        {adType}
+                      </Label>
+                    </div>
+                  ))}
+                  
+                  {/* Other option with free text field */}
+                  <div className="flex items-start space-x-2 pt-2 border-t">
+                    <Checkbox
+                      id="adtype-other"
+                      checked={selectedAdTypes.includes('Other')}
+                      onCheckedChange={() => toggleAdType('Other')}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="adtype-other" className="text-sm cursor-pointer">
+                        Other:
+                      </Label>
+                      <Input
+                        type="text"
+                        value={formData.adTypesOther || ''}
+                        onChange={(e) => updateField('adTypesOther', e.target.value)}
+                        placeholder="Specify other ad types..."
+                        className="mt-1"
+                        disabled={!selectedAdTypes.includes('Other')}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium">Last JBP</Label>
