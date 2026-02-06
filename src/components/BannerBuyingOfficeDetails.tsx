@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, MapPin, Globe, Calendar, Target, Package, Truck, TrendingUp, ShoppingCart, FileText, User, Mail, Phone, MessageCircle, ExternalLink, Users } from 'lucide-react';
+import { Building, MapPin, Globe, Calendar, Target, Package, Truck, TrendingUp, ShoppingCart, FileText, User, Mail, Phone, MessageCircle, ExternalLink, Users, Megaphone, Sparkles, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +36,21 @@ const getExecutionReliabilityDescription = (score: string | undefined): string =
     default:
       return score;
   }
+};
+
+// Helper function to format JBP alert options
+const formatJBPAlertOptions = (options?: string[]) => {
+  if (!options || options.length === 0) return 'None';
+  return options.map(opt => {
+    if (opt === '30_days_before') return '30 Days Before';
+    if (opt === '7_days_before') return '7 Days Before';
+    if (opt === '1_day_before') return '1 Day Before';
+    if (opt.startsWith('custom_')) {
+      const days = opt.replace('custom_', '');
+      return `${days} Days Before`;
+    }
+    return opt;
+  }).join(', ');
 };
 
 export default function BannerBuyingOfficeDetails({ 
@@ -87,6 +102,14 @@ export default function BannerBuyingOfficeDetails({
     }
   };
 
+  // Helper function to format ad type display - shows "Other: [custom text]" if Other is selected
+  const formatAdType = (adType: string): string => {
+    if (adType === 'Other' && banner.adTypesOther) {
+      return `Other: ${banner.adTypesOther}`;
+    }
+    return adType;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -129,6 +152,25 @@ export default function BannerBuyingOfficeDetails({
                       <InfoItem label="All Spirits Outlets" value={banner.allSpiritsOutlets} />
                       <InfoItem label="Full Proof Outlets" value={banner.fullProofOutlets} />
                     </div>
+
+                    {/* Spirits Outlets by State */}
+                    {banner.spiritsOutletsByState && banner.spiritsOutletsByState.length > 0 && (
+                      <>
+                        <Separator className="my-4" />
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Spirits Outlets by State</label>
+                          <div className="mt-2 p-3 bg-gray-50 rounded-lg border">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              {banner.spiritsOutletsByState.map((outlet, idx) => (
+                                <div key={idx} className="text-sm">
+                                  <span className="font-medium">{outlet.state}:</span> {outlet.outletCount || 'N/A'}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
 
                     {banner.executionReliabilityScore && (
                       <>
@@ -258,8 +300,8 @@ export default function BannerBuyingOfficeDetails({
                             Engagement Type
                           </h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InfoItem label="In-Person Visit" value={banner.engagementInPersonVisit} />
-                            <InfoItem label="Phone/Email Communication" value={banner.engagementPhoneEmail} />
+                            <InfoItem label="In-Person Visit" value={banner.inPersonVisit} />
+                            <InfoItem label="Phone/Email Communication" value={banner.phoneEmailCommunication} />
                           </div>
                         </div>
 
@@ -270,13 +312,80 @@ export default function BannerBuyingOfficeDetails({
                             <>
                               {banner.lastJBPDate && <InfoItem label="Last JBP" value={banner.lastJBPDate} />}
                               {banner.nextJBPDate && <InfoItem label="Next JBP" value={banner.nextJBPDate} />}
+                              {banner.nextJBPDate && (
+                                <>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                      <Bell className="w-4 h-4" />
+                                      Alert Status
+                                    </label>
+                                    <div className="mt-1">
+                                      <Badge variant={banner.nextJBPAlert ? "default" : "secondary"}>
+                                        {banner.nextJBPAlert ? "Enabled" : "Disabled"}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  {banner.nextJBPAlert && banner.nextJBPAlertOptions && banner.nextJBPAlertOptions.length > 0 && (
+                                    <div className="md:col-span-2">
+                                      <label className="text-sm font-medium text-gray-600">Alert Options</label>
+                                      <p className="text-sm mt-1">{formatJBPAlertOptions(banner.nextJBPAlertOptions)}</p>
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </>
                           )}
                         </div>
                       </div>
 
+                      {/* Advertising Section - NEW */}
+                      {(banner.isAdvertiser || (banner.adTypesDeployed && banner.adTypesDeployed.length > 0)) && (
+                        <>
+                          <Separator />
+                          <div>
+                            <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                              <Megaphone className="w-4 h-4" />
+                              Advertising
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <InfoItem label="Advertiser" value={banner.isAdvertiser} />
+                              {banner.adTypesDeployed && banner.adTypesDeployed.length > 0 && (
+                                <div className="md:col-span-2">
+                                  <label className="text-sm font-medium text-gray-600">Ad Types Deployed</label>
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {banner.adTypesDeployed.map((adType, idx) => (
+                                      <Badge key={idx} variant="secondary" className="text-xs">
+                                        {formatAdType(adType)}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Sampling & Innovation Section - NEW */}
+                      {(banner.allowsWetSampling || banner.innovationLeadTime || banner.innovationAppetite) && (
+                        <>
+                          <Separator />
+                          <div>
+                            <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+                              <Sparkles className="w-4 h-4" />
+                              Sampling & Innovation
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {banner.allowsWetSampling && <InfoItem label="Allows Wet Sampling" value={banner.allowsWetSampling} />}
+                              {banner.innovationAppetite && <InfoItem label="Innovation Appetite" value={banner.innovationAppetite} />}
+                              {banner.innovationLeadTime && <InfoItem label="Innovation Information Lead Time" value={banner.innovationLeadTime} />}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
                       {(banner.categoryCaptain || banner.categoryAdvisor || banner.pricingStrategy || 
-                        banner.privateLabel || banner.innovationAppetite || banner.displayMandates) && (
+                        banner.privateLabel || banner.displayMandates) && (
                         <>
                           <Separator />
                           <div>
@@ -286,7 +395,6 @@ export default function BannerBuyingOfficeDetails({
                               {banner.categoryAdvisor && banner.categoryAdvisor !== 'none' && <InfoItem label="Category Validator" value={banner.categoryAdvisor} />}
                               {banner.pricingStrategy && banner.pricingStrategy !== 'none' && <InfoItem label="Pricing Strategy" value={banner.pricingStrategy} />}
                               {banner.privateLabel && banner.privateLabel !== 'none' && <InfoItem label="Private Label" value={banner.privateLabel} />}
-                              {banner.innovationAppetite && <InfoItem label="Innovation Appetite" value={banner.innovationAppetite} />}
                               {banner.displayMandates && banner.displayMandates !== 'none' && <InfoItem label="Display Mandates" value={banner.displayMandates} />}
                             </div>
                           </div>
