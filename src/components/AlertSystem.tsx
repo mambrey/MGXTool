@@ -86,6 +86,46 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
     return false;
   };
 
+  // Helper to parse per-contact alert options (e.g., '30_days_before', '7_days_before', '1_day_before', 'custom_X')
+  // Returns the max number of days from the contact's own alert options
+  const getMaxDaysFromContactOptions = (options: string[]): number => {
+    if (!options || options.length === 0) return 0;
+    let maxDays = 0;
+    for (const opt of options) {
+      if (opt === '1_day_before' || opt === 'day_before') {
+        maxDays = Math.max(maxDays, 1);
+      } else if (opt === '7_days_before' || opt === 'week_before') {
+        maxDays = Math.max(maxDays, 7);
+      } else if (opt === '30_days_before') {
+        maxDays = Math.max(maxDays, 30);
+      } else if (opt === 'same_day') {
+        maxDays = Math.max(maxDays, 0);
+      } else if (opt.startsWith('custom_')) {
+        const customDays = parseInt(opt.replace('custom_', ''), 10);
+        if (!isNaN(customDays)) {
+          maxDays = Math.max(maxDays, customDays);
+        }
+      }
+    }
+    return maxDays;
+  };
+
+  // Check if a per-contact alert should fire at a given daysUntil value
+  const shouldShowContactAlert = (daysUntil: number, options: string[]): boolean => {
+    if (!options || options.length === 0) return false;
+    for (const opt of options) {
+      if ((opt === 'same_day') && daysUntil === 0) return true;
+      if ((opt === '1_day_before' || opt === 'day_before') && daysUntil <= 1) return true;
+      if ((opt === '7_days_before' || opt === 'week_before') && daysUntil <= 7) return true;
+      if (opt === '30_days_before' && daysUntil <= 30) return true;
+      if (opt.startsWith('custom_')) {
+        const customDays = parseInt(opt.replace('custom_', ''), 10);
+        if (!isNaN(customDays) && daysUntil <= customDays) return true;
+      }
+    }
+    return false;
+  };
+
   // Load settings and snoozed alerts on mount
   useEffect(() => {
     setPowerAutomateEnabled(powerAutomateService.isEnabled());
@@ -402,13 +442,20 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             // Calculate days until birthday
             const daysUntilBirthday = Math.round((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             
+            // Use per-contact birthdayAlertOptions if available, otherwise fall back to global settings
+            const contactBirthdayOptions = contact.birthdayAlertOptions && contact.birthdayAlertOptions.length > 0
+              ? contact.birthdayAlertOptions
+              : alertSettings.birthdayAlertOptions;
+
             console.log(`  Birthday Check:`);
             console.log(`    - Days until: ${daysUntilBirthday}`);
-            console.log(`    - Alert options: ${alertSettings.birthdayAlertOptions.join(', ')}`);
+            console.log(`    - Contact alert options: ${(contact.birthdayAlertOptions || []).join(', ')}`);
+            console.log(`    - Global alert options: ${alertSettings.birthdayAlertOptions.join(', ')}`);
+            console.log(`    - Using options: ${contactBirthdayOptions.join(', ')}`);
             
-            // Show alerts based on user's checkbox selections
-            const maxDays = getMaxDaysFromOptions(alertSettings.birthdayAlertOptions);
-            if (daysUntilBirthday >= 0 && daysUntilBirthday <= maxDays) {
+            // Show alerts based on per-contact options (or global fallback)
+            const maxDays = getMaxDaysFromContactOptions(contactBirthdayOptions as string[]);
+            if (daysUntilBirthday >= 0 && shouldShowContactAlert(daysUntilBirthday, contactBirthdayOptions as string[])) {
               console.log(`    ✓ Creating birthday alert (${daysUntilBirthday} days)`);
               
               const alertId = `birthday-${contact.id}`;

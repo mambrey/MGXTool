@@ -171,9 +171,27 @@ export interface Account {
   industry?: string;
 }
 
+export interface RelationshipOwner {
+  ownerName?: string;
+  ownerEmail?: string;
+  svp?: string;
+  name?: string;
+  email?: string;
+  vicePresident?: string;
+}
+
+export interface ContactEventWithAlert {
+  id: string;
+  title: string;
+  date: string;
+  alertEnabled?: boolean;
+  alertOptions?: string[];
+}
+
 export interface Contact {
   id: string;
   accountId: string;
+  bannerBuyingOfficeId?: string;
   firstName: string;
   lastName: string;
   title?: string;
@@ -181,7 +199,33 @@ export interface Contact {
   mobilePhone?: string;
   officePhone?: string;
   isPrimaryContact?: boolean;
+  contactActiveStatus?: string;
   relationshipStatus?: string;
+  categorySegmentOwnership?: string[];
+  responsibilityLevels?: Record<string, string>;
+  birthday?: string;
+  birthdayAlert?: boolean;
+  birthdayAlertOptions?: string[];
+  nextContactDate?: string;
+  nextContactAlert?: boolean;
+  nextContactAlertOptions?: string[];
+  lastContactDate?: string;
+  linkedinProfile?: string;
+  knownPreferences?: string;
+  entertainment?: string;
+  decisionBiasProfile?: Record<string, unknown>;
+  followThrough?: string;
+  notes?: string;
+  values?: string;
+  painPoints?: string;
+  uploadedNotes?: Array<{ id: string; name: string; content: string; uploadedAt: string }>;
+  contactEvents?: ContactEventWithAlert[];
+  primaryDiageoRelationshipOwners?: RelationshipOwner;
+  relationshipOwner?: RelationshipOwner;
+  managerId?: string;
+  vp?: string;
+  notificationEmail?: string;
+  teamsChannelId?: string;
   createdAt: string;
   lastModified: string;
 }
