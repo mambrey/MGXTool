@@ -33,21 +33,20 @@ interface ContactEvent {
   alertOptions?: ('same_day' | 'day_before' | 'week_before')[];
 }
 
-// Helper function to format birthday for display (MM/DD/YYYY)
+// Helper function to format birthday for display (MM/DD only, no year)
 const formatBirthday = (birthday: string): string => {
   if (!birthday) return 'N/A';
   
-  // If already in ISO format (YYYY-MM-DD), convert to MM/DD/YYYY
+  // If already in ISO format (YYYY-MM-DD), convert to MM/DD
   if (birthday.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const [year, month, day] = birthday.split('-');
-    return `${month}/${day}/${year}`;
+    const [, month, day] = birthday.split('-');
+    return `${month}/${day}`;
   }
   
-  // If in MM-DD format (legacy), add current year and convert to MM/DD/YYYY
+  // If in MM-DD format, convert to MM/DD
   if (birthday.match(/^\d{2}-\d{2}$/)) {
     const [month, day] = birthday.split('-');
-    const currentYear = new Date().getFullYear();
-    return `${month}/${day}/${currentYear}`;
+    return `${month}/${day}`;
   }
   
   // Return as-is if format is unknown

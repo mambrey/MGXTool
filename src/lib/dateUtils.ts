@@ -1,5 +1,5 @@
 /**
- * Format a birthday string to MM/DD/YYYY format without timezone issues
+ * Format a birthday string to MM/DD format without year
  * Handles both YYYY-MM-DD and MM-DD formats
  */
 export function formatBirthday(birthday: string): string {
@@ -7,15 +7,14 @@ export function formatBirthday(birthday: string): string {
   
   // Handle YYYY-MM-DD format (new format)
   if (birthday.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const [year, month, day] = birthday.split('-');
-    return `${month}/${day}/${year}`;
+    const [, month, day] = birthday.split('-');
+    return `${month}/${day}`;
   }
   
   // Handle MM-DD format (legacy format)
   if (birthday.match(/^\d{2}-\d{2}$/)) {
     const [month, day] = birthday.split('-');
-    const currentYear = new Date().getFullYear();
-    return `${month}/${day}/${currentYear}`;
+    return `${month}/${day}`;
   }
   
   return birthday;

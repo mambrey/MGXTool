@@ -150,21 +150,40 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-// Convert MM-DD to date input format (YYYY-MM-DD) using current year
-const birthdayToDateInput = (birthday: string): string => {
-  if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return '';
-  const currentYear = new Date().getFullYear();
+// Parse MM-DD birthday into month and day strings
+const parseBirthdayParts = (birthday: string): { month: string; day: string } => {
+  if (!birthday || !birthday.match(/^\d{2}-\d{2}$/)) return { month: '', day: '' };
   const [month, day] = birthday.split('-');
-  return `${currentYear}-${month}-${day}`;
+  return { month, day };
 };
 
-// Convert date input format (YYYY-MM-DD) to MM-DD
-const dateInputToBirthday = (dateInput: string): string => {
-  if (!dateInput) return '';
-  const parts = dateInput.split('-');
-  if (parts.length !== 3) return '';
-  return `${parts[1]}-${parts[2]}`;
+// Build MM-DD from month and day strings
+const buildBirthday = (month: string, day: string): string => {
+  if (!month || !day) return '';
+  return `${month}-${day}`;
 };
+
+// Month options for birthday select
+const BIRTHDAY_MONTHS = [
+  { value: '01', label: 'January' },
+  { value: '02', label: 'February' },
+  { value: '03', label: 'March' },
+  { value: '04', label: 'April' },
+  { value: '05', label: 'May' },
+  { value: '06', label: 'June' },
+  { value: '07', label: 'July' },
+  { value: '08', label: 'August' },
+  { value: '09', label: 'September' },
+  { value: '10', label: 'October' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
+];
+
+// Day options for birthday select (1-31)
+const BIRTHDAY_DAYS = Array.from({ length: 31 }, (_, i) => {
+  const d = (i + 1).toString().padStart(2, '0');
+  return { value: d, label: (i + 1).toString() };
+});
 
 // Helper function to normalize decisionBiasProfile to array (handles legacy string data)
 const normalizeDecisionBiasProfile = (value: string | string[] | undefined): string[] => {
@@ -474,8 +493,15 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
     setFormData(prev => ({ ...prev, [field]: formatted }));
   };
 
-  const handleBirthdayChange = (dateInput: string) => {
-    const birthday = dateInputToBirthday(dateInput);
+  const handleBirthdayMonthChange = (month: string) => {
+    const { day } = parseBirthdayParts(formData.birthday);
+    const birthday = buildBirthday(month, day);
+    setFormData(prev => ({ ...prev, birthday }));
+  };
+
+  const handleBirthdayDayChange = (day: string) => {
+    const { month } = parseBirthdayParts(formData.birthday);
+    const birthday = buildBirthday(month, day);
     setFormData(prev => ({ ...prev, birthday }));
   };
 
@@ -1529,13 +1555,30 @@ export default function ContactForm({ contact, accounts, onSave, onCancel }: Con
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="birthday">Birthday (Month & Day)</Label>
-                <Input
-                  id="birthday"
-                  type="date"
-                  value={birthdayToDateInput(formData.birthday)}
-                  onChange={(e) => handleBirthdayChange(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                />
+                <div className="flex gap-2">
+                  <select
+                    id="birthday-month"
+                    value={parseBirthdayParts(formData.birthday).month}
+                    onChange={(e) => handleBirthdayMonthChange(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                  >
+                    <option value="">Month</option>
+                    {BIRTHDAY_MONTHS.map((m) => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                  <select
+                    id="birthday-day"
+                    value={parseBirthdayParts(formData.birthday).day}
+                    onChange={(e) => handleBirthdayDayChange(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                  >
+                    <option value="">Day</option>
+                    {BIRTHDAY_DAYS.map((d) => (
+                      <option key={d.value} value={d.value}>{d.label}</option>
+                    ))}
+                  </select>
+                </div>
                 
                 <div className="space-y-3 pt-2 border-t border-gray-200">
                   <div className="flex items-center justify-between">
