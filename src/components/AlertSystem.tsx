@@ -78,11 +78,12 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
   };
 
   // Helper function to check if alert should be shown based on options
+  // Uses <= range checks so alerts show for any day within the window, not just the exact day
   const shouldShowAlert = (daysUntil: number, options: AlertOption[]): boolean => {
     if (options.length === 0) return false;
-    if (options.includes('same_day') && daysUntil === 0) return true;
-    if (options.includes('day_before') && daysUntil === 1) return true;
-    if (options.includes('week_before') && daysUntil === 7) return true;
+    if (options.includes('week_before') && daysUntil <= 7) return true;
+    if (options.includes('day_before') && daysUntil <= 1) return true;
+    if (options.includes('same_day') && daysUntil <= 0) return true;
     return false;
   };
 
@@ -394,9 +395,20 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       const generatedAlerts: AlertType[] = [];
       
       console.log('=== ALERT SYSTEM DEBUG ===');
-      console.log('Processing real contacts for alerts:', contacts?.length || 0);
+      console.log('Total contacts:', contacts?.length || 0);
       console.log('Processing accounts:', accounts?.length || 0);
       console.log('Alert Settings:', alertSettings);
+      
+      // Diagnostic: count contacts with birthday data
+      if (contacts && Array.isArray(contacts)) {
+        const contactsWithBirthday = contacts.filter(c => c.birthday);
+        const contactsWithBirthdayAlert = contacts.filter(c => c.birthday && c.birthdayAlert);
+        console.log(`Contacts with birthday set: ${contactsWithBirthday.length}`);
+        console.log(`Contacts with birthdayAlert=true: ${contactsWithBirthdayAlert.length}`);
+        contactsWithBirthdayAlert.forEach(c => {
+          console.log(`  - ${c.firstName} ${c.lastName}: birthday="${c.birthday}", format=${typeof c.birthday}`);
+        });
+      }
 
       // Load saved alert completion states
       const savedAlerts = loadFromStorage<AlertType[]>('crm-alerts', []);
@@ -427,7 +439,10 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
           if (contact.birthday && contact.birthdayAlert) {
             // Parse birthday without timezone issues
             const parsed = parseBirthdayForComparison(contact.birthday);
-            if (!parsed) return;
+            if (!parsed) {
+              console.warn(`  ⚠ Could not parse birthday "${contact.birthday}" for ${contact.firstName} ${contact.lastName} - skipping birthday alert`);
+              return;
+            }
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
