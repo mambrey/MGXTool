@@ -140,6 +140,11 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
       eventAlertOptions: ['week_before'],
       reminderFrequency: 'once'
     });
+    // Ensure birthday alert options are never empty from a previously saved config.
+    // If the user had unchecked all options, restore a sensible default so alerts still fire.
+    if (!savedSettings.birthdayAlertOptions || savedSettings.birthdayAlertOptions.length === 0) {
+      savedSettings.birthdayAlertOptions = ['week_before'];
+    }
     setAlertSettings(savedSettings);
     
     const savedSnoozed = loadFromStorage<SnoozedAlert[]>('crm-snoozed-alerts', []);
@@ -442,10 +447,15 @@ export default function AlertSystem({ accounts, contacts, onBack }: AlertSystemP
             // Calculate days until birthday
             const daysUntilBirthday = Math.round((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             
-            // Use per-contact birthdayAlertOptions if available, otherwise fall back to global settings
+            // Use per-contact birthdayAlertOptions if available, otherwise fall back to global settings.
+            // If both contact-level and global-level options are empty, default to ['week_before']
+            // to ensure birthday alerts are not silently suppressed.
+            const DEFAULT_BIRTHDAY_OPTIONS: AlertOption[] = ['week_before'];
             const contactBirthdayOptions = contact.birthdayAlertOptions && contact.birthdayAlertOptions.length > 0
               ? contact.birthdayAlertOptions
-              : alertSettings.birthdayAlertOptions;
+              : (alertSettings.birthdayAlertOptions.length > 0
+                ? alertSettings.birthdayAlertOptions
+                : DEFAULT_BIRTHDAY_OPTIONS);
 
             console.log(`  Birthday Check:`);
             console.log(`    - Days until: ${daysUntilBirthday}`);
