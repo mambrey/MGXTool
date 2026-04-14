@@ -14,6 +14,9 @@ interface WelcomeScreenProps {
   onAddAccount?: () => void;
   onAddContact?: () => void;
   onExploreFeatures?: () => void;
+  onNavigateToAccounts?: () => void;
+  onNavigateToContacts?: () => void;
+  onNavigateToAlerts?: () => void;
 }
 
 export default function WelcomeScreen({ 
@@ -22,7 +25,10 @@ export default function WelcomeScreen({
   contacts = [],
   onAddAccount,
   onAddContact,
-  onExploreFeatures
+  onExploreFeatures,
+  onNavigateToAccounts,
+  onNavigateToContacts,
+  onNavigateToAlerts
 }: WelcomeScreenProps) {
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
 
@@ -172,7 +178,10 @@ export default function WelcomeScreen({
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300">
+          <Card 
+            className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300 cursor-pointer hover:shadow-md"
+            onClick={onNavigateToAccounts}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -192,7 +201,10 @@ export default function WelcomeScreen({
             </CardContent>
           </Card>
 
-          <Card className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300">
+          <Card 
+            className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300 cursor-pointer hover:shadow-md"
+            onClick={onNavigateToContacts}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -212,7 +224,10 @@ export default function WelcomeScreen({
             </CardContent>
           </Card>
 
-          <Card className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300">
+          <Card 
+            className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300 cursor-pointer hover:shadow-md"
+            onClick={onNavigateToAlerts}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -232,7 +247,10 @@ export default function WelcomeScreen({
             </CardContent>
           </Card>
 
-          <Card className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300">
+          <Card 
+            className="bg-white/70 backdrop-blur-sm border-white/20 hover:bg-white/80 transition-all duration-300 cursor-pointer hover:shadow-md"
+            onClick={onNavigateToAlerts}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>

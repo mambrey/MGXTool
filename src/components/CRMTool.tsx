@@ -730,6 +730,9 @@ export default function CRMTool({ userName }: CRMToolProps) {
             onAddAccount={handleAddAccount}
             onAddContact={() => handleAddContact()}
             onExploreFeatures={handleExploreFeatures}
+            onNavigateToAccounts={() => { handleBackToList(); setCurrentView('accounts'); }}
+            onNavigateToContacts={() => { handleBackToList(); setCurrentView('contacts'); }}
+            onNavigateToAlerts={() => { handleBackToList(); setCurrentView('alert-system'); }}
           />
         );
       
@@ -1259,6 +1262,9 @@ export default function CRMTool({ userName }: CRMToolProps) {
             onAddAccount={handleAddAccount}
             onAddContact={() => handleAddContact()}
             onExploreFeatures={handleExploreFeatures}
+            onNavigateToAccounts={() => { handleBackToList(); setCurrentView('accounts'); }}
+            onNavigateToContacts={() => { handleBackToList(); setCurrentView('contacts'); }}
+            onNavigateToAlerts={() => { handleBackToList(); setCurrentView('alert-system'); }}
           />
         );
     }
