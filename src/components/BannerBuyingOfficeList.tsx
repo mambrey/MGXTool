@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building, Search, MapPin, Globe, Calendar, Target, Package, Truck, ChevronRight, User, Briefcase } from 'lucide-react';
+import { Building, Search, MapPin, Globe, Calendar, Target, Package, Truck, ChevronRight, User, Briefcase, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -45,6 +45,62 @@ export default function BannerBuyingOfficeList({ accounts, contacts, onViewBanne
     );
   });
 
+  const escapeCsvValue = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+    const str = String(value);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const exportBannersSummary = () => {
+    const headers = [
+      'Banner/Buying Office Name', 'Parent Account', 'Address', 'Primary Contact',
+      'Diageo Owner', 'Channel', 'Footprint', 'Operating States',
+      'All Spirits Outlets', 'Is JBP', 'Category Captain', 'Has Planograms',
+      'Fulfillment Types', 'E-Commerce Maturity Level'
+    ];
+
+    const rows = filteredBanners.map(({ banner, accountName, accountId }) => {
+      const bannerContacts = (contacts || []).filter(c =>
+        c.bannerBuyingOfficeId === banner.id || c.accountId === accountId
+      );
+      const parentAccount = accounts.find(a => a.id === accountId);
+      let primaryContact = bannerContacts.find(c => c.isPrimaryContact);
+      if (!primaryContact && parentAccount?.primaryContactId) {
+        primaryContact = bannerContacts.find(c => c.id === parentAccount.primaryContactId);
+      }
+      const diageoOwnerContact = bannerContacts.find(c => c.primaryDiageoRelationshipOwners?.ownerName);
+
+      return [
+        banner.accountName || '',
+        accountName || '',
+        banner.address || '',
+        primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : '',
+        diageoOwnerContact?.primaryDiageoRelationshipOwners?.ownerName || '',
+        banner.channel || '',
+        banner.footprint || '',
+        (banner.operatingStates || []).join('; '),
+        banner.allSpiritsOutlets || '',
+        banner.isJBP ? 'Yes' : 'No',
+        banner.categoryCaptain || '',
+        banner.hasPlanograms ? 'Yes' : 'No',
+        Array.isArray(banner.fulfillmentTypes) ? banner.fulfillmentTypes.join('; ') : '',
+        banner.ecommerceMaturityLevel || ''
+      ].map(escapeCsvValue);
+    });
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'banner-buying-offices-summary.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -56,6 +112,10 @@ export default function BannerBuyingOfficeList({ accounts, contacts, onViewBanne
           <h2 className="text-2xl font-bold text-gray-900">Banner/Buying Offices</h2>
           <p className="text-gray-600">View all banner and buying office locations</p>
         </div>
+        <Button variant="outline" onClick={exportBannersSummary} className="flex items-center gap-2">
+          <Download className="w-4 h-4" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Search */}

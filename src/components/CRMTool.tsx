@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase, Building, MapPin } from 'lucide-react';
+import { Home, Building2, Users, BarChart3, FolderOpen, Network, CheckSquare, Bell, Menu, X, Search, Plus, Calendar, AlertTriangle, User, Phone, Mail, MessageCircle, UserCog, TrendingUp, HelpCircle, ThumbsUp, Briefcase, Building, MapPin, Download } from 'lucide-react';
 import diageoLogo from '@/assets/diageo-logo.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -362,6 +362,113 @@ export default function CRMTool({ userName }: CRMToolProps) {
     });
   };
 
+  // CSV export helper
+  const downloadCSV = (csvContent: string, filename: string) => {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const escapeCsvValue = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+    const str = String(value);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  // Export Customer Accounts Summary
+  const exportAccountsSummary = () => {
+    const headers = [
+      'Account Name', 'Industry', 'Address', 'Primary Contact', 'Diageo Owner',
+      'Account Status', 'Channel', 'Revenue', 'Parent Company', 'Website',
+      'Phone', 'Email', 'Footprint', 'Operating States', 'Publicly Traded',
+      'Ticker Symbol', 'Total Buying Offices'
+    ];
+
+    const rows = filteredAccounts.map(account => {
+      const primaryContact = account.primaryContactId
+        ? (contacts || []).find(c => c.id === account.primaryContactId)
+        : (contacts || []).find(c => c.accountId === account.id && c.isPrimaryContact);
+      const accountContacts = (contacts || []).filter(c => c.accountId === account.id);
+      const diageoOwnerContact = accountContacts.find(c => c.primaryDiageoRelationshipOwners?.ownerName);
+
+      return [
+        account.accountName || '',
+        account.industry || '',
+        account.address || '',
+        primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : '',
+        diageoOwnerContact?.primaryDiageoRelationshipOwners?.ownerName || '',
+        account.accountStatus || '',
+        account.channel || '',
+        account.revenue ? `$${account.revenue.toLocaleString()}` : '',
+        account.parentCompany || '',
+        account.website || '',
+        account.phone || '',
+        account.email || '',
+        account.footprint || '',
+        Array.isArray(account.operatingStates) ? account.operatingStates.join('; ') : (account.operatingStates || ''),
+        account.publiclyTraded ? 'Yes' : 'No',
+        account.tickerSymbol || '',
+        account.totalBuyingOffices || ''
+      ].map(escapeCsvValue);
+    });
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    downloadCSV(csvContent, 'customer-accounts-summary.csv');
+  };
+
+  // Export Contacts Summary
+  const exportContactsSummary = () => {
+    const headers = [
+      'First Name', 'Last Name', 'Title', 'Email', 'Office Phone', 'Mobile Phone',
+      'Account Name', 'Banner/Buying Office', 'Relationship Status', 'Influence',
+      'Influencer Level', 'Receptiveness', 'Relationship Owner', 'Diageo Owner',
+      'Diageo Owner Email', 'Preferred Contact Method', 'Birthday', 'Last Contact Date',
+      'Next Contact Date', 'Contact Active Status', 'Known Preferences', 'Notes'
+    ];
+
+    const rows = filteredContacts.map(contact => {
+      const account = (accounts || []).find(a => a.id === contact.accountId);
+      const bannerName = contact.bannerBuyingOfficeId && account?.bannerBuyingOffices
+        ? account.bannerBuyingOffices.find(b => b.id === contact.bannerBuyingOfficeId)?.accountName || ''
+        : '';
+
+      return [
+        contact.firstName || '',
+        contact.lastName || '',
+        contact.title || '',
+        contact.email || '',
+        contact.officePhone || '',
+        contact.mobilePhone || '',
+        account?.accountName || '',
+        bannerName,
+        contact.relationshipStatus || '',
+        contact.influence || '',
+        contact.influencerLevel ? `${contact.influencerLevel}/10` : '',
+        contact.receptiveness || '',
+        contact.relationshipOwner?.name || '',
+        contact.primaryDiageoRelationshipOwners?.ownerName || '',
+        contact.primaryDiageoRelationshipOwners?.ownerEmail || '',
+        contact.preferredContactMethod || '',
+        contact.birthday ? formatBirthday(contact.birthday) : '',
+        contact.lastContactDate ? new Date(contact.lastContactDate).toLocaleDateString() : '',
+        contact.nextContactDate ? new Date(contact.nextContactDate).toLocaleDateString() : '',
+        contact.contactActiveStatus || '',
+        contact.knownPreferences || '',
+        contact.notes || ''
+      ].map(escapeCsvValue);
+    });
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    downloadCSV(csvContent, 'contacts-summary.csv');
+  };
+
   // Helper function to check if a date is coming up (within 7 days)
   const isDateUpcoming = (dateString: string) => {
     if (!dateString) return false;
@@ -635,10 +742,16 @@ export default function CRMTool({ userName }: CRMToolProps) {
                 <h2 className="text-2xl font-bold text-gray-900">Customer Accounts</h2>
                 <p className="text-gray-600">Manage your strategic business relationships</p>
               </div>
-              <Button onClick={handleAddAccount} className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Add Account
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={exportAccountsSummary} className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </Button>
+                <Button onClick={handleAddAccount} className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Add Account
+                </Button>
+              </div>
             </div>
 
             {/* Search */}
@@ -794,10 +907,16 @@ export default function CRMTool({ userName }: CRMToolProps) {
                 <h2 className="text-2xl font-bold text-gray-900">Contacts</h2>
                 <p className="text-gray-600">Build and maintain key relationships</p>
               </div>
-              <Button onClick={() => handleAddContact()} className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Add Contact
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={exportContactsSummary} className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </Button>
+                <Button onClick={() => handleAddContact()} className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Add Contact
+                </Button>
+              </div>
             </div>
 
             {/* Search */}
