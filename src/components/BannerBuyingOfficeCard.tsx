@@ -603,6 +603,7 @@ export default function BannerBuyingOfficeCard({
                 <SelectItem value="National">National Retailer</SelectItem>
                 <SelectItem value="Regional">Regional Retailer</SelectItem>
                 <SelectItem value="Single State">Single State Retailer</SelectItem>
+                <SelectItem value="3P">3P</SelectItem>
               </SelectContent>
               </Select>
             </div>
