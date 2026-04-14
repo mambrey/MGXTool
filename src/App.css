@@ -3,12 +3,9 @@
 .birthday-no-year::-webkit-datetime-edit-year-field {
   display: none;
 }
-/* Hide all separators, then show only the first one (between month and day) */
-.birthday-no-year::-webkit-datetime-edit-text {
+/* Hide only the second separator (between day and year), keep the first one (between month and day) */
+.birthday-no-year::-webkit-datetime-edit-text:nth-of-type(2) {
   display: none;
-}
-.birthday-no-year::-webkit-datetime-edit-text:first-of-type {
-  display: initial;
 }
 
 /* Google Places Autocomplete - Make input text black and visible */
